@@ -10,6 +10,5 @@ class Auction(models.Model):
     player = models.ForeignKey(Player, null=True, on_delete=models.CASCADE)
     done_deal = models.BooleanField(default=False, null=True, verbose_name='خریداری شده')
 
-
     def __str__(self):
         return self.title

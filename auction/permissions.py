@@ -15,12 +15,12 @@ class problem_sell_limit(permissions.BasePermission):
 
 
 class seller_answer_problem(permissions.BasePermission):
-    
+
     def has_permission(self, request, view):
         seller = Player.objects.get(user=request.user)
         problem = Problem.objects.get(id=request.data.get('problem_id'))
-        
-        if PlayerSingleProblem.objects.filter(player=seller, problem=problem, status='SCORED').exists() == True:
+
+        if ProblemAnswer.objects.filter(player=seller, problem=problem, status='SCORED').exists() == True:
             return True
         else:
             return False

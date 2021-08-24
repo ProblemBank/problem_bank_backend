@@ -33,10 +33,11 @@ class BuyAuctionProblem(generics.GenericAPIView):
             auction_obj.done_deal = True
             player_user.score -= auction_obj.price
             player_user.save()
-            new_player_problem = PlayerSingleProblem(player=player_user, problem=auction_obj.problem_for_sell)
+            new_player_problem = ProblemAnswer(player=player_user, problem=auction_obj.problem_for_sell)
             new_player_problem.save()
             auction_obj.save()
             return Response({"message": "خرید با موفقیت انجام شد"}, status.HTTP_200_OK)
 
         else:
-            return Response({"message": "شما نمی توانید سوالی که به مزایده گذاشتید را نمی توانید بخرید!"}, status.HTTP_403_FORBIDDEN)
+            return Response({"message": "شما نمی‌توانید سوالی را که به مزایده گذاشتید، بخرید!"},
+                            status.HTTP_403_FORBIDDEN)
