@@ -4,12 +4,12 @@ from Game.models import *
 
 
 class problem_sell_limit(permissions.BasePermission):
-    
+
     def has_permission(self, request, view):
         seller = Player.objects.get(user=request.user)
         if Auction.objects.filter(player=seller, done_deal=False).count() > 10:
             return False
-        
+
         else:
             return True
 
@@ -24,6 +24,5 @@ class seller_answer_problem(permissions.BasePermission):
             return True
         else:
             return False
-
 
 # , income__in=[1, 2]

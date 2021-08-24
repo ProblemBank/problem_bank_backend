@@ -1,7 +1,7 @@
 from django.db import models
-from Game.models import PlayerSingleProblem, Player, Problem
+from Game.models import ProblemAnswer, Player, Problem
 from django.core.validators import MaxValueValidator, MinValueValidator
-# Create your models here.
+
 
 class Auction(models.Model):
     title = models.CharField(max_length=50, verbose_name='عنوان')

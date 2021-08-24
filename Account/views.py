@@ -39,10 +39,10 @@ class ChangePasswordAPI(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_object(self, queryset=None):
-        return self.request.user
+        return self.request.users
 
     def put(self, request, *args, **kwargs):
-        self.object = self.request.user
+        self.object = self.request.users
         serializer = self.get_serializer(data=request.data)
 
         if serializer.is_valid():

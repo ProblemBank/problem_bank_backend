@@ -1,10 +1,13 @@
 from random import choice
 
+from django.core.files import File
 from rest_framework import generics, status
 from rest_framework import permissions
+from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 
-from Game.models import Subject, PlayerSingleProblem, PlayerMultipleProblem, Player, Problem, MultipleProblem, Game, \
+from Account.models import User
+from Game.models import Subject, ProblemAnswer, CometProblemAnswer, Player, Problem, CometProblem, Game, \
     Transaction, Hint
 from Game.serializers import SingleProblemSerializer, SubjectSerializer, MultipleProblemSerializer, \
     ProblemDetailedSerializer, PlayerSingleProblemDetailedSerializer, PlayerSerializer, HintSerializer, \
@@ -28,7 +31,7 @@ class HintView(generics.GenericAPIView):
         user = request.user
         question = request.data['question']
         player = Player.objects.get(user=user, game__id=game_id)
-        multiple_problem = MultipleProblem.objects.get(id=problem_id)
+        multiple_problem = CometProblem.objects.get(id=problem_id)
         new_hint = Hint(question=question, multiple_problem=multiple_problem, player=player)
         new_hint.save()
 
@@ -39,12 +42,14 @@ class HintView(generics.GenericAPIView):
 
 
 class PlayerView(generics.GenericAPIView):
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticated,)
     serializer_class = PlayerSerializer
 
     def get(self, request, game_id):
         user = request.user
-        player = Player.objects.get(user=user, game__id=game_id)
+        player = user.player_set.filter(game__id=game_id).first()
+        if player is None:
+            return Response({"message": "بازیکنی یافت نشد"}, status.HTTP_404_NOT_FOUND)
         player_serializer = self.get_serializer(player)
         return Response(player_serializer.data, status.HTTP_200_OK)
 
@@ -54,7 +59,7 @@ class SubjectView(generics.GenericAPIView):
     serializer_class = SubjectSerializer
 
     def get(self, request, game_id):
-        queryset = Subject.objects.filter(game__id=game_id)
+        queryset = Subject.objects.filter(games__id=game_id)
         serializer = self.get_serializer(data=queryset, many=True)
         serializer.is_valid()
         return Response(serializer.data, status.HTTP_200_OK)
@@ -64,30 +69,31 @@ class SubjectView(generics.GenericAPIView):
 class PlayerSingleProblemView(generics.GenericAPIView):
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = PlayerSingleProblemDetailedSerializer
-    queryset = PlayerSingleProblem.objects.all()
+    queryset = ProblemAnswer.objects.all()
+    parser_classes = (MultiPartParser,)
 
     def get(self, request, game_id, problem_id):
         user = request.user
-        player = Player.objects.get(game__id=game_id, user=user)
+        player = user.player_set.filter(game__id=game_id).first()
         player_single_problem = self.get_queryset() \
             .filter(player=player, problem__id=problem_id).first()
         if player_single_problem is None:
             return Response({"message": "شما دسترسی ندارید!"}, status.HTTP_403_FORBIDDEN)
 
-        player_single_problem_serializer = self.get_serializer(player_single_problem)
-        return Response(player_single_problem_serializer.data, status.HTTP_200_OK)
+        player_problem_serializer = self.get_serializer(player_single_problem)
+        return Response(player_problem_serializer.data, status.HTTP_200_OK)
 
     def post(self, request, game_id, problem_id):
-        answer = request.data['answer']
+        text_answer, file_answer = request.data['text'], request.FILES.get('file')
         user = request.user
-        player = Player.objects.get(game__id=game_id, user=user)
+        player = user.player_set.filter(game__id=game_id).first()
         player_single_problem = self.get_queryset() \
             .filter(player=player, problem__id=problem_id, status='RECEIVED').first()
         if player_single_problem is None:
             return Response({"message": "شما دسترسی ندارید!"}, status.HTTP_403_FORBIDDEN)
 
-        # todo: add file
-        player_single_problem.text_answer = answer
+        player_single_problem.text_answer = text_answer
+        player_single_problem.file_answer = file_answer
         player_single_problem.status = 'DELIVERED'
         player_single_problem.save()
         return Response({"message": "پاسخ شما با موفقیت ثبت شد!"}, status.HTTP_200_OK)
@@ -97,7 +103,7 @@ class PlayerSingleProblemView(generics.GenericAPIView):
 class PlayerMultipleProblemView(generics.GenericAPIView):
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = ProblemDetailedSerializer
-    queryset = PlayerMultipleProblem.objects.all()
+    queryset = CometProblemAnswer.objects.all()
 
     def get(self, request, game_id, problem_id):
         user = request.user
@@ -148,14 +154,14 @@ class PlayerMultipleProblemView(generics.GenericAPIView):
 
 
 # related to problem list
-class SingleProblemView(generics.GenericAPIView):
+class ProblemView(generics.GenericAPIView):
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = SingleProblemSerializer
-    queryset = PlayerSingleProblem.objects.all()
+    queryset = ProblemAnswer.objects.all()
 
     def get(self, request, game_id):
         user = request.user
-        player = Player.objects.get(game__id=game_id, user=user)
+        player = Player.objects.get(game__id=game_id, users=user)
         query_set = self.get_queryset().filter(player=player)
         serializer = self.get_serializer(data=query_set, many=True)
         serializer.is_valid()
@@ -163,46 +169,42 @@ class SingleProblemView(generics.GenericAPIView):
 
     def post(self, request, game_id):
         print(request.data)
-        user, difficulty = request.user, request.data['difficulty']
+        user, difficulty, subject_id = request.user, request.data['difficulty'], request.data['subject']
 
-        # todo:
-        # if subject_id is None or difficulty is None:
-        #     return Response({"message": "لطفاً تمام مشخصات خواسته‌شده را وارد کنید!"}, status.HTTP_404_NOT_FOUND)
-        # subject = Subject.objects.get(id=subject_id)
+        if subject_id is None or difficulty is None:
+            return Response({"message": "لطفاً تمام مشخصات خواسته‌شده را وارد کنید!"}, status.HTTP_404_NOT_FOUND)
 
-        player = Player.objects.get(game__id=game_id, user=user)
+        player = Player.objects.get(game__id=game_id, users__in=[user])
 
-        received_problems_count = PlayerSingleProblem.objects.filter(player=player, status='RECEIVED').count()
-        received_problems_count += PlayerMultipleProblem.objects.filter(player=player, status='RECEIVED').count()
+        received_problems_count = ProblemAnswer.objects.filter(player=player, status='RECEIVED').count()
+
         game = Game.objects.get(id=game_id)
         if received_problems_count >= game.maximum_number_of_received_problem:
             return Response({
                 "message": f"شما نمی‌توانید در یک لحظه بیش از {game.maximum_number_of_received_problem} سوال گرفته‌شده "
-                           f" داشته باشید!"},
-                status.HTTP_400_BAD_REQUEST)
+                           f" داشته باشید!"}, status.HTTP_400_BAD_REQUEST)
 
-        player_single_problems = self.get_queryset().filter(player=player).values_list('problem', flat=True)
-        available_problems = Problem.objects.filter(games__in=[game], difficulty=difficulty,
-                                                    type='DESCRIPTIVE') \
-            .exclude(id__in=player_single_problems.all())
+        player_problems = self.get_queryset().filter(player=player).values_list('problem', flat=True)
+        available_problems = Problem.objects.filter(games__in=[game], difficulty=difficulty, subject__id=subject_id, ) \
+            .exclude(id__in=player_problems.all())
+
         if available_problems.count() == 0:
             return Response({"message": "شما تمام سوالات این بخش را گرفته‌اید!"}, status.HTTP_404_NOT_FOUND)
 
         selected_problem = get_random(available_problems)
-        newPlayerSingleProblem = PlayerSingleProblem()
-        newPlayerSingleProblem.player = player
-        newPlayerSingleProblem.problem = selected_problem
-        newPlayerSingleProblem.game = Game.objects.get(id=game_id)
-        newPlayerSingleProblem.save()
+        new_player_problem = ProblemAnswer(player=player, problem=selected_problem)
+        new_player_problem.save()
         make_transaction(player, f'دریافت مسئله‌ی {selected_problem.title}', -selected_problem.cost)
-        return Response({"message": "سوال تکی با موفقیت اضافه شد!"}, status.HTTP_200_OK)
+
+        player_problem_serializer = self.get_serializer(new_player_problem)
+        return Response(player_problem_serializer.data, status.HTTP_200_OK)
 
 
 #  related to problem list
 class MultipleProblemView(generics.GenericAPIView):
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = MultipleProblemSerializer
-    queryset = PlayerMultipleProblem.objects.all()
+    queryset = CometProblemAnswer.objects.all()
 
     def get(self, request, game_id):
         user = request.user
@@ -216,8 +218,8 @@ class MultipleProblemView(generics.GenericAPIView):
         user = request.user
         player = Player.objects.get(game__id=game_id, user=user)
 
-        received_problems_count = PlayerSingleProblem.objects.filter(player=player, status='RECEIVED').count()
-        received_problems_count += PlayerMultipleProblem.objects.filter(player=player, status='RECEIVED').count()
+        received_problems_count = ProblemAnswer.objects.filter(player=player, status='RECEIVED').count()
+        received_problems_count += CometProblemAnswer.objects.filter(player=player, status='RECEIVED').count()
         game = Game.objects.get(id=game_id)
         if received_problems_count >= game.maximum_number_of_received_problem:
             return Response({
@@ -225,12 +227,12 @@ class MultipleProblemView(generics.GenericAPIView):
                 status.HTTP_400_BAD_REQUEST)
 
         player_multiple_problems = self.get_queryset().filter(player=player).values_list('multiple_problem', flat=True)
-        available_problems = MultipleProblem.objects.all().exclude(id__in=player_multiple_problems.all())
+        available_problems = CometProblem.objects.all().exclude(id__in=player_multiple_problems.all())
         if available_problems.count() == 0:
             return Response({"message": "شما تمام سوالات این بخش را گرفته‌اید!"}, status.HTTP_404_NOT_FOUND)
 
         selected_problem = get_random(available_problems)
-        new_player_multiple_problem = PlayerMultipleProblem()
+        new_player_multiple_problem = CometProblemAnswer()
         new_player_multiple_problem.player = player
         new_player_multiple_problem.multiple_problem = selected_problem
         new_player_multiple_problem.game = Game.objects.get(id=game_id)
@@ -242,7 +244,7 @@ class MultipleProblemView(generics.GenericAPIView):
 class PlayerSingleProblemCorrectionView(generics.GenericAPIView):
     permission_classes = (permissions.AllowAny,)
     serializer_class = PlayerSingleProblemCorrectionSerializer
-    queryset = PlayerSingleProblem.objects.all()
+    queryset = ProblemAnswer.objects.all()
 
     def get(self, request):
         answers = self.get_queryset().filter(status='DELIVERED')
@@ -273,7 +275,7 @@ class HintAnswering(generics.GenericAPIView):
         if hints.count() == 0:
             return Response({"message": "همه‌ی راهنمایی‌ها پاسخ داده‌شده‌اند!"}, status.HTTP_200_OK)
         selected_hint = get_random(hints)
-        player_questioned_problem = PlayerMultipleProblem.objects.get(
+        player_questioned_problem = CometProblemAnswer.objects.get(
             multiple_problem=selected_hint.multiple_problem, player=selected_hint.player)
 
         hint_serializer = self.get_serializer(selected_hint)

@@ -3,11 +3,11 @@ import csv
 from django.contrib import admin
 from django.contrib.auth.hashers import make_password
 from Account.models import User
-from Game.models import Game, Player, PlayerProblem, Transaction, Subject, Hint, PlayerMultipleProblem, \
-    PlayerSingleProblem, Problem, MultipleProblem
+from Game.models import Game, Player, Transaction, Subject, Hint, CometProblemAnswer, \
+    ProblemAnswer, Problem, CometProblem
 
-admin.site.register(MultipleProblem)
-admin.site.register(PlayerMultipleProblem)
+admin.site.register(CometProblem)
+admin.site.register(CometProblemAnswer)
 admin.site.register(Game)
 admin.site.register(Subject)
 
@@ -53,16 +53,17 @@ def import_from_csv(a, b, c):
 
 
 @admin.register(Player)
-
 class PlayerAdmin(admin.ModelAdmin):
     import_from_csv.short_description = 'بارگذاری دانش‌آموزان در سایت'
     actions = [import_from_csv]
-    list_display = ('user', 'game', 'score', 'id')
+
+    list_display = ('game', 'score', 'id')
 
 
 @admin.register(Problem)
 class ProblemAdmin(admin.ModelAdmin):
-    list_display = ('title', 'type', 'difficulty', 'cost', 'reward', 'answer')
+    pass
+    # list_display = ('title', 'type', 'difficulty', 'cost', 'reward', 'answer')
 
 
 def girls_scores(a, b, c):
@@ -82,9 +83,9 @@ class TransactionAdmin(admin.ModelAdmin):
 
 @admin.register(Hint)
 class HintAdmin(admin.ModelAdmin):
-    list_display = ('multiple_problem', 'player', 'is_answered')
+    list_display = ('answer', 'is_answered')
 
 
-@admin.register(PlayerSingleProblem)
+@admin.register(ProblemAnswer)
 class PlayerSingleProblemAdmin(admin.ModelAdmin):
     list_display = ('player', 'problem', 'status', 'mark')

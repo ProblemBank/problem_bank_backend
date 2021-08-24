@@ -24,13 +24,13 @@ class PlayerSingleProblemDetailedSerializer(serializers.ModelSerializer):
     problem = ProblemDetailedSerializer()
 
     class Meta:
-        model = PlayerSingleProblem
+        model = ProblemAnswer
         fields = '__all__'
 
 
 class MultipleProblemDetailedSerializer(serializers.ModelSerializer):
     class Meta:
-        model = MultipleProblem
+        model = CometProblem
         fields = '__all__'
 
 
@@ -38,7 +38,7 @@ class PlayerMultipleProblemDetailedSerializer(serializers.ModelSerializer):
     multiple_problem = MultipleProblemDetailedSerializer()
 
     class Meta:
-        model = PlayerMultipleProblem
+        model = CometProblemAnswer
         fields = '__all__'
 
 
@@ -54,7 +54,7 @@ class MultipleProblemInfoSerializer(serializers.ModelSerializer):
     problems_count = serializers.SerializerMethodField()
 
     class Meta:
-        model = MultipleProblem
+        model = CometProblem
         fields = ['id', 'cost', 'reward', 'title', 'problems_count']
 
     def get_problems_count(self, obj):
@@ -65,7 +65,7 @@ class SingleProblemSerializer(serializers.ModelSerializer):
     problem = ProblemInfoSerializer()
 
     class Meta:
-        model = PlayerSingleProblem
+        model = ProblemAnswer
         fields = ['id', 'status', 'mark', 'problem']
 
 
@@ -73,7 +73,7 @@ class MultipleProblemSerializer(serializers.ModelSerializer):
     multiple_problem = MultipleProblemInfoSerializer()
 
     class Meta:
-        model = PlayerMultipleProblem
+        model = CometProblemAnswer
         fields = ['id', 'status', 'mark', 'step', 'multiple_problem']
 
 
@@ -84,18 +84,18 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class PlayerSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
+    users = UserSerializer()
 
     class Meta:
         model = Player
-        fields = ['user', 'score']
+        fields = ['name', 'users', 'score']
 
 
 class PlayerSingleProblemCorrectionSerializer(serializers.ModelSerializer):
     problem = ProblemDetailedSerializer()
 
     class Meta:
-        model = PlayerSingleProblem
+        model = ProblemAnswer
         fields = ['text_answer', 'problem', 'id']
 
 

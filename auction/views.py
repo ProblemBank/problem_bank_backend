@@ -3,17 +3,15 @@ from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models import *
-from Game.models import Problem, PlayerSingleProblem, PlayerProblem
+from Game.models import Problem, ProblemAnswer, BaseAnswer
 from .serializers import AuctionSerializers
 from .permissions import problem_sell_limit, seller_answer_problem
 
-# Create your views here.
 
 class CreateAuctionProblem(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated, problem_sell_limit]
     serializer_class = AuctionSerializers
     queryset = Auction.objects.filter(done_deal=False)
-
 
     def perform_create(self, serializer):
         auction_obj = serializer.save()

@@ -89,7 +89,7 @@ WSGI_APPLICATION = 'karsoogh.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Interkarsolar2',
+        'NAME': 'Formula0',
         'USER': 'Admin',
         'PASSWORD': '147456admin',
         'HOST': '127.0.0.1',
@@ -154,11 +154,9 @@ USE_TZ = True
 
 STATIC_ROOT = rel('static')
 
-STATIC_URL = '/static/'
-
+STATIC_URL = 'static/'
 MEDIA_ROOT = rel('media')
-
-MEDIA_URL = '/media/'
+MEDIA_URL = 'media/'
 
 # payment properties:
 API_TOKEN = '19e8961b-ad5a-4a65-807a-087c777f6e1b'
