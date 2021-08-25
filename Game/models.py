@@ -59,18 +59,18 @@ class Problem(BaseProblem):
                f'{"آسان" if self.difficulty == "EASY" else ("متوسط" if self.difficulty == "MEDIUM" else "سخت")})'
 
 
-class CometProblem(BaseProblem):
-    problems = models.ManyToManyField(Problem, verbose_name='مسئله(ها)')
+# class CometProblem(BaseProblem):
+#     problems = models.ManyToManyField(Problem, verbose_name='مسئله(ها)')
 
 
 class Player(models.Model):
-    name = models.CharField(max_length=50, verbose_name='نام بازیکن', blank=True)
+    name = models.CharField(max_length=50, verbose_name='نام بازیکن')
     users = models.ManyToManyField(User, verbose_name='کاربر(ان)')
     game = models.ForeignKey(to=Game, on_delete=models.PROTECT, verbose_name='بازی')
     score = models.IntegerField(default=0, verbose_name='امتیاز')
 
     def __str__(self):
-        return f'{self.users} | {self.game.title}'
+        return f'{self.name}'
 
 
 class BaseAnswer(models.Model):
@@ -84,31 +84,31 @@ class BaseAnswer(models.Model):
     mark = models.IntegerField(default=-1, verbose_name='نمره')
 
 
-class ProblemAnswer(BaseAnswer):
-    problem = models.ForeignKey(Problem, on_delete=models.PROTECT, verbose_name='مسئله')
+class Answer(BaseAnswer):
+    problem = models.ForeignKey(Problem, on_delete=models.PROTECT, verbose_name='مسئله', related_name='problem')
     text_answer = models.TextField(verbose_name='پاسخ متنی')
     file_answer = models.FileField(upload_to='game-answers/', blank=True, null=True, verbose_name='فایل پاسخ')
 
 
-class CometProblemAnswer(BaseAnswer):
-    multiple_problem = models.ForeignKey(CometProblem, on_delete=models.PROTECT, blank=True)
-    step = models.IntegerField(default=0, verbose_name='تعداد سوالات حل‌شده تا اینجا')
-
-    def __str__(self):
-        return f'{self.player} | {self.multiple_problem.title}'
-
-
-class Hint(models.Model):
-    baseAnswer = models.ForeignKey(to=BaseAnswer, on_delete=models.PROTECT, verbose_name='پاسخ')
-    question = models.TextField(verbose_name='متن راهنمایی')
-    answer = models.TextField(verbose_name='پاسخ به راهنمایی', blank=True, null=True)
-    is_answered = models.BooleanField(default=False, verbose_name='آیا رسیدگی شده؟')
+# class CometProblemAnswer(BaseAnswer):
+#     multiple_problem = models.ForeignKey(CometProblem, on_delete=models.PROTECT, blank=True)
+#     step = models.IntegerField(default=0, verbose_name='تعداد سوالات حل‌شده تا اینجا')
+#
+#     def __str__(self):
+#         return f'{self.player} | {self.multiple_problem.title}'
 
 
-class Transaction(models.Model):
-    player = models.ForeignKey(to=Player, on_delete=models.PROTECT, verbose_name='بازیکن')
-    title = models.CharField(max_length=100, verbose_name='عنوان')
-    amount = models.IntegerField(verbose_name='مقدار')
+# class Hint(models.Model):
+#     baseAnswer = models.ForeignKey(to=BaseAnswer, on_delete=models.PROTECT, verbose_name='پاسخ')
+#     question = models.TextField(verbose_name='متن راهنمایی')
+#     answer = models.TextField(verbose_name='پاسخ به راهنمایی', blank=True, null=True)
+#     is_answered = models.BooleanField(default=False, verbose_name='آیا رسیدگی شده؟')
 
-    def __str__(self):
-        return f'{self.title} | {self.player}'
+
+# class Transaction(models.Model):
+#     player = models.ForeignKey(to=Player, on_delete=models.PROTECT, verbose_name='بازیکن')
+#     title = models.CharField(max_length=100, verbose_name='عنوان')
+#     amount = models.IntegerField(verbose_name='مقدار')
+#
+#     def __str__(self):
+#         return f'{self.title} | {self.player}'

@@ -3,13 +3,10 @@ import csv
 from django.contrib import admin
 from django.contrib.auth.hashers import make_password
 from Account.models import User
-from Game.models import Game, Player, Transaction, Subject, Hint, CometProblemAnswer, \
-    ProblemAnswer, Problem, CometProblem
+from Game.models import Game, Player, Subject, \
+    Answer, Problem
 
-admin.site.register(CometProblem)
-admin.site.register(CometProblemAnswer)
 admin.site.register(Game)
-admin.site.register(Subject)
 
 
 # with open(path) as f:
@@ -66,26 +63,24 @@ class ProblemAdmin(admin.ModelAdmin):
     # list_display = ('title', 'type', 'difficulty', 'cost', 'reward', 'answer')
 
 
-def girls_scores(a, b, c):
-    all_transaction = Transaction.objects.all()
-    for transaction in all_transaction:
-        if transaction.title == 'ماین' or transaction.title == 'بانک' or transaction.title == 'بازی':
-            transaction.player.score += transaction.amount
-            transaction.player.save()
+# @admin.register(Transaction)
+# class TransactionAdmin(admin.ModelAdmin):
+#     list_display = ('title', 'player', 'amount')
+#     actions = [girls_scores]
+#     girls_scores.short_description = 'هندل‌کردن امتیاز دخترها'
 
 
-@admin.register(Transaction)
-class TransactionAdmin(admin.ModelAdmin):
-    list_display = ('title', 'player', 'amount')
-    actions = [girls_scores]
-    girls_scores.short_description = 'هندل‌کردن امتیاز دخترها'
+# @admin.register(Hint)
+# class HintAdmin(admin.ModelAdmin):
+#     list_display = ('answer', 'is_answered')
 
 
-@admin.register(Hint)
-class HintAdmin(admin.ModelAdmin):
-    list_display = ('answer', 'is_answered')
-
-
-@admin.register(ProblemAnswer)
-class PlayerSingleProblemAdmin(admin.ModelAdmin):
+@admin.register(Answer)
+class AnswerAdmin(admin.ModelAdmin):
     list_display = ('player', 'problem', 'status', 'mark')
+
+
+@admin.register(Subject)
+class SubjectAdmin(admin.ModelAdmin):
+    list_display = ['title']
+

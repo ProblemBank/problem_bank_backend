@@ -1,5 +1,7 @@
 from django.contrib import admin
 from .models import Auction
-# Register your models here.
 
-admin.site.register(Auction)
+
+@admin.register(Auction)
+class AuctionAdmin(admin.ModelAdmin):
+    list_display = ('seller', 'buyer', 'problem', 'price', 'done_deal')
