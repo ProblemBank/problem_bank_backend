@@ -31,6 +31,7 @@ RUN pip install --upgrade pip setuptools
 COPY requirements.txt requirements.txt
 
 RUN pip install -r requirements.txt
+RUN pip install gunicorn==20.0.4
 
 WORKDIR /usr/src/app/
 
