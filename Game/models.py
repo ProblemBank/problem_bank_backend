@@ -11,6 +11,10 @@ class Game(models.Model):
         models.IntegerField(default=2,
                             verbose_name='حداکثر تعداد سوالاتی که بازیکن در یک لحظه می‌تواند داشته باشد')
 
+    maximum_number_of_received_problem_per_subject = \
+        models.IntegerField(default=6,
+                            verbose_name='حداکثر تعداد سوالاتی که یک بازیکن در کل مسابقه از یک مبحث می‌تواند داشته باشد')
+
     def __str__(self):
         return self.title
 
@@ -88,7 +92,6 @@ class Answer(BaseAnswer):
     problem = models.ForeignKey(Problem, on_delete=models.PROTECT, verbose_name='مسئله', related_name='problem')
     text_answer = models.TextField(verbose_name='پاسخ متنی')
     file_answer = models.FileField(upload_to='game-answers/', blank=True, null=True, verbose_name='فایل پاسخ')
-
 
 # class CometProblemAnswer(BaseAnswer):
 #     multiple_problem = models.ForeignKey(CometProblem, on_delete=models.PROTECT, blank=True)
