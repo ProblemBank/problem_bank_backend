@@ -3,10 +3,14 @@ from pathlib import Path
 from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 AUTH_USER_MODEL = 'Account.User'
 
+def get_environment_var(var_name, default, prefixed=True):
+    if prefixed:
+        var_name = 'GAME_BACKEND_%s' % var_name
+    return os.getenv(var_name, default)
 
 def rel(x):
     return Path.joinpath(BASE_DIR, x)
@@ -19,13 +23,6 @@ def rel_media(x):
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '3s%v6jaceszv$rabw)fj85+_alf^+v8ryanaf2qa&^n1)-3+x&'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = ['*']
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_METHODS = ['*']
 CORS_ALLOW_HEADERS = ['*']
@@ -83,27 +80,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'karsoogh.wsgi.application'
 
-# Database
-# https://docs.djangoproject.com/en/3.1/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Formula0',
-        'USER': 'Admin',
-        'PASSWORD': '147456admin',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
-    }
-}
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': str(os.path.join(BASE_DIR, "db.sqlite3")),
-#     }
-# }
-
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
 
@@ -152,11 +128,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
-STATIC_ROOT = rel('static')
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
 MEDIA_ROOT = rel('media')
-MEDIA_URL = 'media/'
 
 # payment properties:
 API_TOKEN = '19e8961b-ad5a-4a65-807a-087c777f6e1b'
