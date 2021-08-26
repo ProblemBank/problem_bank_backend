@@ -57,12 +57,6 @@ class PlayerAdmin(admin.ModelAdmin):
     list_display = ('game', 'score', 'id')
 
 
-@admin.register(Problem)
-class ProblemAdmin(admin.ModelAdmin):
-    pass
-    # list_display = ('title', 'type', 'difficulty', 'cost', 'reward', 'answer')
-
-
 # @admin.register(Transaction)
 # class TransactionAdmin(admin.ModelAdmin):
 #     list_display = ('title', 'player', 'amount')
@@ -83,4 +77,10 @@ class AnswerAdmin(admin.ModelAdmin):
 @admin.register(Subject)
 class SubjectAdmin(admin.ModelAdmin):
     list_display = ['title']
+  
+# Edited part by atid:
+@admin.register(Problem)
+class BaseProblemAdmin(admin.ModelAdmin):
+    list_display = ['title', 'type', 'subject', 'difficulty', 'cost', 'reward', 'answer']
+    list_filter = ('subject',)
 
