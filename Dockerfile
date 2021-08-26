@@ -24,6 +24,9 @@ RUN apk update \
     && pip install psycopg2 \
     && pip install --upgrade incremental
 
+# install zlib for pillow
+RUN apk add --no-cache jpeg-dev zlib-dev build-base
+
 # install dependencies
 RUN pip install --upgrade pip setuptools
 
