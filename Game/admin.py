@@ -5,6 +5,7 @@ from django.contrib.auth.hashers import make_password
 from Account.models import User
 from Game.models import Game, Player, Subject, \
     Answer, Problem
+from auction.models import Auction
 
 admin.site.register(Game)
 
@@ -63,8 +64,21 @@ class PlayerAdmin(admin.ModelAdmin):
 #     list_display = ('answer', 'is_answered')
 
 
+def fix_hard_cost(a, b, c):
+    answers = Answer.objects.all()
+    for answer in answers:
+        buyer = answer.player
+        auction = Auction.objects.filter(buyer=buyer, problem=answer.problem)
+        if not auction and answer.problem.difficulty == 'HARD' and answer.mark == 3:
+            answer.mark = 6
+            answer.save()
+
+
 @admin.register(Answer)
 class AnswerAdmin(admin.ModelAdmin):
+    fix_hard_cost.short_description = 'رفع باگ عجیب'
+    actions = [fix_hard_cost]
+
     list_display = ('player', 'problem', 'status', 'mark')
 
 
