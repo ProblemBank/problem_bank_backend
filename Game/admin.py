@@ -48,7 +48,7 @@ class PlayerAdmin(admin.ModelAdmin):
     import_from_csv.short_description = 'بارگذاری دانش‌آموزان در سایت'
     actions = [import_from_csv]
 
-    list_display = ('game', 'score', 'id')
+    list_display = ('name', 'game', 'score', 'id')
 
 
 # @admin.register(Transaction)
@@ -71,10 +71,9 @@ class AnswerAdmin(admin.ModelAdmin):
 @admin.register(Subject)
 class SubjectAdmin(admin.ModelAdmin):
     list_display = ['title']
-  
-# Edited part by atid:
+
+
 @admin.register(Problem)
 class BaseProblemAdmin(admin.ModelAdmin):
     list_display = ['title', 'type', 'subject', 'difficulty', 'cost', 'reward', 'answer']
     list_filter = ('subject',)
-
