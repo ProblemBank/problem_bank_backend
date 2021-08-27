@@ -72,6 +72,8 @@ def fix_hard_cost(a, b, c):
         if not auction and answer.problem.difficulty == 'HARD' and answer.mark == 3:
             answer.mark = 6
             answer.save()
+            buyer.score += 3
+            buyer.save()
 
 
 @admin.register(Answer)
