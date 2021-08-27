@@ -53,6 +53,17 @@ class PlayerView(generics.GenericAPIView):
         return Response(player_serializer.data, status.HTTP_200_OK)
 
 
+class ScoreboardView(generics.GenericAPIView):
+    permission_classes = (permissions.AllowAny,)
+    serializer_class = PlayerSerializer
+
+    def get(self, request, game_id):
+        players = Player.objects.filter(game__id=game_id).order_by('-score')
+        players_serializer = self.get_serializer(data=players, many=True)
+        players_serializer.is_valid()
+        return Response(players_serializer.data, status.HTTP_200_OK)
+
+
 class SubjectView(generics.GenericAPIView):
     permission_classes = (permissions.AllowAny,)
     serializer_class = SubjectSerializer

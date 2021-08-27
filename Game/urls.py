@@ -6,6 +6,7 @@ urlpatterns = [
     path('<int:game_id>/player/', PlayerView.as_view(), name='get player info'),
     path('<int:game_id>/subject/', SubjectView.as_view(), name='subjects'),
     path('<int:game_id>/problem/', ProblemView.as_view(), name='get all player problems'),
+    path('<int:game_id>/problem/scoreboard/', ScoreboardView.as_view(), name='get all player problems'),
     path('<int:game_id>/problem/<int:problem_id>/',
          PlayerSingleProblemView.as_view(), name='one detailed problem'),
     path('<int:game_id>/mentor/problem/', GetAnswerForCorrectionView.as_view(), name='problem correction'),
