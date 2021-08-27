@@ -1,11 +1,13 @@
 from random import choice
 
+from django.db.transaction import atomic
 from rest_framework import generics, status
 from rest_framework import permissions
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 
 from Game.models import Subject, Answer, Player, Problem, Game
+from Game.permissions import ReceiveProblem
 from Game.serializers import ProblemSerializer, SubjectSerializer, \
     PlayerSingleProblemDetailedSerializer, PlayerSerializer, \
     GetAnswerForCorrectionSerializer
@@ -69,6 +71,7 @@ class PlayerSingleProblemView(generics.GenericAPIView):
     queryset = Answer.objects.all()
     parser_classes = (MultiPartParser,)
 
+    @atomic
     def get(self, request, game_id, problem_id):
         user = request.user
         player = user.player_set.filter(game__id=game_id).first()
@@ -80,6 +83,7 @@ class PlayerSingleProblemView(generics.GenericAPIView):
         player_problem_serializer = self.get_serializer(player_single_problem)
         return Response(player_problem_serializer.data, status.HTTP_200_OK)
 
+    @atomic
     def post(self, request, game_id, problem_id):
         text_answer, file_answer = request.data['text'], request.FILES.get('file')
         user = request.user
@@ -151,9 +155,8 @@ class PlayerSingleProblemView(generics.GenericAPIView):
 #
 
 # related to problem list
-
 class ProblemView(generics.GenericAPIView):
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated, ReceiveProblem)
     serializer_class = ProblemSerializer
     queryset = Answer.objects.all()
 
@@ -165,34 +168,27 @@ class ProblemView(generics.GenericAPIView):
         serializer.is_valid()
         return Response(serializer.data, status.HTTP_200_OK)
 
+    @atomic
     def post(self, request, game_id):
-        print(request.data)
         user, difficulty, subject_id = request.user, request.data['difficulty'], request.data['subject']
-
-        if subject_id is None or difficulty is None:
-            return Response({"message": "لطفاً تمام مشخصات خواسته‌شده را وارد کنید!"}, status.HTTP_404_NOT_FOUND)
-
         player = Player.objects.get(game__id=game_id, users__in=[user])
-
-        received_problems_count = Answer.objects.filter(player=player, status='RECEIVED').count()
-
         game = Game.objects.get(id=game_id)
-        if received_problems_count >= game.maximum_number_of_received_problem:
-            return Response({
-                "message": f"شما نمی‌توانید در یک لحظه بیش از {game.maximum_number_of_received_problem} سوال گرفته‌شده "
-                           f" داشته باشید!"}, status.HTTP_400_BAD_REQUEST)
 
         player_problems = self.get_queryset().filter(player=player).values_list('problem', flat=True)
         available_problems = Problem.objects.filter(games__in=[game], difficulty=difficulty, subject__id=subject_id, ) \
             .exclude(id__in=player_problems.all())
 
-        if available_problems.count() == 0:
-            return Response({"message": "شما تمام سوالات این بخش را گرفته‌اید!"}, status.HTTP_404_NOT_FOUND)
-
         selected_problem = get_random(available_problems)
         new_player_problem = Answer(player=player, problem=selected_problem)
         new_player_problem.save()
-        # make_transaction(player, f'دریافت مسئله‌ی {selected_problem.title}', -selected_problem.cost)
+
+        # print(player)
+        # make_transaction(player, )
+        print(player.score, " --- ", selected_problem.cost)
+        player.score = player.score + -selected_problem.cost
+        print(player.score, " --- ", selected_problem.cost)
+
+        player.save()
 
         player_problem_serializer = self.get_serializer(new_player_problem)
         return Response(player_problem_serializer.data, status.HTTP_200_OK)
@@ -244,6 +240,7 @@ class MarkAnswerView(generics.GenericAPIView):
     serializer_class = GetAnswerForCorrectionSerializer
     queryset = Answer.objects.all()
 
+    @atomic
     def post(self, request, game_id, answer_id):
         mark = request.data['mark']
         player_answer = self.get_queryset().filter(player__game__id=game_id, id=answer_id).first()
@@ -252,8 +249,9 @@ class MarkAnswerView(generics.GenericAPIView):
         player_answer.mark = int(mark)
         player_answer.status = 'SCORED'
         player_answer.save()
-        # make_transaction(player_answer.player, f"حل‌کردن مسئله‌ی تکی «{player_answer.problem.title}»",
-        #                  player_answer.mark)
+
+        make_transaction(player_answer.player, player_answer.mark)
+
         return Response({"message": "نمره‌ی این مسئله با موفقیت ثبت شد!"})
 
 
@@ -262,6 +260,7 @@ class GetAnswerForCorrectionView(generics.GenericAPIView):
     serializer_class = GetAnswerForCorrectionSerializer
     queryset = Answer.objects.all()
 
+    @atomic
     def post(self, request, game_id):
         subject_id = request.data['subject']
         answers = self.get_queryset().filter(player__game__id=game_id, status='DELIVERED',
@@ -337,13 +336,15 @@ def get_random(query_set):
     random_pk = choice(pks)
     return query_set.get(pk=random_pk)
 
-# def make_transaction(player: Player, title: str, value: int):
-#     player.score += value
-#     player.save()
-#
-#     new_transaction = Transaction()
-#     new_transaction.player = player
-#     new_transaction.title = title
-#     new_transaction.amount = value
-#
-#     new_transaction.save()
+
+@atomic
+def make_transaction(player: Player, value: int):
+    player.score = player.score + value
+    player.save()
+
+    # new_transaction = Transaction()
+    # new_transaction.player = player
+    # new_transaction.title = title
+    # new_transaction.amount = value
+    #
+    # new_transaction.save()

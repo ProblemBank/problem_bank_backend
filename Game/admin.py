@@ -24,16 +24,10 @@ admin.site.register(Game)
 def import_from_csv(a, b, c):
     with open('students_info.csv') as f:
         reader = csv.reader(f)
-        boys_game = Game.objects.get(title='پسرانه')
-        girls_game = Game.objects.get(title='دخترانه')
+        game = Game.objects.get(id=1)
         for row in reader:
-            if row[5] == 'MAN':
-                game = boys_game
-            else:
-                game = girls_game
-
-            initial_user = User.objects.filter(username=row[2]).first()
-            if initial_user is None:
+            user1 = User.objects.filter(username=row[2]).first()
+            if user1 is None:
                 user = User(
                     password=make_password(row[2]),
                     username=row[2],
@@ -43,7 +37,7 @@ def import_from_csv(a, b, c):
                     backup_phone_number=row[8]
                 )
                 user.save()
-                Player.objects.get_or_create(
+                p, created = Player.objects.get_or_create(
                     score=row[0],
                     user=user,
                     game=game)
