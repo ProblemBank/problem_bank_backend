@@ -44,7 +44,7 @@ class BuyAuctionProblem(generics.GenericAPIView):
         player_user.score -= auction_obj.price
         player_user.save()
 
-        auction_obj.seller += auction_obj.price
+        auction_obj.seller.score += auction_obj.price
         auction_obj.seller.save()
 
         new_problem = Answer(player=player_user, problem=auction_obj.problem)

@@ -182,13 +182,7 @@ class ProblemView(generics.GenericAPIView):
         new_player_problem = Answer(player=player, problem=selected_problem)
         new_player_problem.save()
 
-        # print(player)
-        # make_transaction(player, )
-        print(player.score, " --- ", selected_problem.cost)
-        player.score = player.score + -selected_problem.cost
-        print(player.score, " --- ", selected_problem.cost)
-
-        player.save()
+        make_transaction(player, -selected_problem.cost)
 
         player_problem_serializer = self.get_serializer(new_player_problem)
         return Response(player_problem_serializer.data, status.HTTP_200_OK)
@@ -339,7 +333,7 @@ def get_random(query_set):
 
 @atomic
 def make_transaction(player: Player, value: int):
-    player.score = player.score + value
+    player.score += value
     player.save()
 
     # new_transaction = Transaction()
