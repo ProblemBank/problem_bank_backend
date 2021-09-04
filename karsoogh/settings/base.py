@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'Account',
     'Game',
+    'problembank',
     'corsheaders',
     'rest_framework',
     'auction.apps.AuctionConfig',
