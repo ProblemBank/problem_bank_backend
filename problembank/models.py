@@ -31,7 +31,7 @@ class Subtopic(models.Model):
 
 
 
-class Problem(models.Model):
+class BaseProblem(models.Model):
     class Difficulty(models.TextChoices):
         VeryEasy = 'VeryEasy'
         Easy = 'Easy'
@@ -57,11 +57,12 @@ class Problem(models.Model):
     title = models.CharField(max_length=100, verbose_name='عنوان')
     
     topics = models.ManyToManyField(Topic, verbose_name='موضوع(ها)', blank=True, related_name='problems')
-    subtopics = models.ManyToManyField(SubTopic, verbose_name='زیر موضوع(ها)', blank=True, related_name='problems')
-    source = models.ForeignKey(Source, blank=True, null=True, on_delete=models.SET_NULL, verbose_name='منبع', related_name='problems')
+    subtopics = models.ManyToManyField(Subtopic, verbose_name='زیر موضوع(ها)', blank=True, related_name='problems')
+    source = models.ForeignKey(Source, blank=True, null=True, on_delete=models.SET_NULL,
+                                verbose_name='منبع', related_name='problems')
     
     difficulty = models.CharField(max_length=20, choices=Difficulty.choices, verbose_name='سختی',
-                                  default=Difficulty.MEDIUM)
+                                  default=Difficulty.Medium)
     suitable_for_over = models.IntegerField(
         choices=Grade.choices,
         default=Grade.First,
@@ -77,13 +78,13 @@ class Problem(models.Model):
     
 
 
-class ProblemInstance(models.Model):
+class Problem(models.Model):
     class Type(models.TextChoices):
         ShortAnswer = 'ShortAnswer'
         Descriptive = 'Descriptive'
         MultiChoice = 'MultiChoice'
     
-    problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='problems', verbose_name='مسئله')
+    base_problem = models.ForeignKey(BaseProblem, on_delete=models.CASCADE, related_name='problems', verbose_name='مسئله')
     type = models.CharField(max_length=20, choices=Type.choices, default=Type.Descriptive, verbose_name='نوع')
     title = models.CharField(max_length=100, verbose_name='عنوان')
     author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='نویسنده', related_name='problems')
@@ -107,13 +108,13 @@ class ProblemInstance(models.Model):
         abstract = True
 
 
-class ShortAnswerProblemInstance(ProblemInstance):
+class ShortAnswerProblem(Problem):
     answer = models.OneToOneField('ShortAnswer', null=True, on_delete=models.SET_NULL, unique=True,
                                    related_name='problem')
-class DescriptiveProblemInstance(ProblemInstance):
+class DescriptiveProblem(Problem):
     answer = models.OneToOneField('DescriptiveAnswer', null=True, on_delete=models.SET_NULL, unique=True,
                                    related_name='problem')
-class MultiChoiceProblemInstance(ProblemInstance):
+class MultiChoiceProblem(Problem):
     answer = models.OneToOneField('MultiChoiceAnswer', null=True, on_delete=models.SET_NULL, unique=True,
                                    related_name='problem')
 
@@ -144,7 +145,7 @@ class UploadFileAnswer(Answer):
 
 
 class Guidance(models.Model):
-    problem = models.ForeignKey(ProblemInstance, on_delete=models.CASCADE, verbose_name='مسئله', related_name='guidances')
+    problem = models.ForeignKey(Problem, on_delete=models.CASCADE, verbose_name='مسئله', related_name='guidances')
     text = models.TextField(verbose_name='متن')
     priority = models.IntegerField(default=1, null=True, blank=True)    
     
@@ -154,7 +155,7 @@ class BaseSubmit(models.Model):
         Delivered = 'Delivered'
         Judged = 'Judged'
 
-    problem = models.ForeignKey(ProblemInstance, on_delete=models.CASCADE, verbose_name='مسئله', related_name='submissions')
+    problem = models.ForeignKey(Problem, on_delete=models.CASCADE, verbose_name='مسئله', related_name='submissions')
     author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='نویسنده', related_name='submissions')
     received_at = models.DateTimeField(default=timezone.now)
     status = models.CharField(max_length=20, default=Status.Received,
@@ -231,7 +232,7 @@ class JudgeableSubmit(BaseSubmit):
 
 
 class Comment(models.Model):
-    problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='comments', verbose_name='مسئله')
+    base_problem = models.ForeignKey(BaseProblem, on_delete=models.CASCADE, related_name='comments', verbose_name='مسئله')
     text = models.TextField(verbose_name='متن')
     author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='نویسنده', related_name='comments')
     publish_date = models.DateTimeField(null=True, blank=True, verbose_name='زمان انتشار')
@@ -240,11 +241,11 @@ class Comment(models.Model):
 
 class ProblemCategory(models.Model):
     title = models.CharField(max_length=100, verbose_name='عنوان')
-    problems = models.ManyToManyField(ProblemInstance, verbose_name='مسئله(ها)', blank=True, related_name='categories') #maby many to one
+    problems = models.ManyToManyField(Problem, verbose_name='مسئله(ها)', blank=True, related_name='categories') #maby many to one
 
     owner = models.ForeignKey(User, null=True, on_delete=models.SET_NULL, verbose_name='صاحب', related_name='categories')
-    mentors = models.ManyToManyField(ProblemInstance, verbose_name='همیار(ها)', blank=True, related_name='categories')
-    # viewers = models.ManyToManyField(ProblemInstance, verbose_name='بیننده(ها)', blank=True)
+    mentors = models.ManyToManyField(Problem, verbose_name='همیار(ها)', blank=True, related_name='categories')
+    # viewers = models.ManyToManyField(Problem, verbose_name='بیننده(ها)', blank=True)
     #roles    
 
 
