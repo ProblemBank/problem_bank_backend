@@ -53,7 +53,7 @@ class BaseProblem(models.Model):
         VeryHard = 'VeryHard'
 
     
-    class Grade(models.TextChoices):
+    class Grade(models.IntegerChoices):
         First = 1
         Second = 2
         Third = 3
@@ -67,7 +67,7 @@ class BaseProblem(models.Model):
         Eleventh = 11
         Twelfth = 12
 
-    title = models.CharField(max_length=100, verbose_name='عنوان')
+    title = models.CharField(max_length=100, default='بدون عنوان', verbose_name='عنوان')
     
     topics = models.ManyToManyField(Topic, verbose_name='موضوع(ها)', blank=True, related_name='problems')
     subtopics = models.ManyToManyField(Subtopic, verbose_name='زیر موضوع(ها)', blank=True, related_name='problems')
@@ -93,12 +93,12 @@ class BaseProblem(models.Model):
 
 class Problem(models.Model):
     class Type(models.TextChoices):
-        ShortAnswer = 'ShortAnswer'
-        Descriptive = 'Descriptive'
-        MultiChoice = 'MultiChoice'
+        ShortAnswerProblem = 'ShortAnswerProblem'
+        DescriptiveProblem = 'DescriptiveProblem'
+        # MultiChoice = 'MultiChoice'
     
     base_problem = models.ForeignKey(BaseProblem, on_delete=models.CASCADE, related_name='%(class)s', verbose_name='مسئله')
-    type = models.CharField(max_length=20, choices=Type.choices, default=Type.Descriptive, verbose_name='نوع')
+    type = models.CharField(max_length=20, choices=Type.choices, default=Type.DescriptiveProblem, verbose_name='نوع')
     title = models.CharField(max_length=100, verbose_name='عنوان')
     author = models.ForeignKey(BankAccount, on_delete=models.CASCADE, verbose_name='نویسنده', related_name='%(class)s')
     
@@ -111,7 +111,7 @@ class Problem(models.Model):
     
     def __str__(self):
         return f'{self.title} ({self.type}، ' \
-               f'{self.problem.difficulty})'
+               f'{self.base_problem.difficulty})'
 
     objects = InheritanceManager()
 
@@ -122,17 +122,17 @@ class ShortAnswerProblem(Problem):
 class DescriptiveProblem(Problem):
     answer = models.OneToOneField('DescriptiveAnswer', null=True, on_delete=models.SET_NULL, unique=True,
                                    related_name='problem', verbose_name='پاسخ صحیح')
-class MultiChoiceProblem(Problem):
-    answer = models.OneToOneField('MultiChoiceAnswer', null=True, on_delete=models.SET_NULL, unique=True,
-                                   related_name='problem', verbose_name='پاسخ صحیح')
+# class MultiChoiceProblem(Problem):
+#     answer = models.OneToOneField('MultiChoiceAnswer', null=True, on_delete=models.SET_NULL, unique=True,
+#                                    related_name='problem', verbose_name='پاسخ صحیح')
 
 class Answer(models.Model):
     class Type(models.TextChoices):
         ShortAnswer = 'ShortAnswer'
-        Descriptive = 'Descriptive'
-        MultiChoice = 'MultiChoice'
+        DescriptiveAnswer = 'DescriptiveAnswer'
+        # MultiChoiceAnswer = 'MultiChoiceAnswer'
 
-    type = models.CharField(max_length=20, choices=Type.choices, default=Type.Descriptive, verbose_name='نوع')
+    type = models.CharField(max_length=20, choices=Type.choices, default=Type.DescriptiveAnswer, verbose_name='نوع')
     objects = InheritanceManager()
 
     class Meta:
@@ -145,8 +145,8 @@ class DescriptiveAnswer(Answer):
     text = models.TextField(verbose_name='متن')
 
 
-class MultiChoiceAnswer(Answer):
-    text = models.IntegerField(verbose_name='شماره گزینه')
+# class MultiChoiceAnswer(Answer):
+#     text = models.IntegerField(verbose_name='شماره گزینه')
 
 
 class UploadFileAnswer(Answer):
@@ -157,7 +157,7 @@ class UploadFileAnswer(Answer):
 class Guidance(models.Model):
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, verbose_name='مسئله', related_name='guidances')
     text = models.TextField(verbose_name='متن')
-    priority = models.IntegerField(default=1, null=True, blank=True, verbose_name='اولویت')    
+    priority = models.IntegerField(default=1, null=True, blank=True, verbose_name='اولویت') #maybe unusable better impelement exist!
     
 class BaseSubmit(models.Model):
     class Status(models.TextChoices):
@@ -262,4 +262,6 @@ class ProblemCategory(models.Model):
     mentors = models.ManyToManyField(BankAccount, verbose_name='همیار(ها)', blank=True, related_name='editable_categories')
     viewers = models.ManyToManyField(BankAccount, verbose_name='بیننده(ها)', blank=True, related_name='observable_categories')
     #roles
+    # def get_random_problem():
+    #     pass
 
