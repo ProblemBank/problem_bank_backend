@@ -80,10 +80,10 @@ class Problem(models.Model):
         Descriptive = 'Descriptive'
         MultiChoice = 'MultiChoice'
     
-    base_problem = models.ForeignKey(BaseProblem, on_delete=models.CASCADE, related_name='problems', verbose_name='مسئله')
+    base_problem = models.ForeignKey(BaseProblem, on_delete=models.CASCADE, related_name='%(class)s', verbose_name='مسئله')
     type = models.CharField(max_length=20, choices=Type.choices, default=Type.Descriptive, verbose_name='نوع')
     title = models.CharField(max_length=100, verbose_name='عنوان')
-    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='نویسنده', related_name='problems')
+    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='نویسنده', related_name='%(class)s')
     
     text = models.TextField(verbose_name='متن')
     publish_date = models.DateTimeField(null=True, blank=True, verbose_name='زمان انتشار')
@@ -99,9 +99,6 @@ class Problem(models.Model):
                f'{self.problem.difficulty})'
 
     objects = InheritanceManager()
-
-    class Meta:
-        abstract = True
 
 
 class ShortAnswerProblem(Problem):
@@ -123,6 +120,8 @@ class Answer(models.Model):
     type = models.CharField(max_length=20, choices=Type.choices, default=Type.Descriptive, verbose_name='نوع')
     objects = InheritanceManager()
 
+    class Meta:
+        abstract = True
 
 class ShortAnswer(Answer):
     text = models.TextField(verbose_name='متن')
@@ -151,9 +150,9 @@ class BaseSubmit(models.Model):
         Delivered = 'Delivered'
         Judged = 'Judged'
 
-    problem = models.ForeignKey(Problem, on_delete=models.CASCADE, verbose_name='مسئله', related_name='submissions')
-    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='نویسنده', related_name='submissions')
-    received_at = models.DateTimeField(default=timezone.now, received_at='تاریخ دریافت مسئله')
+    problem = models.ForeignKey(Problem, on_delete=models.CASCADE, verbose_name='مسئله', related_name='%(class)s')
+    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='نویسنده', related_name='%(class)s')
+    received_at = models.DateTimeField(default=timezone.now, verbose_name='تاریخ دریافت مسئله')
     status = models.CharField(max_length=20, default=Status.Received,
                                      choices=Status.choices, verbose_name='وضعیت تصحیح')
     delivered_at = models.DateTimeField(null=True, verbose_name='تاریخ دریافت پاسخ')
@@ -167,6 +166,11 @@ class BaseSubmit(models.Model):
         return 'Submit from %s for problem %s with status %s' % (
             self.author.username, self.problem.title, self.status
         )
+
+
+    class Meta:
+        abstract = True
+
 
     
 class ShortAnswerSubmit(BaseSubmit):
@@ -187,7 +191,7 @@ class ShortAnswerSubmit(BaseSubmit):
 
 
 class JudgeableSubmit(BaseSubmit):
-    text_answer = models.OneToOneField('UploadFileAnswer', null=True, on_delete=models.SET_NULL, unique=True,
+    text_answer = models.OneToOneField('DescriptiveAnswer', null=True, on_delete=models.SET_NULL, unique=True,
                                    related_name='submit_answer', verbose_name='پاسخ متنی')
     upload_file_answer = models.OneToOneField('UploadFileAnswer', null=True, on_delete=models.SET_NULL, unique=True,
                                    related_name='submit_answer', verbose_name='پاسخ آپلودی')
@@ -239,9 +243,9 @@ class ProblemCategory(models.Model):
     title = models.CharField(max_length=100, verbose_name='عنوان')
     problems = models.ManyToManyField(Problem, verbose_name='مسئله(ها)', blank=True, related_name='categories') #maby many to one
 
-    owner = models.ForeignKey(User, null=True, on_delete=models.SET_NULL, verbose_name='صاحب', related_name='categories')
-    mentors = models.ManyToManyField(Problem, verbose_name='همیار(ها)', blank=True, related_name='categories')
-    # viewers = models.ManyToManyField(Problem, verbose_name='بیننده(ها)', blank=True)
+    owner = models.ForeignKey(User, null=True, on_delete=models.SET_NULL, verbose_name='صاحب', related_name='owned_categories')
+    mentors = models.ManyToManyField(User, verbose_name='همیار(ها)', blank=True, related_name='editable_categories')
+    viewers = models.ManyToManyField(User, verbose_name='بیننده(ها)', blank=True, related_name='observable_categories')
     #roles    
 
 
