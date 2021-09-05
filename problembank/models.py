@@ -1,8 +1,4 @@
-from _typeshed import Self
-from karsoogh.settings.base import rel
 
-from django.db.models.deletion import SET_NULL
-from Game.models import Problem
 from django.db import models
 from Account.models import User
 from model_utils.managers import InheritanceManager
