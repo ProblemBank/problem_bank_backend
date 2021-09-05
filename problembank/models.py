@@ -4,6 +4,27 @@ from Account.models import User
 from model_utils.managers import InheritanceManager
 from django.utils import timezone
 
+
+class BankAccount(models.Model):
+    user = models.OneToOneField(User, null=True, on_delete=models.SET_NULL, unique=True, related_name='account')
+    first_name = models.CharField(max_length=30, default='None')
+    last_name = models.CharField(max_length=30, default='None')
+    phone_number = models.CharField(max_length=15, blank=False, null=False)
+    email = models.CharField(max_length=200, blank=False, null=False)
+    
+    class Position(models.TextChoices):
+        Admin = 'Admin'
+        Member = 'Member'
+        NotRegistered = 'NotRegistered'
+    
+    position = models.CharField(max_length=20, choices=Position.choices, default=Position.Member, verbose_name='جایگاه')
+    
+    def __str__(self):
+        return self.user.username
+
+
+
+
 class Source(models.Model):
     title = models.CharField(max_length=50, verbose_name='عنوان')
     
@@ -83,7 +104,7 @@ class Problem(models.Model):
     base_problem = models.ForeignKey(BaseProblem, on_delete=models.CASCADE, related_name='%(class)s', verbose_name='مسئله')
     type = models.CharField(max_length=20, choices=Type.choices, default=Type.Descriptive, verbose_name='نوع')
     title = models.CharField(max_length=100, verbose_name='عنوان')
-    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='نویسنده', related_name='%(class)s')
+    author = models.ForeignKey(BankAccount, on_delete=models.CASCADE, verbose_name='نویسنده', related_name='%(class)s')
     
     text = models.TextField(verbose_name='متن')
     publish_date = models.DateTimeField(null=True, blank=True, verbose_name='زمان انتشار')
@@ -154,7 +175,7 @@ class BaseSubmit(models.Model):
         Judged = 'Judged'
 
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, verbose_name='مسئله', related_name='%(class)s')
-    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='نویسنده', related_name='%(class)s')
+    author = models.ForeignKey(BankAccount, on_delete=models.CASCADE, verbose_name='نویسنده', related_name='%(class)s')
     received_at = models.DateTimeField(default=timezone.now, verbose_name='تاریخ دریافت مسئله')
     status = models.CharField(max_length=20, default=Status.Received,
                                      choices=Status.choices, verbose_name='وضعیت تصحیح')
@@ -200,7 +221,7 @@ class JudgeableSubmit(BaseSubmit):
                                    related_name='submit_answer', verbose_name='پاسخ آپلودی')
     judge_note = models.CharField(max_length=200, null=True, blank=True, verbose_name='نظر مصحح')
 
-    judged_by = models.ForeignKey(User,
+    judged_by = models.ForeignKey(BankAccount,
                                   on_delete=models.SET_NULL,
                                   null=True,
                                   blank=True, related_name='judged_problems', verbose_name='مصحح')
@@ -237,7 +258,7 @@ class JudgeableSubmit(BaseSubmit):
 class Comment(models.Model):
     base_problem = models.ForeignKey(BaseProblem, on_delete=models.CASCADE, related_name='comments', verbose_name='مسئله')
     text = models.TextField(verbose_name='متن')
-    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='نویسنده', related_name='comments')
+    author = models.ForeignKey(BankAccount, on_delete=models.CASCADE, verbose_name='نویسنده', related_name='comments')
     publish_date = models.DateTimeField(null=True, blank=True, verbose_name='زمان انتشار')
     def __str__(self):
         return f'{self.writer.first_name} {self.writer.last_name} | {self.problem.title}'
@@ -246,8 +267,8 @@ class ProblemCategory(models.Model):
     title = models.CharField(max_length=100, verbose_name='عنوان')
     problems = models.ManyToManyField(Problem, verbose_name='مسئله(ها)', blank=True, related_name='categories')
 
-    owner = models.ForeignKey(User, null=True, on_delete=models.SET_NULL, verbose_name='صاحب', related_name='owned_categories')
-    mentors = models.ManyToManyField(User, verbose_name='همیار(ها)', blank=True, related_name='editable_categories')
-    viewers = models.ManyToManyField(User, verbose_name='بیننده(ها)', blank=True, related_name='observable_categories')
+    owner = models.ForeignKey(BankAccount, null=True, on_delete=models.SET_NULL, verbose_name='صاحب', related_name='owned_categories')
+    mentors = models.ManyToManyField(BankAccount, verbose_name='همیار(ها)', blank=True, related_name='editable_categories')
+    viewers = models.ManyToManyField(BankAccount, verbose_name='بیننده(ها)', blank=True, related_name='observable_categories')
     #roles
 
