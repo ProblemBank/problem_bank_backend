@@ -1,4 +1,3 @@
-
 from django.db import models
 from Account.models import User
 from model_utils.managers import InheritanceManager
@@ -21,9 +20,6 @@ class BankAccount(models.Model):
     
     def __str__(self):
         return self.user.username
-
-
-
 
 class Source(models.Model):
     title = models.CharField(max_length=50, verbose_name='عنوان')
@@ -119,11 +115,6 @@ class Problem(models.Model):
 
     objects = InheritanceManager()
 
-class GamingShortAnswerProblem(Problem):
-    answer = models.OneToOneField('ShortAnswer', null=True, on_delete=models.SET_NULL, unique=True,
-                                   related_name='problem', verbose_name='پاسخ صحیح')
-    cost = models.IntegerField(default=0, verbose_name='هزینه‌ی دریافت') 
-    reward = models.IntegerField(default=0, verbose_name='پاداش حل‌کردن')
 
 class ShortAnswerProblem(Problem):
     answer = models.OneToOneField('ShortAnswer', null=True, on_delete=models.SET_NULL, unique=True,
@@ -175,7 +166,7 @@ class BaseSubmit(models.Model):
         Judged = 'Judged'
 
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, verbose_name='مسئله', related_name='%(class)s')
-    author = models.ForeignKey(BankAccount, on_delete=models.CASCADE, verbose_name='نویسنده', related_name='%(class)s')
+    respondents = models.ManyToManyField(BankAccount, verbose_name='پاسخ دهنده (ها)', related_name='%(class)s')
     received_at = models.DateTimeField(default=timezone.now, verbose_name='تاریخ دریافت مسئله')
     status = models.CharField(max_length=20, default=Status.Received,
                                      choices=Status.choices, verbose_name='وضعیت تصحیح')
