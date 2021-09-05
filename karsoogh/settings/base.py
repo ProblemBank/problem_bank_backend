@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'Account',
     'Game',
+    'competition',
     'problembank',
     'corsheaders',
     'rest_framework',
