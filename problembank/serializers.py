@@ -130,15 +130,12 @@ class ProblemSerializer(serializers.ModelSerializer):
     base_problem = BaseProblemSerializer()
     @classmethod
     def get_serializer(cls, model):
+        print(model)
         if model == ShortAnswerProblem:
             return ShortAnswerProblemSerializer
         elif model == DescriptiveProblem:
             return DescriptiveProblemSerializer
       
-    def to_representation(self, instance):
-        serializer = ProblemSerializer.get_serializer(instance.__class__)
-        return serializer(instance, context=self.context).data
-
     @transaction.atomic
     def create(self, validated_data):
         serializerClass = ProblemSerializer.get_serializer(getattr(sys.modules[__name__],\
@@ -169,6 +166,11 @@ class ProblemSerializer(serializers.ModelSerializer):
         instance = self.create(validated_data)
         return instance
         return serializer.update(instance, validated_data)
+
+    def to_representation(self, instance):
+        serializer = ProblemSerializer.get_serializer(instance.__class__)
+        return serializer(instance, context=self.context).data
+
 
 class BankAccountSerializer(serializers.ModelSerializer):
     class Meta:
@@ -205,6 +207,16 @@ class ProblemCategorySerializer(serializers.ModelSerializer):
         instance = self.create(validated_data)
         return instance
 
+
+class ProblemCategoryGetSerializer(serializers.ModelSerializer):
+    problems = ProblemSerializer(many=True)
+    mentors = BankAccountSerializer(many=True)
+    viewers = BankAccountSerializer(many=True)
+
+    class Meta:
+        model = ProblemCategory
+        fields = '__all__'
+   
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:

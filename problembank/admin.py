@@ -1,4 +1,5 @@
 
+from problembank.views.problemcategoryview import ProblemCategoryView
 from problembank.serializers import BaseProblemSerializer
 from django.contrib import admin
 
@@ -9,9 +10,4 @@ admin.site.register(BaseProblem)
 admin.site.register(ShortAnswerProblem)
 admin.site.register(BankAccount)
 admin.site.register(ShortAnswer)
-
-
-
-
-
-
+admin.site.register(ProblemCategory)

@@ -29,4 +29,4 @@ class ProblemView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Cre
                     self.request.data['type']))
             except:
                 pass
-        
+        return ProblemSerializer
