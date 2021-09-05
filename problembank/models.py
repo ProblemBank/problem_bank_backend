@@ -73,7 +73,7 @@ class BaseProblem(models.Model):
         default=Grade.Twelfth,
         verbose_name='بالاترین پایه مناسب'
     )
-    upvoteCount = models.IntegerField(default=0)
+    upvoteCount = models.IntegerField(default=0, verbose_name='تعداد آرای مثبت')
     is_checked = models.BooleanField(default=False, verbose_name='آیا بررسی شده؟')
     
 
@@ -93,7 +93,7 @@ class Problem(models.Model):
     publish_date = models.DateTimeField(null=True, blank=True, verbose_name='زمان انتشار')
     last_change_date = models.DateTimeField(null=True, blank=True, verbose_name='زمان آخرین تغییر')
 
-    priority = models.IntegerField(default=1, null=True, blank=True)    
+    priority = models.IntegerField(default=1, null=True, blank=True, verbose_name='اولویت')    
     is_private = models.BooleanField(default=True, verbose_name='آیا خصوصی است؟')
     # cost = models.IntegerField(default=0, verbose_name='هزینه‌ی دریافت') 
     # reward = models.IntegerField(default=0, verbose_name='پاداش حل‌کردن')
@@ -110,13 +110,13 @@ class Problem(models.Model):
 
 class ShortAnswerProblem(Problem):
     answer = models.OneToOneField('ShortAnswer', null=True, on_delete=models.SET_NULL, unique=True,
-                                   related_name='problem')
+                                   related_name='problem', verbose_name='پاسخ صحیح')
 class DescriptiveProblem(Problem):
     answer = models.OneToOneField('DescriptiveAnswer', null=True, on_delete=models.SET_NULL, unique=True,
-                                   related_name='problem')
+                                   related_name='problem', verbose_name='پاسخ صحیح')
 class MultiChoiceProblem(Problem):
     answer = models.OneToOneField('MultiChoiceAnswer', null=True, on_delete=models.SET_NULL, unique=True,
-                                   related_name='problem')
+                                   related_name='problem', verbose_name='پاسخ صحیح')
 
 class Answer(models.Model):
     class Type(models.TextChoices):
@@ -136,18 +136,18 @@ class DescriptiveAnswer(Answer):
 
 
 class MultiChoiceAnswer(Answer):
-    text = models.IntegerField()
+    text = models.IntegerField(verbose_name='شماره گزینه')
 
 
 class UploadFileAnswer(Answer):
     answer_file = models.FileField(upload_to='AnswerFile', max_length=4000, blank=False)
-    file_name = models.CharField(max_length=50)
+    file_name = models.CharField(max_length=50, verbose_name='نام فایل')
 
 
 class Guidance(models.Model):
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, verbose_name='مسئله', related_name='guidances')
     text = models.TextField(verbose_name='متن')
-    priority = models.IntegerField(default=1, null=True, blank=True)    
+    priority = models.IntegerField(default=1, null=True, blank=True, verbose_name='اولویت')    
     
 class BaseSubmit(models.Model):
     class Status(models.TextChoices):
@@ -157,11 +157,11 @@ class BaseSubmit(models.Model):
 
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, verbose_name='مسئله', related_name='submissions')
     author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='نویسنده', related_name='submissions')
-    received_at = models.DateTimeField(default=timezone.now)
+    received_at = models.DateTimeField(default=timezone.now, received_at='تاریخ دریافت مسئله')
     status = models.CharField(max_length=20, default=Status.Received,
-                                     choices=Status.choices)
-    delivered_at = models.DateTimeField(null=True)
-    judged_at = models.DateTimeField(null=True)
+                                     choices=Status.choices, verbose_name='وضعیت تصحیح')
+    delivered_at = models.DateTimeField(null=True, verbose_name='تاریخ دریافت پاسخ')
+    judged_at = models.DateTimeField(null=True, verbose_name='تاریخ تصحیح')
     mark = models.IntegerField(default=0, verbose_name='نمره')
     #event!!
 
@@ -175,7 +175,7 @@ class BaseSubmit(models.Model):
     
 class ShortAnswerSubmit(BaseSubmit):
     answer = models.OneToOneField('ShortAnswer', null=True, on_delete=models.SET_NULL, unique=True,
-                                   related_name='submit_answer')
+                                   related_name='submit_answer', verbose_name='پاسخ')
     
     def check_answer(self):
         pass
@@ -192,15 +192,15 @@ class ShortAnswerSubmit(BaseSubmit):
 
 class JudgeableSubmit(BaseSubmit):
     text_answer = models.OneToOneField('UploadFileAnswer', null=True, on_delete=models.SET_NULL, unique=True,
-                                   related_name='submit_answer')
+                                   related_name='submit_answer', verbose_name='پاسخ متنی')
     upload_file_answer = models.OneToOneField('UploadFileAnswer', null=True, on_delete=models.SET_NULL, unique=True,
-                                   related_name='submit_answer')
-    judge_note = models.CharField(max_length=200, null=True, blank=True)
+                                   related_name='submit_answer', verbose_name='پاسخ آپلودی')
+    judge_note = models.CharField(max_length=200, null=True, blank=True, verbose_name='نظر مصحح')
 
     judged_by = models.ForeignKey(User,
                                   on_delete=models.SET_NULL,
                                   null=True,
-                                  blank=True, related_name='judged_problems')
+                                  blank=True, related_name='judged_problems', verbose_name='مصحح')
 
     def save(self, *args, **kwargs):
         pass
