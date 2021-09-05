@@ -1,4 +1,5 @@
 from _typeshed import Self
+from karsoogh.settings.base import rel
 
 from django.db.models.deletion import SET_NULL
 from Game.models import Problem
@@ -17,17 +18,16 @@ class Source(models.Model):
 class Topic(models.Model):
     title = models.CharField(max_length=30, verbose_name='عنوان')
     
-    # sub_tags
     def __str__(self):
-        return self.name
+        return self.title
 
 
-class SubTopic(models.Model):
+class Subtopic(models.Model):
     title = models.CharField(max_length=30, verbose_name='عنوان')
-    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, verbose_name='موضوع')
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, verbose_name='موضوع', related_name='subtopics')
 
     def __str__(self):
-        return self.name
+        return f'{self.topic.title} - {self.title}'
 
 
 
@@ -57,8 +57,8 @@ class Problem(models.Model):
     title = models.CharField(max_length=100, verbose_name='عنوان')
     
     topics = models.ManyToManyField(Topic, verbose_name='موضوع(ها)', blank=True, related_name='problems')
-    sub_topics = models.ManyToManyField(SubTopic, verbose_name='زیر موضوع(ها)', blank=True, related_name='problems')
-    source = models.ForeignKey(Source, blank=True, null=True, on_delete=models.SET_NULL, verbose_name='منبع')
+    subtopics = models.ManyToManyField(SubTopic, verbose_name='زیر موضوع(ها)', blank=True, related_name='problems')
+    source = models.ForeignKey(Source, blank=True, null=True, on_delete=models.SET_NULL, verbose_name='منبع', related_name='problems')
     
     difficulty = models.CharField(max_length=20, choices=Difficulty.choices, verbose_name='سختی',
                                   default=Difficulty.MEDIUM)
@@ -72,8 +72,9 @@ class Problem(models.Model):
         default=Grade.Twelfth,
         verbose_name='بالاترین پایه مناسب'
     )
+    upvoteCount = models.IntegerField(default=0)
     is_checked = models.BooleanField(default=False, verbose_name='آیا بررسی شده؟')
-
+    
 
 
 class ProblemInstance(models.Model):
@@ -85,22 +86,22 @@ class ProblemInstance(models.Model):
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='problems', verbose_name='مسئله')
     type = models.CharField(max_length=20, choices=Type.choices, default=Type.Descriptive, verbose_name='نوع')
     title = models.CharField(max_length=100, verbose_name='عنوان')
-    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='نویسنده')
+    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='نویسنده', related_name='problems')
     
     text = models.TextField(verbose_name='متن')
     publish_date = models.DateTimeField(null=True, blank=True, verbose_name='زمان انتشار')
     last_change_date = models.DateTimeField(null=True, blank=True, verbose_name='زمان آخرین تغییر')
 
     priority = models.IntegerField(default=1, null=True, blank=True)    
+    is_private = models.BooleanField(default=True, verbose_name='آیا خصوصی است؟')
     # cost = models.IntegerField(default=0, verbose_name='هزینه‌ی دریافت') 
     # reward = models.IntegerField(default=0, verbose_name='پاداش حل‌کردن')
-    # answer = models.TextField(null=True, blank=True, verbose_name='پاسخ (اختیاری)')
 
-    is_private = models.BooleanField(default=True, verbose_name='آیا خصوصی است؟')
-    
     def __str__(self):
         return f'{self.title} ({self.type}، ' \
                f'{self.problem.difficulty})'
+
+    objects = InheritanceManager()
 
     class Meta:
         abstract = True
@@ -141,23 +142,29 @@ class UploadFileAnswer(Answer):
     answer_file = models.FileField(upload_to='AnswerFile', max_length=4000, blank=False)
     file_name = models.CharField(max_length=50)
 
+
+class Guidance(models.Model):
+    problem = models.ForeignKey(ProblemInstance, on_delete=models.CASCADE, verbose_name='مسئله', related_name='guidances')
+    text = models.TextField(verbose_name='متن')
+    priority = models.IntegerField(default=1, null=True, blank=True)    
+    
 class BaseSubmit(models.Model):
     class Status(models.TextChoices):
         Received = 'Received'
         Delivered = 'Delivered'
         Judged = 'Judged'
 
-    problem = models.ForeignKey(ProblemInstance, on_delete=models.CASCADE, verbose_name='مسئله')
-    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='نویسنده')
+    problem = models.ForeignKey(ProblemInstance, on_delete=models.CASCADE, verbose_name='مسئله', related_name='submissions')
+    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='نویسنده', related_name='submissions')
     received_at = models.DateTimeField(default=timezone.now)
     status = models.CharField(max_length=20, default=Status.Received,
                                      choices=Status.choices)
     delivered_at = models.DateTimeField(null=True)
     judged_at = models.DateTimeField(null=True)
     mark = models.IntegerField(default=0, verbose_name='نمره')
+    #event!!
 
-    class Meta:
-        abstract = True
+    objects = InheritanceManager()
 
     def __str__(self):
         return 'Submit from %s for problem %s with status %s' % (
@@ -183,14 +190,16 @@ class ShortAnswerSubmit(BaseSubmit):
 
 
 class JudgeableSubmit(BaseSubmit):
-    answer = models.OneToOneField('UploadFileAnswer', null=True, on_delete=models.SET_NULL, unique=True,
+    text_answer = models.OneToOneField('UploadFileAnswer', null=True, on_delete=models.SET_NULL, unique=True,
+                                   related_name='submit_answer')
+    upload_file_answer = models.OneToOneField('UploadFileAnswer', null=True, on_delete=models.SET_NULL, unique=True,
                                    related_name='submit_answer')
     judge_note = models.CharField(max_length=200, null=True, blank=True)
 
     judged_by = models.ForeignKey(User,
                                   on_delete=models.SET_NULL,
                                   null=True,
-                                  blank=True)
+                                  blank=True, related_name='judged_problems')
 
     def save(self, *args, **kwargs):
         pass
@@ -221,27 +230,20 @@ class JudgeableSubmit(BaseSubmit):
         #     super(JudgeableSubmit, self).save(*args, **kwargs)
 
 
-
-class Guidance(models.Model):
-    problem = models.ForeignKey(ProblemInstance, on_delete=models.CASCADE, verbose_name='مسئله')
-    text = models.TextField(verbose_name='متن')
-
-
-
 class Comment(models.Model):
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='comments', verbose_name='مسئله')
     text = models.TextField(verbose_name='متن')
-    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='نویسنده')
+    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='نویسنده', related_name='comments')
     publish_date = models.DateTimeField(null=True, blank=True, verbose_name='زمان انتشار')
     def __str__(self):
         return f'{self.writer.first_name} {self.writer.last_name} | {self.problem.title}'
 
 class ProblemCategory(models.Model):
     title = models.CharField(max_length=100, verbose_name='عنوان')
-    problems = models.ManyToManyField(ProblemInstance, verbose_name='مسئله(ها)', blank=True) #maby many to one
+    problems = models.ManyToManyField(ProblemInstance, verbose_name='مسئله(ها)', blank=True, related_name='categories') #maby many to one
 
-    owner = models.ForeignKey(User, null=True, on_delete=models.SET_NULL, verbose_name='صاحب')
-    mentors = models.ManyToManyField(ProblemInstance, verbose_name='همیار(ها)', blank=True)
+    owner = models.ForeignKey(User, null=True, on_delete=models.SET_NULL, verbose_name='صاحب', related_name='categories')
+    mentors = models.ManyToManyField(ProblemInstance, verbose_name='همیار(ها)', blank=True, related_name='categories')
     # viewers = models.ManyToManyField(ProblemInstance, verbose_name='بیننده(ها)', blank=True)
     #roles    
 
