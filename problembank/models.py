@@ -69,9 +69,9 @@ class BaseProblem(models.Model):
         default=Grade.Twelfth,
         verbose_name='بالاترین پایه مناسب'
     )
-    upvoteCount = models.IntegerField(default=0, verbose_name='تعداد آرای مثبت')
     is_checked = models.BooleanField(default=False, verbose_name='آیا بررسی شده؟')
     
+    # number of problems or max upvoteCount for rating
 
 
 class Problem(models.Model):
@@ -89,17 +89,20 @@ class Problem(models.Model):
     publish_date = models.DateTimeField(null=True, blank=True, verbose_name='زمان انتشار')
     last_change_date = models.DateTimeField(null=True, blank=True, verbose_name='زمان آخرین تغییر')
 
-    priority = models.IntegerField(default=1, null=True, blank=True, verbose_name='اولویت')    
     is_private = models.BooleanField(default=True, verbose_name='آیا خصوصی است؟')
-    # cost = models.IntegerField(default=0, verbose_name='هزینه‌ی دریافت') 
-    # reward = models.IntegerField(default=0, verbose_name='پاداش حل‌کردن')
-
+    upvoteCount = models.IntegerField(default=0, verbose_name='تعداد آرای مثبت')
+    
     def __str__(self):
         return f'{self.title} ({self.type}، ' \
                f'{self.problem.difficulty})'
 
     objects = InheritanceManager()
 
+class GamingShortAnswerProblem(Problem):
+    answer = models.OneToOneField('ShortAnswer', null=True, on_delete=models.SET_NULL, unique=True,
+                                   related_name='problem', verbose_name='پاسخ صحیح')
+    cost = models.IntegerField(default=0, verbose_name='هزینه‌ی دریافت') 
+    reward = models.IntegerField(default=0, verbose_name='پاداش حل‌کردن')
 
 class ShortAnswerProblem(Problem):
     answer = models.OneToOneField('ShortAnswer', null=True, on_delete=models.SET_NULL, unique=True,
@@ -241,13 +244,10 @@ class Comment(models.Model):
 
 class ProblemCategory(models.Model):
     title = models.CharField(max_length=100, verbose_name='عنوان')
-    problems = models.ManyToManyField(Problem, verbose_name='مسئله(ها)', blank=True, related_name='categories') #maby many to one
+    problems = models.ManyToManyField(Problem, verbose_name='مسئله(ها)', blank=True, related_name='categories')
 
     owner = models.ForeignKey(User, null=True, on_delete=models.SET_NULL, verbose_name='صاحب', related_name='owned_categories')
     mentors = models.ManyToManyField(User, verbose_name='همیار(ها)', blank=True, related_name='editable_categories')
     viewers = models.ManyToManyField(User, verbose_name='بیننده(ها)', blank=True, related_name='observable_categories')
-    #roles    
+    #roles
 
-
-#handle related names   
-#handle events
