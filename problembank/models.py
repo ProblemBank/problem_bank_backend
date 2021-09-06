@@ -105,8 +105,8 @@ class Problem(models.Model):
     author = models.ForeignKey(BankAccount, on_delete=models.CASCADE, verbose_name='نویسنده', related_name='%(class)s')
     
     text = models.TextField(verbose_name='متن')
-    publish_date = models.DateTimeField(null=True, blank=True, verbose_name='زمان انتشار')
-    last_change_date = models.DateTimeField(null=True, blank=True, verbose_name='زمان آخرین تغییر')
+    publish_date = models.DateTimeField(default=timezone.now, null=True, blank=True, verbose_name='زمان انتشار')
+    last_change_date = models.DateTimeField(default=timezone.now, null=True, blank=True, verbose_name='زمان آخرین تغییر')
 
     is_private = models.BooleanField(default=True, verbose_name='آیا خصوصی است؟')
     upvoteCount = models.IntegerField(default=0, verbose_name='تعداد آرای مثبت')
@@ -257,7 +257,7 @@ class Comment(models.Model):
     base_problem = models.ForeignKey(BaseProblem, on_delete=models.CASCADE, related_name='comments', verbose_name='مسئله')
     text = models.TextField(verbose_name='متن')
     author = models.ForeignKey(BankAccount, on_delete=models.CASCADE, verbose_name='نویسنده', related_name='comments')
-    publish_date = models.DateTimeField(null=True, blank=True, verbose_name='زمان انتشار')
+    publish_date = models.DateTimeField(default=timezone.now, null=True, blank=True, verbose_name='زمان انتشار')
     def __str__(self):
         return f'{self.writer.first_name} {self.writer.last_name} | {self.problem.title}'
 
