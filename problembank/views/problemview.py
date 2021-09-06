@@ -26,7 +26,15 @@ class ProblemView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Cre
         if self.request.method == 'POST' or self.request.method == 'PATCH':
             try:
                 return ProblemSerializer.get_serializer(getattr(sys.modules[__name__],\
-                    self.request.data['type']))
+                    self.request.data['problem_type']))
             except:
                 pass
-        return ProblemSerializer
+        # try:
+        print(self.kwargs)
+        instance = Problem.objects.filter(pk=self.kwargs['pk'])[0]
+        print(getattr(sys.modules[__name__],\
+                instance.problem_type))
+        return ProblemSerializer.get_serializer(getattr(sys.modules[__name__],\
+                instance.problem_type))
+        # except: 
+        #     print("!!!")

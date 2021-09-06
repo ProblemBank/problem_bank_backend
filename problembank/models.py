@@ -19,7 +19,7 @@ class BankAccount(models.Model):
     position = models.CharField(max_length=20, choices=Position.choices, default=Position.Member, verbose_name='جایگاه')
     
     def __str__(self):
-        return self.user.username
+        return f'{self.first_name} {self.last_name}'
 
 class Source(models.Model):
     title = models.CharField(max_length=50, verbose_name='عنوان')
@@ -96,9 +96,11 @@ class Problem(models.Model):
         ShortAnswerProblem = 'ShortAnswerProblem'
         DescriptiveProblem = 'DescriptiveProblem'
         # MultiChoice = 'MultiChoice'
+        Problem = 'Problem'
+        
     
     base_problem = models.ForeignKey(BaseProblem, on_delete=models.CASCADE, related_name='%(class)s', verbose_name='مسئله')
-    type = models.CharField(max_length=20, choices=Type.choices, default=Type.DescriptiveProblem, verbose_name='نوع')
+    problem_type = models.CharField(max_length=20, choices=Type.choices, default=Type.DescriptiveProblem, verbose_name='نوع')
     title = models.CharField(max_length=100, verbose_name='عنوان')
     author = models.ForeignKey(BankAccount, on_delete=models.CASCADE, verbose_name='نویسنده', related_name='%(class)s')
     
@@ -110,8 +112,13 @@ class Problem(models.Model):
     upvoteCount = models.IntegerField(default=0, verbose_name='تعداد آرای مثبت')
     
     def __str__(self):
-        return f'{self.title} ({self.type}، ' \
+        return f'{self.title} ({self.problem_type}، ' \
                f'{self.base_problem.difficulty})'
+
+    def delete(self):
+        if len(Problem.objects.filter(base_problem=self.base_problem)) == 1:
+            self.base_problem.delete()
+        super(Problem, self).delete()
 
     objects = InheritanceManager()
 
@@ -120,7 +127,7 @@ class ShortAnswerProblem(Problem):
     answer = models.OneToOneField('ShortAnswer', null=True, on_delete=models.SET_NULL, unique=True,
                                    related_name='problem', verbose_name='پاسخ صحیح')
 class DescriptiveProblem(Problem):
-    answer = models.OneToOneField('DescriptiveAnswer', null=True, on_delete=models.SET_NULL, unique=True,
+    answer = models.OneToOneField('DescriptiveAnswer', null=True, blank=True, on_delete=models.SET_NULL, unique=True,
                                    related_name='problem', verbose_name='پاسخ صحیح')
 # class MultiChoiceProblem(Problem):
 #     answer = models.OneToOneField('MultiChoiceAnswer', null=True, on_delete=models.SET_NULL, unique=True,
@@ -132,7 +139,7 @@ class Answer(models.Model):
         DescriptiveAnswer = 'DescriptiveAnswer'
         # MultiChoiceAnswer = 'MultiChoiceAnswer'
 
-    type = models.CharField(max_length=20, choices=Type.choices, default=Type.DescriptiveAnswer, verbose_name='نوع')
+    answer_type = models.CharField(max_length=20, choices=Type.choices, default=Type.DescriptiveAnswer, verbose_name='نوع')
     objects = InheritanceManager()
 
     class Meta:
@@ -264,4 +271,3 @@ class ProblemCategory(models.Model):
     #roles
     # def get_random_problem():
     #     pass
-

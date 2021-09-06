@@ -17,6 +17,7 @@ class ProblemCategoryView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mi
                     mixins.UpdateModelMixin):
     # permission_classes = [permissions.IsAuthenticated, customPermissions.MentorPermission,]
 
+    permission_classes = [permissions.AllowAny]
     queryset = ProblemCategory.objects.all()
     serializer_class = ProblemCategorySerializer
 
