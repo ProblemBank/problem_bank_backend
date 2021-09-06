@@ -305,11 +305,20 @@ def create_or_get_subtopic(topic_title, title):
     except:
         return Subtopic.objects.create(title=title, topic=topic)
 
+def create_or_get_source_pk(title):
+    if title is None:
+        return None
+    try:
+        return Source.objects.filter(title=title)[0].pk
+    except:
+        return Source.objects.create(title=title).pk
+
 def create_problem_with_global_problem_json(problem_json_object):
     base_problem_data = problem_json_object['base_problem']
     base_problem_data['topics'] = [create_or_get_topic(topic).pk for topic in base_problem_data['topics']]
     base_problem_data['subtopics'] = [create_or_get_subtopic(subtopic['topic'], subtopic['title']).pk for subtopic in base_problem_data['subtopics']]
-    
+    base_problem_data['source'] = create_or_get_source_pk(base_problem_data['source'])
+
     baseProblemSerializer = BaseProblemSerializer(data=base_problem_data)
     baseProblemSerializer.is_valid(raise_exception=True)
 
@@ -325,3 +334,4 @@ def create_many_problem_with_global_problem_json(problems_json):
     for problem_json_object in problems_json_object:
         create_problem_with_global_problem_json(problem_json_object)
     
+'[{"base_problem": {"title": "erty", "topics": ["ترکیبیات"], "subtopics": [{"topic": "ترکیبیات", "title": "لانه کبوتری"}, {"topic": "ترکیبیات", "title": "استقرا"}], "source": null, "difficulty": "VeryEasy", "suitable_for_over": 1, "suitable_for_under": 12, "is_checked": false}, "problem_type": "DescriptiveProblem", "title": "erty", "author": {"first_name": "sdf", "last_name": "None", "email": "wef", "phone_number": "09"}, "text": "derfghjn", "publish_date": "2021-09-06T17:49:54.043791+04:30", "last_change_date": null, "is_private": false, "upvoteCount": 0}, {"base_problem": {"title": "lkjpo;lasfdasdf", "topics": ["ترکیبیات"], "subtopics": [{"topic": "ترکیبیات", "title": "لانه کبوتری"}, {"topic": "ترکیبیات", "title": "استقرا"}], "source": "آنالیز ترکیبی", "difficulty": "Easy", "suitable_for_over": 1, "suitable_for_under": 12, "is_checked": false}, "problem_type": "DescriptiveProblem", "title": "lkjpo;lasfdasdf", "author": {"first_name": "sdf", "last_name": "None", "email": "wef", "phone_number": "09"}, "text": "slkdnf;sdf;llefwef", "publish_date": "2021-09-07T00:16:58.108720+04:30", "last_change_date": null, "is_private": false, "upvoteCount": 0}, {"base_problem": {"title": "mm", "topics": ["ترکیبیات", "هندسه"], "subtopics": [{"topic": "ترکیبیات", "title": "ناوردایی"}, {"topic": "هندسه", "title": "همساز"}], "source": "آنالیز ترکیبی", "difficulty": "Hard", "suitable_for_over": 5, "suitable_for_under": 7, "is_checked": false}, "problem_type": "DescriptiveProblem", "title": "mm", "author": {"first_name": "sdf", "last_name": "None", "email": "wef", "phone_number": "09"}, "text": "لاذتدنمپک", "publish_date": "2021-09-07T00:17:52.200124+04:30", "last_change_date": null, "is_private": false, "upvoteCount": 0}]'

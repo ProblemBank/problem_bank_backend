@@ -25,7 +25,7 @@ class Source(models.Model):
     title = models.CharField(max_length=50, verbose_name='عنوان')
     
     def __str__(self):
-        return self.name
+        return self.title
 
 
 class Topic(models.Model):
