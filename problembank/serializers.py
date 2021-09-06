@@ -75,10 +75,9 @@ class ShortAnswerProblemSerializer(serializers.ModelSerializer):
     @transaction.atomic
     def create(self, validated_data):
         base_problem_data = validated_data.pop('base_problem')
-        base_problem = BaseProblem.objects.create(**base_problem_data)
-        base_problem.save()
-        validated_data['base_problem'] = base_problem
-        print(validated_data)
+        baseProblemSerializer = BaseProblemSerializer(data=base_problem_data)
+        baseProblemSerializer.is_valid(raise_exception=True)
+        validated_data['base_problem'] = baseProblemSerializer.create(baseProblemSerializer.validated_data)
         
         answer_data = validated_data.pop('answer')
         instance = ShortAnswerProblem.objects.create(**validated_data)
@@ -113,9 +112,9 @@ class DescriptiveProblemSerializer(serializers.ModelSerializer):
     @transaction.atomic
     def create(self, validated_data):
         base_problem_data = validated_data.pop('base_problem')
-        base_problem = BaseProblem.objects.create(**base_problem_data)
-        base_problem.save()
-        validated_data['base_problem'] = base_problem
+        baseProblemSerializer = BaseProblemSerializer(data=base_problem_data)
+        baseProblemSerializer.is_valid(raise_exception=True)
+        validated_data['base_problem'] = baseProblemSerializer.create(baseProblemSerializer.validated_data)
         
         answer_data = validated_data.pop('answer')
         instance = DescriptiveProblem.objects.create(**validated_data)
@@ -166,9 +165,9 @@ class ProblemSerializer(serializers.ModelSerializer):
         serializer = serializerClass(validated_data)
 
         base_problem_data = validated_data.pop('base_problem')
-        base_problem = BaseProblem.objects.create(**base_problem_data)
-        base_problem.save()
-        validated_data['base_problem'] = base_problem
+        baseProblemSerializer = BaseProblemSerializer(data=base_problem_data)
+        baseProblemSerializer.is_valid(raise_exception=True)
+        validated_data['base_problem'] = baseProblemSerializer.create(baseProblemSerializer.validated_data)
         
         return serializer.create(validated_data)
 

@@ -109,7 +109,7 @@ class Problem(models.Model):
     last_change_date = models.DateTimeField(default=timezone.now, null=True, blank=True, verbose_name='زمان آخرین تغییر')
 
     is_private = models.BooleanField(default=True, verbose_name='آیا خصوصی است؟')
-    upvoteCount = models.IntegerField(default=0, verbose_name='تعداد آرای مثبت')
+    upvoteCount = models.IntegerField(default=0, verbose_name='تعداد آرای مثبت') #camle
     
     def __str__(self):
         return f'{self.title} ({self.problem_type}، ' \
