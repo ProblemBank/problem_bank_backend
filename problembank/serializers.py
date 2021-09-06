@@ -59,7 +59,13 @@ class AnswerSerializer(serializers.ModelSerializer):
         return serializer.update(instance, validated_data)
 
 
+class BaseProblemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BaseProblem
+        fields = '__all__'
+
 class ShortAnswerProblemSerializer(serializers.ModelSerializer):
+    base_problem = BaseProblemSerializer()
     answer = ShortAnswerSerializer()
 
     class Meta:
@@ -68,6 +74,12 @@ class ShortAnswerProblemSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
+        base_problem_data = validated_data.pop('base_problem')
+        base_problem = BaseProblem.objects.create(**base_problem_data)
+        base_problem.save()
+        validated_data['base_problem'] = base_problem
+        print(validated_data)
+        
         answer_data = validated_data.pop('answer')
         instance = ShortAnswerProblem.objects.create(**validated_data)
         answer_data['answer_type'] = 'ShortAnswer'
@@ -92,6 +104,7 @@ class ShortAnswerProblemSerializer(serializers.ModelSerializer):
 
 
 class DescriptiveProblemSerializer(serializers.ModelSerializer):
+    base_problem = BaseProblemSerializer()
     answer = DescriptiveAnswerSerializer(required=False)
     class Meta:
         model = DescriptiveProblem
@@ -99,6 +112,11 @@ class DescriptiveProblemSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
+        base_problem_data = validated_data.pop('base_problem')
+        base_problem = BaseProblem.objects.create(**base_problem_data)
+        base_problem.save()
+        validated_data['base_problem'] = base_problem
+        
         answer_data = validated_data.pop('answer')
         instance = DescriptiveProblem.objects.create(**validated_data)
         answer_data['answer_type'] = 'DescriptiveAnswer'
@@ -122,12 +140,8 @@ class DescriptiveProblemSerializer(serializers.ModelSerializer):
         return instance
 
 
-class BaseProblemSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = BaseProblem
-        fields = '__all__'
-
 class SimpleProblemSerializer(serializers.ModelSerializer):
+    base_problem = BaseProblemSerializer()
     class Meta:
         model = Problem
         exclude = ('base_problem',)
@@ -154,7 +168,7 @@ class ProblemSerializer(serializers.ModelSerializer):
         base_problem_data = validated_data.pop('base_problem')
         base_problem = BaseProblem.objects.create(**base_problem_data)
         base_problem.save()
-        validated_data['base_problem'] = base_problem.pk
+        validated_data['base_problem'] = base_problem
         
         return serializer.create(validated_data)
 
