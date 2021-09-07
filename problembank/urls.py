@@ -5,6 +5,7 @@ from problembank.views.problemgroupview import ProblemGroupView
 from problembank.views.guidanceview import GuidanceView
 from problembank.views.eventview import EventView
 from problembank.views.topicsview import TopicView, SubtopicView, SourceView
+# from problembank.views.submitview import SubmitView
 
 
 from django.urls import path
@@ -28,6 +29,8 @@ router.register('source', SourceView)
 router.register('source/<int:pk>', SourceView)
 router.register('account', AccountView)
 router.register('account/<int:pk>', AccountView)
+# router.register('submit', SubmitView)
+# router.register('submit/<int:pk>', SubmitView)
 urlpatterns = [
       path('addproblemtogroup/<int:ppk>/<int:gpk>', add_problem_to_group),
     

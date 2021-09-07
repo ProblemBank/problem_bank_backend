@@ -275,18 +275,155 @@ class EventSerializer(serializers.ModelSerializer):
         instance = Event.objects.filter(id=instance.id)[0]
         return instance
 
-
-class CommentSerializer(serializers.ModelSerializer):
+class AutoCheckSubmitSerializer(serializers.ModelSerializer):
+    answer = ShortAnswerSerializer(required=False)
     class Meta:
-        model = Comment
+        model = AutoCheckSubmit
         fields = '__all__'
+        extra_kwargs = {'status': {'read_only': True},
+                        'received_at': {'read_only': True},
+                        'delivered_at': {'read_only': True},
+                        'judged_at': {'read_only': True},
+                        }
+    @transaction.atomic
+    def create(self, validated_data):
+        answer_data = validated_data.pop('answer')
+        answer_data['answer_type'] = 'ShortAnswer'
+        answer = ShortAnswer.objects.create(**answer_data)
 
+        instance = JudgeableSubmit.objects.create(**validated_data)
+        instance.answer = answer
+        instance.received_at = timezone.now()
+        instance.mark = 0
+        instance.status = BaseSubmit.Status.Received
+        instance.save()
+    
+        return instance
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        ShortAnswer.objects.filter(id=instance.answer.id).update(**validated_data.pop('answer'))
+        answer = ShortAnswer.objects.filter(id=instance.answer.id)[0]
+        answer.answer_type = 'ShortAnswer'
+        answer.save()
+        instance.answer = answer    
+        instance.save()
+        JudgeableSubmit.objects.filter(id=instance.id).update(**validated_data)
+        instance = JudgeableSubmit.objects.filter(id=instance.id)[0]
+        
+        instance.delivered_at = timezone.now()
+        instance.mark = 0
+        instance.status = BaseSubmit.Status.Delivered
+        
+        instance.judged_at = timezone.now()
+        instance.mark = 0 #calculate mark
+        instance.status = BaseSubmit.Status.Judged
+
+        instance.save()
+        return instance
+
+class JudgeableSubmitSerializer(serializers.ModelSerializer):
+    text_answer = DescriptiveAnswerSerializer(required=False)
+    upload_file_answer = UploadFileAnswerSerializer(required=False)
+    class Meta:
+        model = JudgeableSubmit
+        fields = '__all__'
+        extra_kwargs = {'status': {'read_only': True},
+                        'received_at': {'read_only': True},
+                        'delivered_at': {'read_only': True},
+                        'judged_at': {'read_only': True},
+                        'judged_by': {'read_only': True},
+                        }
+    @transaction.atomic
+    def create(self, validated_data):
+        text_answer_data = validated_data.pop('text_answer')
+        text_answer_data['answer_type'] = 'DescriptiveAnswer'
+        text_answer = DescriptiveAnswer.objects.create(**text_answer_data)
+
+        upload_file_answer_data = validated_data.pop('upload_file_answer')
+        upload_file_answer_data['answer_type'] = 'UploadFileAnswer'
+        upload_file_answer = DescriptiveAnswer.objects.create(**upload_file_answer_data)
+        
+        instance = JudgeableSubmit.objects.create(**validated_data)
+        instance.text_answer = text_answer
+        instance.upload_file_answer = upload_file_answer
+        instance.received_at = timezone.now()
+        instance.mark = 0
+        instance.status = BaseSubmit.Status.Received
+        instance.save()
+    
+        return instance
+
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        DescriptiveAnswer.objects.filter(id=instance.text_answer.id).update(**validated_data.pop('text_answer'))
+        text_answer = DescriptiveAnswer.objects.filter(id=instance.text_answer.id)[0]
+        text_answer.answer_type = 'DescriptiveAnswer'
+        text_answer.save()
+        instance.text_answer = text_answer    
+    
+        UploadFileAnswer.objects.filter(id=instance.upload_file_answer.id).update(**validated_data.pop('upload_file_answer'))
+        upload_file_answer = UploadFileAnswer.objects.filter(id=instance.upload_file_answer.id)[0]
+        upload_file_answer.answer_type = 'UploadFileAnswer'
+        upload_file_answer.save()
+        instance.upload_file_answer = upload_file_answer
+    
+        instance.save()
+        JudgeableSubmit.objects.filter(id=instance.id).update(**validated_data)
+        instance = JudgeableSubmit.objects.filter(id=instance.id)[0]
+        
+        # instance.delivered_at = timezone.now()
+        # instance.mark = 0
+        # instance.status = BaseSubmit.Status.Delivered
+        
+        # instance.judged_at = timezone.now()
+        # instance.status = BaseSubmit.Status.Judged
+        # instance.judged_by = ??
+
+        instance.save()
+        return instance
+
+class BaseSubmitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BaseSubmit
+        fields = '__all__'
+    
+    @classmethod
+    def get_serializer(cls, problem_type):
+        if problem_type == 'ShortAnswerProblem':
+            return AutoCheckSubmitSerializer
+        else:
+            return JudgeableSubmitSerializer
+
+    def to_representation(self, instance):
+        serializer = BaseSubmitSerializer.get_serializer(instance.problem.problem_type)
+        return serializer(instance, context=self.context).data
+
+    @transaction.atomic
+    def create(self, validated_data):
+        serializerClass = BaseSubmitSerializer.get_serializer(validated_data['problem'].problem_type)
+        serializer = serializerClass(validated_data)
+        return serializer.create(validated_data)
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        serializerClass = BaseSubmitSerializer.get_serializer(instance.problem.problem_type)
+        serializer = serializerClass(validated_data)
+        return serializer.update(instance, validated_data)
 
 
 class GuidanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Guidance
         fields = '__all__'
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = '__all__'
+
 
 
 global_problem_json_example =''' {
