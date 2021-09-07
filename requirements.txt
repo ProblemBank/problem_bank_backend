@@ -14,3 +14,4 @@ pillow==7.2.0
 requests==2.25.1
 sqlparse==0.4.1
 urllib3==1.26.5
+django-model-utils==4.1.1
