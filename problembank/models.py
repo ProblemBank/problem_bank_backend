@@ -10,26 +10,28 @@ class BankAccount(models.Model):
     last_name = models.CharField(max_length=30, default='None')
     phone_number = models.CharField(max_length=15, blank=False, null=False)
     email = models.CharField(max_length=200, blank=False, null=False)
+
     class Position(models.TextChoices):
         Admin = 'Admin'
         Member = 'Member'
         NotRegistered = 'NotRegistered'
-    
+
     position = models.CharField(max_length=20, choices=Position.choices, default=Position.Member, verbose_name='جایگاه')
-    
+
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
 
+
 class Source(models.Model):
     title = models.CharField(max_length=50, verbose_name='عنوان')
-    
+
     def __str__(self):
         return self.title
 
 
 class Topic(models.Model):
     title = models.CharField(max_length=30, verbose_name='عنوان')
-    
+
     def __str__(self):
         return self.title
 
@@ -42,16 +44,13 @@ class Subtopic(models.Model):
         return f'{self.topic.title} - {self.title}'
 
 
-
-
-
 class Problem(models.Model):
     class Type(models.TextChoices):
         ShortAnswerProblem = 'ShortAnswerProblem'
         DescriptiveProblem = 'DescriptiveProblem'
         # MultiChoice = 'MultiChoice'
         Problem = 'Problem'
-        
+
     class Difficulty(models.TextChoices):
         VeryEasy = 'VeryEasy'
         Easy = 'Easy'
@@ -65,15 +64,16 @@ class Problem(models.Model):
         HighSchoolFirstHalf = "HighSchoolFirstHalf"
         HighSchoolSecondHalf = "HighSchoolSecondHalf"
 
-    copied_from = models.ForeignKey('Problem', null=True, blank=True, on_delete=models.SET_NULL, verbose_name='کپی شده از', related_name='copies')
-    
+    copied_from = models.ForeignKey('Problem', null=True, blank=True, on_delete=models.SET_NULL,
+                                    verbose_name='کپی شده از', related_name='copies')
+
     title = models.CharField(max_length=100, default='بدون عنوان', verbose_name='عنوان')
-    
+
     topics = models.ManyToManyField(Topic, verbose_name='موضوع(ها)', blank=True, related_name='problems')
     subtopics = models.ManyToManyField(Subtopic, verbose_name='زیر موضوع(ها)', blank=True, related_name='problems')
     source = models.ForeignKey(Source, blank=True, null=True, on_delete=models.SET_NULL,
-                                verbose_name='منبع', related_name='problems')
-    
+                               verbose_name='منبع', related_name='problems')
+
     difficulty = models.CharField(max_length=20, choices=Difficulty.choices, verbose_name='سختی',
                                   default=Difficulty.Medium)
     grade = models.CharField(
@@ -83,18 +83,20 @@ class Problem(models.Model):
         verbose_name='پایه تحصیلی'
     )
     is_checked = models.BooleanField(default=False, verbose_name='آیا بررسی شده؟')
-    
-    problem_type = models.CharField(max_length=20, choices=Type.choices, default=Type.DescriptiveProblem, verbose_name='نوع')
-    title = models.CharField(max_length=100, verbose_name='عنوان')
+
+    problem_type = models.CharField(max_length=20, choices=Type.choices, default=Type.DescriptiveProblem,
+                                    verbose_name='نوع')
+
     author = models.ForeignKey(BankAccount, on_delete=models.CASCADE, verbose_name='نویسنده', related_name='problems')
-    
+
     text = models.TextField(verbose_name='متن')
     publish_date = models.DateTimeField(default=timezone.now, null=True, blank=True, verbose_name='زمان انتشار')
-    last_change_date = models.DateTimeField(default=timezone.now, null=True, blank=True, verbose_name='زمان آخرین تغییر')
+    last_change_date = models.DateTimeField(default=timezone.now, null=True, blank=True,
+                                            verbose_name='زمان آخرین تغییر')
 
     is_private = models.BooleanField(default=True, verbose_name='آیا خصوصی است؟')
     upvote_count = models.IntegerField(default=0, verbose_name='تعداد آرای مثبت')
-    
+
     def __str__(self):
         return f'{self.title} ({self.problem_type}، ' \
                f'{self.difficulty})'
@@ -104,10 +106,14 @@ class Problem(models.Model):
 
 class ShortAnswerProblem(Problem):
     answer = models.OneToOneField('ShortAnswer', null=True, on_delete=models.SET_NULL, unique=True,
-                                   related_name='problem', verbose_name='پاسخ صحیح')
+                                  related_name='problem', verbose_name='پاسخ صحیح')
+
+
 class DescriptiveProblem(Problem):
     answer = models.OneToOneField('DescriptiveAnswer', null=True, blank=True, on_delete=models.SET_NULL, unique=True,
-                                   related_name='problem', verbose_name='پاسخ صحیح')
+                                  related_name='problem', verbose_name='پاسخ صحیح')
+
+
 # class MultiChoiceProblem(Problem):
 #     answer = models.OneToOneField('MultiChoiceAnswer', null=True, on_delete=models.SET_NULL, unique=True,
 #                                    related_name='problem', verbose_name='پاسخ صحیح')
@@ -118,14 +124,17 @@ class Answer(models.Model):
         DescriptiveAnswer = 'DescriptiveAnswer'
         # MultiChoiceAnswer = 'MultiChoiceAnswer'
 
-    answer_type = models.CharField(max_length=20, choices=Type.choices, default=Type.DescriptiveAnswer, verbose_name='نوع')
+    answer_type = models.CharField(max_length=20, choices=Type.choices, default=Type.DescriptiveAnswer,
+                                   verbose_name='نوع')
     objects = InheritanceManager()
 
     class Meta:
         abstract = True
 
+
 class ShortAnswer(Answer):
     text = models.TextField(verbose_name='متن')
+
 
 class DescriptiveAnswer(Answer):
     text = models.TextField(verbose_name='متن')
@@ -143,8 +152,10 @@ class UploadFileAnswer(Answer):
 class Guidance(models.Model):
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, verbose_name='مسئله', related_name='guidances')
     text = models.TextField(verbose_name='متن')
-    priority = models.IntegerField(default=1, null=True, blank=True, verbose_name='اولویت') #maybe unusable better impelement exist!
-    
+    priority = models.IntegerField(default=1, null=True, blank=True,
+                                   verbose_name='اولویت')  # maybe unusable better impelement exist!
+
+
 class BaseSubmit(models.Model):
     class Status(models.TextChoices):
         Received = 'Received'
@@ -155,11 +166,11 @@ class BaseSubmit(models.Model):
     respondents = models.ManyToManyField(BankAccount, verbose_name='پاسخ دهنده (ها)', related_name='%(class)s')
     received_at = models.DateTimeField(default=timezone.now, verbose_name='تاریخ دریافت مسئله')
     status = models.CharField(max_length=20, default=Status.Received,
-                                     choices=Status.choices, verbose_name='وضعیت تصحیح')
+                              choices=Status.choices, verbose_name='وضعیت تصحیح')
     delivered_at = models.DateTimeField(null=True, verbose_name='تاریخ دریافت پاسخ')
     judged_at = models.DateTimeField(null=True, verbose_name='تاریخ تصحیح')
     mark = models.IntegerField(default=0, verbose_name='نمره')
-    #event!!
+    # event!!
 
     objects = InheritanceManager()
 
@@ -168,7 +179,6 @@ class BaseSubmit(models.Model):
             self.author.username, self.problem.title, self.status
         )
 
-
     class Meta:
         abstract = True
 
@@ -176,14 +186,14 @@ class BaseSubmit(models.Model):
     
 class AutoCheckSubmit(BaseSubmit):
     answer = models.OneToOneField('ShortAnswer', null=True, on_delete=models.SET_NULL, unique=True,
-                                   related_name='submit_answer', verbose_name='پاسخ')
-    
+                                  related_name='submit_answer', verbose_name='پاسخ')
+
     def check_answer(self):
         pass
         # is_correct = False
         # try:
         #     is_correct = self.answer.text == self.problem.answer.text
-            
+
         # except ValueError:
         #     logger.warn('Type mismatch for %s' % self) #is it true log?
         # selfstatus = BaseSubmit.Status. if is_correct else BaseSubmit.SubmitStatus.Wrong

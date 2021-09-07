@@ -7,10 +7,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 AUTH_USER_MODEL = 'Account.User'
 
+
 def get_environment_var(var_name, default, prefixed=True):
     if prefixed:
         var_name = 'GAME_BACKEND_%s' % var_name
     return os.getenv(var_name, default)
+
 
 def rel(x):
     return Path.joinpath(BASE_DIR, x)
@@ -38,7 +40,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'Account',
     'Game',
-    'competition',
     'problembank',
     'corsheaders',
     'rest_framework',
