@@ -1,11 +1,11 @@
 from django.db.models import base
+from django.http.response import ResponseHeaders
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
 import sys
 from .models import *
 from django.db import transaction
 import json
-
 
 
 class SourceSerializer(serializers.ModelSerializer):
@@ -81,6 +81,11 @@ class ShortAnswerProblemSerializer(serializers.ModelSerializer):
     class Meta:
         model = ShortAnswerProblem
         fields = '__all__'
+        extra_kwargs = {'author': {'read_only': True},
+                        'publish_date': {'read_only': True},
+                        'last_change_date': {'read_only': True},
+                        'upvote_count': {'read_only': True},
+                        }
 
     @transaction.atomic
     def create(self, validated_data):
@@ -93,6 +98,9 @@ class ShortAnswerProblemSerializer(serializers.ModelSerializer):
         instance.topics.set(topics_data)
         instance.subtopics.set(subtopics_data)
         instance.answer = answer
+        instance.publish_date = timezone.now()
+        instance.last_change_date = timezone.now()
+        instance.upvote_count = 0
         instance.save()
         
         
@@ -102,12 +110,16 @@ class ShortAnswerProblemSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         ShortAnswer.objects.filter(id=instance.answer.id).update(**validated_data.pop('answer'))
         answer = ShortAnswer.objects.filter(id=instance.answer.id)[0]
+        answer.answer_type = 'ShortAnswer'
+        answer.save()
         instance.answer = answer    
         instance.topics.set(validated_data.pop('topics'))
         instance.subtopics.set(validated_data.pop('subtopics'))
         instance.save()
         ShortAnswerProblem.objects.filter(id=instance.id).update(**validated_data)
         instance = ShortAnswerProblem.objects.filter(id=instance.id)[0]
+        instance.last_change_date = timezone.now()
+        instance.save()
         return instance
 
 
@@ -116,6 +128,12 @@ class DescriptiveProblemSerializer(serializers.ModelSerializer):
     class Meta:
         model = DescriptiveProblem
         fields = '__all__'
+        extra_kwargs = {'author': {'read_only': True},
+                        'publish_date': {'read_only': True},
+                        'last_change_date': {'read_only': True},
+                        'upvote_count': {'read_only': True},
+                        }
+
 
     @transaction.atomic
     def create(self, validated_data):
@@ -128,20 +146,27 @@ class DescriptiveProblemSerializer(serializers.ModelSerializer):
         instance.topics.set(topics_data)
         instance.subtopics.set(subtopics_data)
         instance.answer = answer
+        instance.publish_date = timezone.now()
+        instance.last_change_date = timezone.now()
+        instance.upvote_count = 0
         instance.save()
-        
+    
         return instance
 
     @transaction.atomic
     def update(self, instance, validated_data):
         DescriptiveAnswer.objects.filter(id=instance.answer.id).update(**validated_data.pop('answer'))
         answer = DescriptiveAnswer.objects.filter(id=instance.answer.id)[0]
+        answer.answer_type = 'DescriptiveAnswer'
+        answer.save()
         instance.answer = answer    
         instance.topics.set(validated_data.pop('topics'))
         instance.subtopics.set(validated_data.pop('subtopics'))
         instance.save()
         DescriptiveProblem.objects.filter(id=instance.id).update(**validated_data)
         instance = DescriptiveProblem.objects.filter(id=instance.id)[0]
+        instance.last_change_date = timezone.now()
+        instance.save()
         return instance
     
 
@@ -179,6 +204,11 @@ class BankAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = BankAccount
         fields = '__all__'
+
+class PublicBankAccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BankAccount
+        exclude = ['phone_number', 'email', 'user']
 
 class ProblemGroupSerializer(serializers.ModelSerializer):
     problems = ProblemSerializer(many=True, required=False)
@@ -219,13 +249,13 @@ class ProblemGroupSerializerWithoutProblems(serializers.ModelSerializer):
 
 
 class EventSerializer(serializers.ModelSerializer):
-    # mentors = BankAccountSerializer(many=True, required=False)
-    # prticipants = BankAccountSerializer(many=True, required=False)
     problem_groups = ProblemGroupSerializerWithoutProblems(many=True, required=False)
 
     class Meta:
         model = Event
         fields = '__all__'
+        extra_kwargs = {'owner': {'read_only': True}}
+
 
     def create(self, validated_data):
         mentors_data = validated_data.pop('mentors')

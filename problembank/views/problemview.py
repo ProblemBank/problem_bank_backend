@@ -10,28 +10,46 @@ from rest_framework.decorators import api_view, permission_classes
 from problembank.models import *
 from rest_framework import permissions
 # from problembank.views import permissions as customPermissions
-from problembank.serializers import ProblemSerializer
-
+from problembank.serializers import ProblemSerializer, DescriptiveProblemSerializer, ShortAnswerProblemSerializer, ShortAnswerProblemSerializer
+from django.utils import timezone
 import sys
 
 class ProblemView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixins.ListModelMixin,
                    mixins.UpdateModelMixin, mixins.DestroyModelMixin):
     #permission_classes = [permissions.IsAuthenticated, customPermissions.MentorPermission, ]
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
     queryset = Problem.objects.all().select_subclasses()
     serializer_class = ProblemSerializer
 
     @transaction.atomic
     def get_serializer_class(self):
-        
+        print(self.request.user, self.request.method)
         if self.request.method == 'POST' or self.request.method == 'PATCH':
             try:
                 return ProblemSerializer.get_serializer(getattr(sys.modules[__name__],\
                     self.request.data['problem_type']))
-            except:
-                pass
+            except Exception as e:
+                print(e)
         instance = Problem.objects.filter(pk=self.kwargs['pk'])[0]
         return ProblemSerializer.get_serializer(getattr(sys.modules[__name__],\
                 instance.problem_type))
 
+    # @transaction.atomic
+    # def create(self, request, *args, **kwargs):
+    #     return super(ProblemView, self).create(request, *args, **kwargs)
 
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        data = request.data
+        data['is_checked'] = 'False'
+        serializerClass = self.get_serializer_class()
+        serializer = serializerClass(data=data)
+        if not serializer.is_valid(raise_exception=True):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        data = serializer.validated_data
+        data['author'] = request.user.account
+        instance = serializer.create(data)
+        instance.save()
+
+        response = serializer.to_representation(instance)
+        return Response(response)

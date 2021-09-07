@@ -1,6 +1,8 @@
+from problembank.models import BankAccount
+from problembank.serializers import BankAccountSerializer
 from rest_framework import serializers
 from .models import *
-
+from django.db import transaction
 
 # todo:
 # TokenObtainPairSerializer
@@ -8,13 +10,20 @@ from .models import *
 class CreateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username', 'phone_number', 'password')
+        fields = ('id', 'username', 'phone_number', 'password', 'first_name', 'last_name')
         extra_kwargs = {'password': {'write_only': True}}
 
+    @transaction.atomic
     def create(self, validated_data):
         user = User.objects.create(**validated_data)
         user.set_password(validated_data['password'])
         user.save()
+        bank_account_data = {}
+        bank_account_data['phone_number'] = validated_data['phone_number']
+        bank_account_data['first_name'] = validated_data['first_name']
+        bank_account_data['last_name'] = validated_data['last_name']
+        bank_account_data['user'] = user
+        BankAccount.objects.create(**bank_account_data)
         return user
 
 

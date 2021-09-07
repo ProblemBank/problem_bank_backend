@@ -17,7 +17,7 @@ class ProblemGroupView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixin
                     mixins.UpdateModelMixin):
     # permission_classes = [permissions.IsAuthenticated, customPermissions.MentorPermission,]
 
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
     queryset = ProblemGroup.objects.all()
     serializer_class = ProblemGroupSerializer    
 

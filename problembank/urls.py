@@ -1,3 +1,4 @@
+from problembank.views.accountview import AccountView
 from problembank.views.otherviews import add_problem_to_group
 from problembank.views.problemview import ProblemView
 from problembank.views.problemgroupview import ProblemGroupView
@@ -25,6 +26,8 @@ router.register('subtopic', SubtopicView)
 router.register('subtopic/<int:pk>', SubtopicView)
 router.register('source', SourceView)
 router.register('source/<int:pk>', SourceView)
+router.register('account', AccountView)
+router.register('account/<int:pk>', AccountView)
 urlpatterns = [
       path('addproblemtogroup/<int:ppk>/<int:gpk>', add_problem_to_group),
     
