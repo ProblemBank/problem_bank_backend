@@ -40,13 +40,7 @@ class ProblemGroupView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixin
             pass
         instance = serializer.create(data)
         instance.save()
-        # if 'widgets' in request.data:
-        #     widgets_data = request.data['widgets']
-        #     for widget_data in widgets_data:
-        #         widget = Widget.objects.get(id=widget_data)
-        #         widget.state = instance
-        #         widget.save()
-
+       
         response = serializer.to_representation(instance)
         return Response(response, status=status.HTTP_200_OK)
 

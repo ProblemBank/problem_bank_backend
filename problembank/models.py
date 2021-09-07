@@ -49,7 +49,6 @@ class Problem(models.Model):
         ShortAnswerProblem = 'ShortAnswerProblem'
         DescriptiveProblem = 'DescriptiveProblem'
         # MultiChoice = 'MultiChoice'
-        Problem = 'Problem'
 
     class Difficulty(models.TextChoices):
         VeryEasy = 'VeryEasy'
@@ -253,7 +252,7 @@ class Comment(models.Model):
 class ProblemGroup(models.Model):
     title = models.CharField(max_length=100, verbose_name='عنوان')
     event = models.ForeignKey('Event', on_delete=models.CASCADE, verbose_name='رویداد', related_name='problem_groups')
-    problems = models.ManyToManyField(Problem, verbose_name='مسئله(ها)', blank=True, related_name='groups')
+    problems = models.ManyToManyField(Problem, verbose_name='مسئله(ها)', related_name='groups')
     is_visible = models.BooleanField(default=True, verbose_name='آیا قابل نمایش است؟')
     
 
@@ -261,5 +260,5 @@ class Event(models.Model):
     title = models.CharField(max_length=100, verbose_name='عنوان')
     
     owner = models.ForeignKey(BankAccount, null=True, blank=True, on_delete=models.SET_NULL, verbose_name='صاحب', related_name='owned_events')
-    mentors = models.ManyToManyField(BankAccount, verbose_name='همیار(ها)', blank=True, related_name='editable_events')
-    prticipants = models.ManyToManyField(BankAccount, verbose_name='بیننده(ها)', blank=True, related_name='participated_events')
+    mentors = models.ManyToManyField(BankAccount, verbose_name='همیار(ها)', related_name='editable_events')
+    prticipants = models.ManyToManyField(BankAccount, verbose_name='بیننده(ها)', related_name='participated_events')

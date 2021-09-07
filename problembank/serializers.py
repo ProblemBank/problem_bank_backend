@@ -8,6 +8,21 @@ import json
 
 
 
+class SourceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Source
+        fields = '__all__'
+
+class TopicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Topic
+        fields = '__all__'
+
+class SubtopicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subtopic
+        fields = '__all__'
+
 class ShortAnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = ShortAnswer
@@ -125,11 +140,6 @@ class DescriptiveProblemSerializer(serializers.ModelSerializer):
         return instance
 
 
-class SimpleProblemSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Problem
-        fields = '__all__'
-
 class ProblemSerializer(serializers.ModelSerializer):
     @classmethod
     def get_serializer(cls, model):
@@ -138,9 +148,7 @@ class ProblemSerializer(serializers.ModelSerializer):
             return ShortAnswerProblemSerializer
         elif model == DescriptiveProblem:
             return DescriptiveProblemSerializer
-        elif model == Problem:  
-            return SimpleProblemSerializer
-      
+
     @transaction.atomic
     def create(self, validated_data):
         serializerClass = ProblemSerializer.get_serializer(getattr(sys.modules[__name__],\
@@ -174,44 +182,60 @@ class BankAccountSerializer(serializers.ModelSerializer):
 
 class ProblemGroupSerializer(serializers.ModelSerializer):
     problems = ProblemSerializer(many=True, required=False)
-    mentors = BankAccountSerializer(many=True, required=False)
-    viewers = BankAccountSerializer(many=True, required=False)
     
     class Meta:
         model = ProblemGroup
         fields = '__all__'
 
     def create(self, validated_data):
-        if 'problems' in validated_data:
-            validated_data.pop('problems')
-        if 'mentors' in validated_data:
-            validated_data.pop('mentors')
-        if 'viewers' in validated_data:
-            validated_data.pop('viewers')
-
+        problems_data = validated_data.pop('problems')
+        
         instance = ProblemGroup.objects.create(**validated_data)
+        instance.problems.set(problems_data)
+        instance.save()
         return instance
 
     def update(self, instance, validated_data):
-        validated_data.pop('problems')
-        validated_data.pop('mentors')
-        validated_data.pop('viewers')
-        validated_data.pop('fsm')
-        validated_data['pk'] = instance.pk
-        instance.delete()
-        instance = self.create(validated_data)
+        instance.problems.set(validated_data.pop('problems'))
+        instance.save()
+        ProblemGroup.objects.filter(id=instance.id).update(**validated_data)
+        instance = ProblemGroup.objects.filter(id=instance.id)[0]
         return instance
 
+    
 
 class ProblemGroupGetSerializer(serializers.ModelSerializer):
     problems = ProblemSerializer(many=True)
-    mentors = BankAccountSerializer(many=True)
-    viewers = BankAccountSerializer(many=True)
-
     class Meta:
         model = ProblemGroup
         fields = '__all__'
-   
+
+class EventSerializer(serializers.ModelSerializer):
+    mentors = BankAccountSerializer(many=True, required=False)
+    prticipants = BankAccountSerializer(many=True, required=False)
+    
+    class Meta:
+        model = Event
+        fields = '__all__'
+
+    def create(self, validated_data):
+        mentors_data = validated_data.pop('mentors')
+        prticipants_data = validated_data.pop('prticipants')
+        
+        instance = Event.objects.create(**validated_data)
+        instance.problems.set(mentors_data)
+        instance.problems.set(prticipants_data)
+        instance.save()
+        return instance
+
+    def update(self, instance, validated_data):
+        instance.problems.set(validated_data.pop('mentors'))
+        instance.problems.set(validated_data.pop('prticipants'))
+        instance.save()
+        Event.objects.filter(id=instance.id).update(**validated_data)
+        instance = Event.objects.filter(id=instance.id)[0]
+        return instance
+
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
