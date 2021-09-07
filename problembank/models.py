@@ -169,7 +169,8 @@ class BaseSubmit(models.Model):
     delivered_at = models.DateTimeField(null=True, verbose_name='تاریخ دریافت پاسخ')
     judged_at = models.DateTimeField(null=True, verbose_name='تاریخ تصحیح')
     mark = models.IntegerField(default=0, verbose_name='نمره')
-    # event!!
+    problem_group = models.ForeignKey('ProblemGroup', null=True, blank=True, on_delete=models.SET_NULL, verbose_name='دسته مسئله', related_name='%(class)s')
+    
 
     objects = InheritanceManager()
 
@@ -260,5 +261,5 @@ class Event(models.Model):
     title = models.CharField(max_length=100, verbose_name='عنوان')
     
     owner = models.ForeignKey(BankAccount, null=True, blank=True, on_delete=models.SET_NULL, verbose_name='صاحب', related_name='owned_events')
-    mentors = models.ManyToManyField(BankAccount, verbose_name='همیار(ها)', related_name='editable_events')
-    prticipants = models.ManyToManyField(BankAccount, verbose_name='بیننده(ها)', related_name='participated_events')
+    mentors = models.ManyToManyField(BankAccount, blank=True, verbose_name='همیار(ها)', related_name='editable_events')
+    prticipants = models.ManyToManyField(BankAccount, blank=True, verbose_name='بیننده(ها)', related_name='participated_events')

@@ -148,7 +148,6 @@ class DescriptiveProblemSerializer(serializers.ModelSerializer):
 class ProblemSerializer(serializers.ModelSerializer):
     @classmethod
     def get_serializer(cls, model):
-        print("who call me?")
         if model == ShortAnswerProblem:
             return ShortAnswerProblemSerializer
         elif model == DescriptiveProblem:
@@ -156,7 +155,6 @@ class ProblemSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
-        print("creat from me!!")
         serializerClass = ProblemSerializer.get_serializer(getattr(sys.modules[__name__],\
             validated_data['problem_type']))
         serializer = serializerClass(validated_data)
@@ -196,7 +194,6 @@ class ProblemGroupSerializer(serializers.ModelSerializer):
         instance.problems.set(problems_data)
         instance.save()
         return instance
-
     def update(self, instance, validated_data):
         instance.problems.set(validated_data.pop('problems'))
         instance.save()
@@ -204,12 +201,27 @@ class ProblemGroupSerializer(serializers.ModelSerializer):
         instance = ProblemGroup.objects.filter(id=instance.id)[0]
         return instance
 
+    def to_representation(self, instance):
+        problems_data = ProblemSerializer(instance.problems.select_subclasses(), context=self.context, many=True).data
+        data = ProblemGroupSerializerWithoutProblems(instance, context=self.context).data
+        data['problems'] = problems_data
+        print(problems_data)
+        return data
+
+class ProblemGroupSerializerWithoutProblems(serializers.ModelSerializer):
     
+    class Meta:
+        model = ProblemGroup
+        exclude = ('problems',)
+
+
+
+
 
 class EventSerializer(serializers.ModelSerializer):
-    mentors = BankAccountSerializer(many=True, required=False)
-    prticipants = BankAccountSerializer(many=True, required=False)
-    problem_groups = ProblemGroupSerializer(many=True, required=False)
+    # mentors = BankAccountSerializer(many=True, required=False)
+    # prticipants = BankAccountSerializer(many=True, required=False)
+    problem_groups = ProblemGroupSerializerWithoutProblems(many=True, required=False)
 
     class Meta:
         model = Event

@@ -19,8 +19,7 @@ class ProblemGroupView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixin
 
     permission_classes = [permissions.AllowAny]
     queryset = ProblemGroup.objects.all()
-    serializer_class = ProblemGroupSerializer
-
+    serializer_class = ProblemGroupSerializer    
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):

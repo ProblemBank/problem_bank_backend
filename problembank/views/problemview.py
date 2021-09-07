@@ -30,12 +30,8 @@ class ProblemView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Cre
                     self.request.data['problem_type']))
             except:
                 pass
-        # try:
-        print(self.kwargs)
         instance = Problem.objects.filter(pk=self.kwargs['pk'])[0]
-        print(getattr(sys.modules[__name__],\
-                instance.problem_type))
         return ProblemSerializer.get_serializer(getattr(sys.modules[__name__],\
                 instance.problem_type))
-        # except: 
-        #     print("!!!")
+
+
