@@ -174,7 +174,7 @@ class BaseSubmit(models.Model):
 
 
     
-class ShortAnswerSubmit(BaseSubmit):
+class AutoCheckSubmit(BaseSubmit):
     answer = models.OneToOneField('ShortAnswer', null=True, on_delete=models.SET_NULL, unique=True,
                                    related_name='submit_answer', verbose_name='پاسخ')
     
@@ -192,9 +192,9 @@ class ShortAnswerSubmit(BaseSubmit):
 
 
 class JudgeableSubmit(BaseSubmit):
-    text_answer = models.OneToOneField('DescriptiveAnswer', null=True, on_delete=models.SET_NULL, unique=True,
+    text_answer = models.OneToOneField('DescriptiveAnswer', blank=True, null=True, on_delete=models.SET_NULL, unique=True,
                                    related_name='submit_answer', verbose_name='پاسخ متنی')
-    upload_file_answer = models.OneToOneField('UploadFileAnswer', null=True, on_delete=models.SET_NULL, unique=True,
+    upload_file_answer = models.OneToOneField('UploadFileAnswer', blank=True, null=True, on_delete=models.SET_NULL, unique=True,
                                    related_name='submit_answer', verbose_name='پاسخ آپلودی')
     judge_note = models.CharField(max_length=200, null=True, blank=True, verbose_name='نظر مصحح')
 
@@ -236,17 +236,20 @@ class Comment(models.Model):
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='comments', verbose_name='مسئله')
     text = models.TextField(verbose_name='متن')
     author = models.ForeignKey(BankAccount, on_delete=models.CASCADE, verbose_name='نویسنده', related_name='comments')
-    publish_date = models.DateTimeField(default=timezone.now, null=True, blank=True, verbose_name='زمان انتشار')
+    publish_date = models.DateTimeField(default=timezone.now, verbose_name='زمان انتشار')
     def __str__(self):
         return f'{self.writer.first_name} {self.writer.last_name} | {self.problem.title}'
 
-class ProblemCategory(models.Model):
+class ProblemGroup(models.Model):
     title = models.CharField(max_length=100, verbose_name='عنوان')
-    problems = models.ManyToManyField(Problem, verbose_name='مسئله(ها)', blank=True, related_name='categories')
+    event = models.ForeignKey('Event', on_delete=models.CASCADE, verbose_name='رویداد', related_name='problem_groups')
+    problems = models.ManyToManyField(Problem, verbose_name='مسئله(ها)', blank=True, related_name='groups')
+    is_visible = models.BooleanField(default=True, verbose_name='آیا قابل نمایش است؟')
+    
 
-    owner = models.ForeignKey(BankAccount, null=True, on_delete=models.SET_NULL, verbose_name='صاحب', related_name='owned_categories')
-    mentors = models.ManyToManyField(BankAccount, verbose_name='همیار(ها)', blank=True, related_name='editable_categories')
-    viewers = models.ManyToManyField(BankAccount, verbose_name='بیننده(ها)', blank=True, related_name='observable_categories')
-    #roles
-    # def get_random_problem():
-    #     pass
+class Event(models.Model):
+    title = models.CharField(max_length=100, verbose_name='عنوان')
+    
+    owner = models.ForeignKey(BankAccount, null=True, blank=True, on_delete=models.SET_NULL, verbose_name='صاحب', related_name='owned_events')
+    mentors = models.ManyToManyField(BankAccount, verbose_name='همیار(ها)', blank=True, related_name='editable_events')
+    prticipants = models.ManyToManyField(BankAccount, verbose_name='بیننده(ها)', blank=True, related_name='participated_events')

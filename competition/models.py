@@ -2,7 +2,7 @@ from django.db import models
 from Account.models import User
 from model_utils.managers import InheritanceManager
 from django.utils import timezone
-from problembank.models import Problem, ShortAnswer, ShortAnswerSubmit
+from problembank.models import Problem
 
 
 

@@ -172,13 +172,13 @@ class BankAccountSerializer(serializers.ModelSerializer):
         model = BankAccount
         fields = '__all__'
 
-class ProblemCategorySerializer(serializers.ModelSerializer):
+class ProblemGroupSerializer(serializers.ModelSerializer):
     problems = ProblemSerializer(many=True, required=False)
     mentors = BankAccountSerializer(many=True, required=False)
     viewers = BankAccountSerializer(many=True, required=False)
     
     class Meta:
-        model = ProblemCategory
+        model = ProblemGroup
         fields = '__all__'
 
     def create(self, validated_data):
@@ -189,7 +189,7 @@ class ProblemCategorySerializer(serializers.ModelSerializer):
         if 'viewers' in validated_data:
             validated_data.pop('viewers')
 
-        instance = ProblemCategory.objects.create(**validated_data)
+        instance = ProblemGroup.objects.create(**validated_data)
         return instance
 
     def update(self, instance, validated_data):
@@ -203,13 +203,13 @@ class ProblemCategorySerializer(serializers.ModelSerializer):
         return instance
 
 
-class ProblemCategoryGetSerializer(serializers.ModelSerializer):
+class ProblemGroupGetSerializer(serializers.ModelSerializer):
     problems = ProblemSerializer(many=True)
     mentors = BankAccountSerializer(many=True)
     viewers = BankAccountSerializer(many=True)
 
     class Meta:
-        model = ProblemCategory
+        model = ProblemGroup
         fields = '__all__'
    
 
