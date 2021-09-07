@@ -2,11 +2,12 @@ from django.db import models
 from Account.models import User
 from model_utils.managers import InheritanceManager
 from django.utils import timezone
-from problembank.models import ShortAnswerProblem, ShortAnswer, ShortAnswerSubmit
+from problembank.models import Problem, ShortAnswer, ShortAnswerSubmit
 
 
 
-class GamingShortAnswerProblem(ShortAnswerProblem):
+class GamingProblem(models.Model):
+    problem = models.ForeignKey(Problem, on_delete=models.CASCADE, verbose_name='مسئله', related_name='gaming_problems')
     cost = models.IntegerField(default=0, verbose_name='هزینه‌ی دریافت') 
     reward = models.IntegerField(default=0, verbose_name='پاداش حل‌کردن')
 

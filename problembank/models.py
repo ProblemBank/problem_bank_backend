@@ -10,7 +10,6 @@ class BankAccount(models.Model):
     last_name = models.CharField(max_length=30, default='None')
     phone_number = models.CharField(max_length=15, blank=False, null=False)
     email = models.CharField(max_length=200, blank=False, null=False)
-    
     class Position(models.TextChoices):
         Admin = 'Admin'
         Member = 'Member'
@@ -44,51 +43,6 @@ class Subtopic(models.Model):
 
 
 
-class BaseProblem(models.Model):
-    class Difficulty(models.TextChoices):
-        VeryEasy = 'VeryEasy'
-        Easy = 'Easy'
-        Medium = 'Medium'
-        Hard = 'Hard'
-        VeryHard = 'VeryHard'
-
-    
-    class Grade(models.IntegerChoices):
-        First = 1
-        Second = 2
-        Third = 3
-        Forth = 4
-        Fifth = 5
-        Sixth = 6
-        Seventh = 7
-        Eight = 8
-        Ninth = 9
-        Tenth = 10
-        Eleventh = 11
-        Twelfth = 12
-
-    title = models.CharField(max_length=100, default='بدون عنوان', verbose_name='عنوان')
-    
-    topics = models.ManyToManyField(Topic, verbose_name='موضوع(ها)', blank=True, related_name='problems')
-    subtopics = models.ManyToManyField(Subtopic, verbose_name='زیر موضوع(ها)', blank=True, related_name='problems')
-    source = models.ForeignKey(Source, blank=True, null=True, on_delete=models.SET_NULL,
-                                verbose_name='منبع', related_name='problems')
-    
-    difficulty = models.CharField(max_length=20, choices=Difficulty.choices, verbose_name='سختی',
-                                  default=Difficulty.Medium)
-    suitable_for_over = models.IntegerField(
-        choices=Grade.choices,
-        default=Grade.First,
-        verbose_name='پایین ترین پایه مناسب'
-    )
-    suitable_for_under  = models.IntegerField(
-        choices=Grade.choices,
-        default=Grade.Twelfth,
-        verbose_name='بالاترین پایه مناسب'
-    )
-    is_checked = models.BooleanField(default=False, verbose_name='آیا بررسی شده؟')
-    
-    # number of problems or max upvoteCount for rating
 
 
 class Problem(models.Model):
@@ -98,27 +52,52 @@ class Problem(models.Model):
         # MultiChoice = 'MultiChoice'
         Problem = 'Problem'
         
+    class Difficulty(models.TextChoices):
+        VeryEasy = 'VeryEasy'
+        Easy = 'Easy'
+        Medium = 'Medium'
+        Hard = 'Hard'
+        VeryHard = 'VeryHard'
+
+    class Grade(models.TextChoices):
+        ElementarySchoolFirstHalf = "ElementarySchoolFirstHalf"
+        ElementarySchoolSecondHalf = "ElementarySchoolSecondHalf"
+        HighSchoolFirstHalf = "HighSchoolFirstHalf"
+        HighSchoolSecondHalf = "HighSchoolSecondHalf"
+
+    copied_from = models.ForeignKey('Problem', null=True, blank=True, on_delete=models.SET_NULL, verbose_name='کپی شده از', related_name='copies')
     
-    base_problem = models.ForeignKey(BaseProblem, on_delete=models.CASCADE, related_name='%(class)s', verbose_name='مسئله')
+    title = models.CharField(max_length=100, default='بدون عنوان', verbose_name='عنوان')
+    
+    topics = models.ManyToManyField(Topic, verbose_name='موضوع(ها)', blank=True, related_name='problems')
+    subtopics = models.ManyToManyField(Subtopic, verbose_name='زیر موضوع(ها)', blank=True, related_name='problems')
+    source = models.ForeignKey(Source, blank=True, null=True, on_delete=models.SET_NULL,
+                                verbose_name='منبع', related_name='problems')
+    
+    difficulty = models.CharField(max_length=20, choices=Difficulty.choices, verbose_name='سختی',
+                                  default=Difficulty.Medium)
+    grade = models.CharField(
+        max_length=30,
+        choices=Grade.choices,
+        default=Grade.HighSchoolSecondHalf,
+        verbose_name='پایه تحصیلی'
+    )
+    is_checked = models.BooleanField(default=False, verbose_name='آیا بررسی شده؟')
+    
     problem_type = models.CharField(max_length=20, choices=Type.choices, default=Type.DescriptiveProblem, verbose_name='نوع')
     title = models.CharField(max_length=100, verbose_name='عنوان')
-    author = models.ForeignKey(BankAccount, on_delete=models.CASCADE, verbose_name='نویسنده', related_name='%(class)s')
+    author = models.ForeignKey(BankAccount, on_delete=models.CASCADE, verbose_name='نویسنده', related_name='problems')
     
     text = models.TextField(verbose_name='متن')
     publish_date = models.DateTimeField(default=timezone.now, null=True, blank=True, verbose_name='زمان انتشار')
     last_change_date = models.DateTimeField(default=timezone.now, null=True, blank=True, verbose_name='زمان آخرین تغییر')
 
     is_private = models.BooleanField(default=True, verbose_name='آیا خصوصی است؟')
-    upvoteCount = models.IntegerField(default=0, verbose_name='تعداد آرای مثبت') #camle
+    upvote_count = models.IntegerField(default=0, verbose_name='تعداد آرای مثبت')
     
     def __str__(self):
         return f'{self.title} ({self.problem_type}، ' \
-               f'{self.base_problem.difficulty})'
-
-    def delete(self):
-        if len(Problem.objects.filter(base_problem=self.base_problem)) == 1:
-            self.base_problem.delete()
-        super(Problem, self).delete()
+               f'{self.difficulty})'
 
     objects = InheritanceManager()
 
@@ -254,7 +233,7 @@ class JudgeableSubmit(BaseSubmit):
 
 
 class Comment(models.Model):
-    base_problem = models.ForeignKey(BaseProblem, on_delete=models.CASCADE, related_name='comments', verbose_name='مسئله')
+    problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='comments', verbose_name='مسئله')
     text = models.TextField(verbose_name='متن')
     author = models.ForeignKey(BankAccount, on_delete=models.CASCADE, verbose_name='نویسنده', related_name='comments')
     publish_date = models.DateTimeField(default=timezone.now, null=True, blank=True, verbose_name='زمان انتشار')

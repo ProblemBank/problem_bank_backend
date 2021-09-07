@@ -59,13 +59,8 @@ class AnswerSerializer(serializers.ModelSerializer):
         return serializer.update(instance, validated_data)
 
 
-class BaseProblemSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = BaseProblem
-        fields = '__all__'
 
 class ShortAnswerProblemSerializer(serializers.ModelSerializer):
-    base_problem = BaseProblemSerializer()
     answer = ShortAnswerSerializer()
 
     class Meta:
@@ -74,10 +69,6 @@ class ShortAnswerProblemSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
-        base_problem_data = validated_data.pop('base_problem')
-        baseProblemSerializer = BaseProblemSerializer(data=base_problem_data)
-        baseProblemSerializer.is_valid(raise_exception=True)
-        validated_data['base_problem'] = baseProblemSerializer.create(baseProblemSerializer.validated_data)
         
         answer_data = validated_data.pop('answer')
         instance = ShortAnswerProblem.objects.create(**validated_data)
@@ -103,7 +94,6 @@ class ShortAnswerProblemSerializer(serializers.ModelSerializer):
 
 
 class DescriptiveProblemSerializer(serializers.ModelSerializer):
-    base_problem = BaseProblemSerializer()
     answer = DescriptiveAnswerSerializer(required=False)
     class Meta:
         model = DescriptiveProblem
@@ -111,10 +101,6 @@ class DescriptiveProblemSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
-        base_problem_data = validated_data.pop('base_problem')
-        baseProblemSerializer = BaseProblemSerializer(data=base_problem_data)
-        baseProblemSerializer.is_valid(raise_exception=True)
-        validated_data['base_problem'] = baseProblemSerializer.create(baseProblemSerializer.validated_data)
         
         answer_data = validated_data.pop('answer')
         instance = DescriptiveProblem.objects.create(**validated_data)
@@ -140,14 +126,11 @@ class DescriptiveProblemSerializer(serializers.ModelSerializer):
 
 
 class SimpleProblemSerializer(serializers.ModelSerializer):
-    base_problem = BaseProblemSerializer()
     class Meta:
         model = Problem
-        exclude = ('base_problem',)
-
+        fields = '__all__'
 
 class ProblemSerializer(serializers.ModelSerializer):
-    base_problem = BaseProblemSerializer()
     @classmethod
     def get_serializer(cls, model):
         print(model)
@@ -163,12 +146,7 @@ class ProblemSerializer(serializers.ModelSerializer):
         serializerClass = ProblemSerializer.get_serializer(getattr(sys.modules[__name__],\
             validated_data['problem_type']))
         serializer = serializerClass(validated_data)
-
-        base_problem_data = validated_data.pop('base_problem')
-        baseProblemSerializer = BaseProblemSerializer(data=base_problem_data)
-        baseProblemSerializer.is_valid(raise_exception=True)
-        validated_data['base_problem'] = baseProblemSerializer.create(baseProblemSerializer.validated_data)
-        
+ 
         return serializer.create(validated_data)
 
     @transaction.atomic
@@ -178,12 +156,6 @@ class ProblemSerializer(serializers.ModelSerializer):
         serializer = serializerClass(validated_data)
 
         validated_data['pk'] = instance.pk
-        try:
-            base_problem = instance.base_problem
-            validated_data['base_problem']['pk'] = base_problem.pk
-            base_problem.delete()
-        except:
-            pass
         instance.delete()
         instance = self.create(validated_data)
         return instance
@@ -332,10 +304,10 @@ def create_problem_with_global_problem_json(problem_json_object):
     base_problem_data['subtopics'] = [create_or_get_subtopic(subtopic['topic'], subtopic['title']).pk for subtopic in base_problem_data['subtopics']]
     base_problem_data['source'] = create_or_get_source_pk(base_problem_data['source'])
 
-    baseProblemSerializer = BaseProblemSerializer(data=base_problem_data)
-    baseProblemSerializer.is_valid(raise_exception=True)
+    # baseProblemSerializer = BaseProblemSerializer(data=base_problem_data)
+    # baseProblemSerializer.is_valid(raise_exception=True)
 
-    problem_json_object['base_problem'] = baseProblemSerializer.create(baseProblemSerializer.validated_data).pk
+    # problem_json_object['base_problem'] = baseProblemSerializer.create(baseProblemSerializer.validated_data).pk
     problem_json_object['author'] = create_or_get_account(problem_json_object['author'])
     problem_json_object['answer'] = json.loads('{"text":"بدون پاسخ"}')
     descriptiveProblemSerializer = DescriptiveProblemSerializer(data=problem_json_object)
