@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     'problembank',
     'corsheaders',
     'rest_framework',
-    'auction.apps.AuctionConfig',
 ]
 
 REST_FRAMEWORK = {

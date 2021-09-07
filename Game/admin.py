@@ -3,23 +3,9 @@ import csv
 from django.contrib import admin
 from django.contrib.auth.hashers import make_password
 from Account.models import User
-from Game.models import Game, Player, Subject, \
-    Answer, Problem
-from auction.models import Auction
+from Game.models import Game, Player
 
 admin.site.register(Game)
-
-
-# with open(path) as f:
-#     reader = csv.reader(f)
-#     for row in reader:
-#         _, created = Teacher.objects.get_or_create(
-#             first_name=row[0],
-#             last_name=row[1],
-#             middle_name=row[2],
-#         )
-#         # creates a tuple of the new object or
-#         # current object and a boolean of if it was created
 
 
 def import_from_csv(a, b, c):
@@ -50,46 +36,3 @@ class PlayerAdmin(admin.ModelAdmin):
     actions = [import_from_csv]
 
     list_display = ('name', 'game', 'score', 'id')
-
-
-# @admin.register(Transaction)
-# class TransactionAdmin(admin.ModelAdmin):
-#     list_display = ('title', 'player', 'amount')
-#     actions = [girls_scores]
-#     girls_scores.short_description = 'هندل‌کردن امتیاز دخترها'
-
-
-# @admin.register(Hint)
-# class HintAdmin(admin.ModelAdmin):
-#     list_display = ('answer', 'is_answered')
-
-
-def fix_hard_cost(a, b, c):
-    answers = Answer.objects.all()
-    for answer in answers:
-        buyer = answer.player
-        auction = Auction.objects.filter(buyer=buyer, problem=answer.problem)
-        if not auction and answer.problem.difficulty == 'HARD' and answer.mark == 3:
-            answer.mark = 6
-            answer.save()
-            buyer.score += 3
-            buyer.save()
-
-
-@admin.register(Answer)
-class AnswerAdmin(admin.ModelAdmin):
-    fix_hard_cost.short_description = 'رفع باگ عجیب'
-    actions = [fix_hard_cost]
-
-    list_display = ('player', 'problem', 'status', 'mark')
-
-
-@admin.register(Subject)
-class SubjectAdmin(admin.ModelAdmin):
-    list_display = ['title']
-
-
-@admin.register(Problem)
-class BaseProblemAdmin(admin.ModelAdmin):
-    list_display = ['title', 'type', 'subject', 'difficulty', 'cost', 'reward', 'answer']
-    list_filter = ('subject',)
