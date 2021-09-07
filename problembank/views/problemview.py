@@ -23,6 +23,7 @@ class ProblemView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Cre
 
     @transaction.atomic
     def get_serializer_class(self):
+        
         if self.request.method == 'POST' or self.request.method == 'PATCH':
             try:
                 return ProblemSerializer.get_serializer(getattr(sys.modules[__name__],\

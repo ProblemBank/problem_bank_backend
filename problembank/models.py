@@ -104,12 +104,12 @@ class Problem(models.Model):
 
 
 class ShortAnswerProblem(Problem):
-    answer = models.OneToOneField('ShortAnswer', null=True, on_delete=models.SET_NULL, unique=True,
+    answer = models.OneToOneField('ShortAnswer', on_delete=models.CASCADE, unique=True,
                                   related_name='problem', verbose_name='پاسخ صحیح')
 
 
 class DescriptiveProblem(Problem):
-    answer = models.OneToOneField('DescriptiveAnswer', null=True, blank=True, on_delete=models.SET_NULL, unique=True,
+    answer = models.OneToOneField('DescriptiveAnswer', on_delete=models.CASCADE, unique=True,
                                   related_name='problem', verbose_name='پاسخ صحیح')
 
 
@@ -152,7 +152,7 @@ class Guidance(models.Model):
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, verbose_name='مسئله', related_name='guidances')
     text = models.TextField(verbose_name='متن')
     priority = models.IntegerField(default=1, null=True, blank=True,
-                                   verbose_name='اولویت')  # maybe unusable better impelement exist!
+                                   verbose_name='اولویت')
 
 
 class BaseSubmit(models.Model):

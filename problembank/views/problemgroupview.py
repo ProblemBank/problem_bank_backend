@@ -8,7 +8,7 @@ from rest_framework import mixins
 
 
 from problembank.models import ProblemGroup
-from problembank.serializers import ProblemGroupSerializer, ProblemGroupGetSerializer
+from problembank.serializers import ProblemGroupSerializer
 
 from rest_framework import permissions
 
@@ -21,10 +21,6 @@ class ProblemGroupView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixin
     queryset = ProblemGroup.objects.all()
     serializer_class = ProblemGroupSerializer
 
-    def get_serializer_class(self):
-        return ProblemGroupGetSerializer \
-            if self.request.method == 'GET' \
-            else ProblemGroupSerializer
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):

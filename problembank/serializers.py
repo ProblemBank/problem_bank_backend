@@ -84,27 +84,30 @@ class ShortAnswerProblemSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
-        
+        topics_data = validated_data.pop('topics')
+        subtopics_data = validated_data.pop('subtopics') 
         answer_data = validated_data.pop('answer')
-        instance = ShortAnswerProblem.objects.create(**validated_data)
         answer_data['answer_type'] = 'ShortAnswer'
         answer = ShortAnswer.objects.create(**answer_data)
-        answer.problem = instance
-        answer.save()
-    
+        instance = ShortAnswerProblem.objects.create(**validated_data)
+        instance.topics.set(topics_data)
+        instance.subtopics.set(subtopics_data)
+        instance.answer = answer
+        instance.save()
+        
+        
         return instance
 
     @transaction.atomic
     def update(self, instance, validated_data):
-        validated_data['pk'] = instance.pk
-        try:
-            answer = ShortAnswerProblem.objects.filter(problem=instance)[0]
-            validated_data['answer']['pk'] = answer.pk
-            answer.delete()
-        except:
-            pass
-        instance.delete()
-        instance = self.create(validated_data)
+        ShortAnswer.objects.filter(id=instance.answer.id).update(**validated_data.pop('answer'))
+        answer = ShortAnswer.objects.filter(id=instance.answer.id)[0]
+        instance.answer = answer    
+        instance.topics.set(validated_data.pop('topics'))
+        instance.subtopics.set(validated_data.pop('subtopics'))
+        instance.save()
+        ShortAnswerProblem.objects.filter(id=instance.id).update(**validated_data)
+        instance = ShortAnswerProblem.objects.filter(id=instance.id)[0]
         return instance
 
 
@@ -116,34 +119,36 @@ class DescriptiveProblemSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
-        
+        topics_data = validated_data.pop('topics')
+        subtopics_data = validated_data.pop('subtopics') 
         answer_data = validated_data.pop('answer')
-        instance = DescriptiveProblem.objects.create(**validated_data)
         answer_data['answer_type'] = 'DescriptiveAnswer'
         answer = DescriptiveAnswer.objects.create(**answer_data)
-        answer.problem = instance
-        answer.save()
-    
+        instance = DescriptiveProblem.objects.create(**validated_data)
+        instance.topics.set(topics_data)
+        instance.subtopics.set(subtopics_data)
+        instance.answer = answer
+        instance.save()
+        
         return instance
 
     @transaction.atomic
     def update(self, instance, validated_data):
-        validated_data['pk'] = instance.pk
-        try:
-            answer = DescriptiveAnswer.objects.filter(problem=instance)[0]
-            validated_data['answer']['pk'] = answer.pk
-            answer.delete()
-        except:
-            pass
-        instance.delete()
-        instance = self.create(validated_data)
+        DescriptiveAnswer.objects.filter(id=instance.answer.id).update(**validated_data.pop('answer'))
+        answer = DescriptiveAnswer.objects.filter(id=instance.answer.id)[0]
+        instance.answer = answer    
+        instance.topics.set(validated_data.pop('topics'))
+        instance.subtopics.set(validated_data.pop('subtopics'))
+        instance.save()
+        DescriptiveProblem.objects.filter(id=instance.id).update(**validated_data)
+        instance = DescriptiveProblem.objects.filter(id=instance.id)[0]
         return instance
-
+    
 
 class ProblemSerializer(serializers.ModelSerializer):
     @classmethod
     def get_serializer(cls, model):
-        print(model)
+        print("who call me?")
         if model == ShortAnswerProblem:
             return ShortAnswerProblemSerializer
         elif model == DescriptiveProblem:
@@ -151,6 +156,7 @@ class ProblemSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
+        print("creat from me!!")
         serializerClass = ProblemSerializer.get_serializer(getattr(sys.modules[__name__],\
             validated_data['problem_type']))
         serializer = serializerClass(validated_data)
@@ -163,10 +169,6 @@ class ProblemSerializer(serializers.ModelSerializer):
             validated_data['problem_type']))
         serializer = serializerClass(validated_data)
 
-        validated_data['pk'] = instance.pk
-        instance.delete()
-        instance = self.create(validated_data)
-        return instance
         return serializer.update(instance, validated_data)
 
     def to_representation(self, instance):
@@ -204,16 +206,11 @@ class ProblemGroupSerializer(serializers.ModelSerializer):
 
     
 
-class ProblemGroupGetSerializer(serializers.ModelSerializer):
-    problems = ProblemSerializer(many=True)
-    class Meta:
-        model = ProblemGroup
-        fields = '__all__'
-
 class EventSerializer(serializers.ModelSerializer):
     mentors = BankAccountSerializer(many=True, required=False)
     prticipants = BankAccountSerializer(many=True, required=False)
-    
+    problem_groups = ProblemGroupSerializer(many=True, required=False)
+
     class Meta:
         model = Event
         fields = '__all__'
