@@ -243,7 +243,6 @@ class ProblemGroupSerializer(serializers.ModelSerializer):
         problems_data = ProblemSerializer(instance.problems.select_subclasses(), context=self.context, many=True).data
         data = ProblemGroupSerializerWithoutProblems(instance, context=self.context).data
         data['problems'] = problems_data
-        print(problems_data)
         return data
 
 class ProblemGroupSerializerWithoutProblems(serializers.ModelSerializer):
@@ -368,7 +367,6 @@ class JudgeableSubmitSerializer(serializers.ModelSerializer):
         # upload_file_answer_data['answer_type'] = 'UploadFileAnswer'
         # upload_file_answer = DescriptiveAnswer.objects.create(**upload_file_answer_data)
         
-        print(validated_data)
         instance = JudgeableSubmit.objects.create(**validated_data)
         instance.text_answer = text_answer
         # instance.upload_file_answer = upload_file_answer

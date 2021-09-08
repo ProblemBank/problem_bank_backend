@@ -1,8 +1,9 @@
 from django.urls import path
 from .views import *
+
 urlpatterns = [
-    path('<int:game_id>/player/', PlayerView.as_view(), name='get player info'),
-    path('<int:game_id>/problem/scoreboard/', ScoreboardView.as_view(), name='get all player problems'),
+    path('player/', PlayerView.as_view(), name='get player info'),
+    path('problem/scoreboard/', ScoreboardView.as_view(), name='get all player problems'),
 
     # path('<int:game_id>/subject/', SubjectView.as_view(), name='subjects'),
     # path('<int:game_id>/problem/', ProblemView.as_view(), name='get all player problems'),

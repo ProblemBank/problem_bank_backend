@@ -35,9 +35,9 @@ router.register('jugeablesubmit/<int:pk>', JudgeableSubmitView)
 router.register('autochecksubmit', AutoCheckSubmitView)
 router.register('autochecksubmit/<int:pk>', AutoCheckSubmitView)
 urlpatterns = [
-      path('addproblemtogroup/<int:pid>/<int:gid>', add_problem_to_group),
-      path('removeproblemfromgroup/<int:pid>/<int:gid>', remove_problem_from_group),
-      path('getproblemfromgroup/<int:gid>', get_problem_from_group),
+      path('addproblemtogroup/<int:pid>/<int:gid>/', add_problem_to_group),
+      path('removeproblemfromgroup/<int:pid>/<int:gid>/', remove_problem_from_group),
+      path('getproblemfromgroup/<int:gid>/', get_problem_from_group),
       path('getallproblems/', get_all_problems),
 ]
 
