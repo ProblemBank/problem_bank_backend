@@ -38,11 +38,22 @@ def get_random_problem_from_group(gid, account):
         return Response("چنین گروه مسئله ای وجود ندارد.",status=status.HTTP_400_BAD_REQUEST)
 
     problems = problem_group.problems.all().select_subclasses()
-    if len(AutoCheckSubmit.objects.all().select_subclasses().filter(problem_group=gid, respondents__in=[account])) > 0:
-        return Response("شما قبلا از این دسته مسئله دریافت کرده اید.",status=status.HTTP_400_BAD_REQUEST)
-    if len(JudgeableSubmit.objects.all().select_subclasses().filter(problem_group=gid, respondents__in=[account])) > 0:
-        return Response("شما قبلا از این دسته مسئله دریافت کرده اید.",status=status.HTTP_400_BAD_REQUEST)
-    
+    submit = None
+    try: 
+        submit = AutoCheckSubmit.objects.all().select_subclasses().filter(problem_group=gid, respondents__in=[account])[0]
+        submit = AutoCheckSubmitSerializer(submit).data
+    except:
+        pass
+    try: 
+        submit = JudgeableSubmit.objects.all().select_subclasses().filter(problem_group=gid, respondents__in=[account])[0]
+        submit = JudgeableSubmitSerializer(submit).data
+    except:
+        pass
+    if submit is not None:
+        if submit['status'] == 'Delivered':
+            return Response("شما قبلا از اینجا مسئله دریافت کرده اید و پاسخ آن را فرستاده اید.",status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(submit,status=status.HTTP_400_BAD_REQUEST)
     try:
         return problems.order_by('?')[0]
     except:

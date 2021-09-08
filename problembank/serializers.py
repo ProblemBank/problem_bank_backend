@@ -94,6 +94,7 @@ class ShortAnswerProblemSerializer(serializers.ModelSerializer):
         answer_data = validated_data.pop('answer')
         answer_data['answer_type'] = 'ShortAnswer'
         answer = ShortAnswer.objects.create(**answer_data)
+        validated_data['answer'] = answer
         instance = ShortAnswerProblem.objects.create(**validated_data)
         instance.topics.set(topics_data)
         instance.subtopics.set(subtopics_data)
@@ -142,6 +143,7 @@ class DescriptiveProblemSerializer(serializers.ModelSerializer):
         answer_data = validated_data.pop('answer')
         answer_data['answer_type'] = 'DescriptiveAnswer'
         answer = DescriptiveAnswer.objects.create(**answer_data)
+        validated_data['answer'] = answer
         instance = DescriptiveProblem.objects.create(**validated_data)
         instance.topics.set(topics_data)
         instance.subtopics.set(subtopics_data)
