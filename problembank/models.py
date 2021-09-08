@@ -175,9 +175,7 @@ class BaseSubmit(models.Model):
     objects = InheritanceManager()
 
     def __str__(self):
-        return 'Submit from %s for problem %s with status %s' % (
-            self.author.username, self.problem.title, self.status
-        )
+        return f'Submit for problem {self.problem.title} with status {self.status}' 
 
     class Meta:
         abstract = True
@@ -213,33 +211,6 @@ class JudgeableSubmit(BaseSubmit):
                                   null=True,
                                   blank=True, related_name='judged_problems', verbose_name='مصحح')
 
-    def save(self, *args, **kwargs):
-        pass
-        # # LONG TODO: fix here so not change every time
-        # # Call standard save
-        # super(JudgeableSubmit, self).save(*args, **kwargs)
-
-        # if not settings.TESTING and self.submitted_answer and len(self.submitted_answer.name) < 40:
-        #     initial_path = self.submitted_answer.path
-
-        #     # New path in the form eg '/images/uploadmodel/1/image.jpg'
-        #     dt = timezone.now()
-        #     r = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
-        #     new_n = '-'.join([r, dt.strftime('%H-%M-%S-%f'), os.path.basename(initial_path)])
-        #     new_name = 'answers/' + new_n
-        #     new_path = os.path.join(settings.MEDIA_ROOT, 'answers', new_n)
-
-        #     # Create dir if necessary and move file
-        #     if not os.path.exists(os.path.dirname(new_path)):
-        #         os.makedirs(os.path.dirname(new_path))
-
-        #     os.rename(initial_path, new_path)
-
-        #     # Update the image_file field
-        #     self.submitted_answer.name = new_name
-
-        #     # Save changes
-        #     super(JudgeableSubmit, self).save(*args, **kwargs)
 
 
 class Comment(models.Model):

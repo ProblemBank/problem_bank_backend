@@ -199,6 +199,12 @@ class ProblemSerializer(serializers.ModelSerializer):
         serializer = ProblemSerializer.get_serializer(instance.__class__)
         return serializer(instance, context=self.context).data
 
+    # @classmethod
+    # def get_problem_data(instance):
+    #     getattr(sys.modules[__name__], self.request.data['problem_type'])
+    #     serializer = ProblemSerializer.get_serializer(instance.__class__)
+    #     return serializer(instance, context=self.context).data
+
 
 class BankAccountSerializer(serializers.ModelSerializer):
     class Meta:
@@ -291,18 +297,18 @@ class AutoCheckSubmitSerializer(serializers.ModelSerializer):
         try:
             answer_data = validated_data.pop('answer')
         except:
-            answer_data = {}
-            answer_data['text'] = "بدون پاسخ"
+            pass
+        answer_data = {}
+        answer_data['text'] = "بدون پاسخ"
         answer_data['answer_type'] = 'ShortAnswer'
         answer = ShortAnswer.objects.create(**answer_data)
 
-        instance = JudgeableSubmit.objects.create(**validated_data)
+        instance = AutoCheckSubmit.objects.create(**validated_data)
         instance.answer = answer
         instance.received_at = timezone.now()
         instance.mark = 0
         instance.status = BaseSubmit.Status.Received
         instance.save()
-    
         return instance
 
     @transaction.atomic
@@ -342,22 +348,32 @@ class JudgeableSubmitSerializer(serializers.ModelSerializer):
                         }
     @transaction.atomic
     def create(self, validated_data):
-        text_answer_data = validated_data.pop('text_answer')
+        try:
+            text_answer_data = validated_data.pop('text_answer')
+        except:
+            pass
+        text_answer_data = {}
+        text_answer_data['text'] = "بدون پاسخ"
         text_answer_data['answer_type'] = 'DescriptiveAnswer'
         text_answer = DescriptiveAnswer.objects.create(**text_answer_data)
 
-        upload_file_answer_data = validated_data.pop('upload_file_answer')
-        upload_file_answer_data['answer_type'] = 'UploadFileAnswer'
-        upload_file_answer = DescriptiveAnswer.objects.create(**upload_file_answer_data)
+        try:
+                upload_file_answer_data = validated_data.pop('upload_file_answer')
+        except:
+            pass
+        # upload_file_answer_data = {}
+        # upload_file_answer_data['text'] = "بدون پاسخ"
+        # upload_file_answer_data['answer_type'] = 'UploadFileAnswer'
+        # upload_file_answer = DescriptiveAnswer.objects.create(**upload_file_answer_data)
         
+        print(validated_data)
         instance = JudgeableSubmit.objects.create(**validated_data)
         instance.text_answer = text_answer
-        instance.upload_file_answer = upload_file_answer
+        # instance.upload_file_answer = upload_file_answer
         instance.received_at = timezone.now()
         instance.mark = 0
         instance.status = BaseSubmit.Status.Received
         instance.save()
-    
         return instance
 
 

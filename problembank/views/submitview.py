@@ -16,20 +16,33 @@ import sys
 from itertools import chain
 # data['juged_by'] = request.user.account #just for mentor not all the times!
 
-class JudgeableSubmitSerializer(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixins.ListModelMixin,
-                   mixins.UpdateModelMixin, mixins.DestroyModelMixin):
+class JudgeableSubmitView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,
+                   mixins.UpdateModelMixin):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = JudgeableSubmitSerializer
     queryset = JudgeableSubmit.objects.all()
 
 
-def get_random_problem_from_group(gid):
+class AutoCheckSubmitView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,
+                   mixins.UpdateModelMixin):
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = AutoCheckSubmit.objects.all()
+    serializer_class = AutoCheckSubmitSerializer
+
+
+
+def get_random_problem_from_group(gid, account):
     try:
         problem_group = ProblemGroup.objects.filter(id=gid)[0]
     except:
         return Response("چنین گروه مسئله ای وجود ندارد.",status=status.HTTP_400_BAD_REQUEST)
 
-    problems = problem_group.problems.all()
+    problems = problem_group.problems.all().select_subclasses()
+    if len(AutoCheckSubmit.objects.all().select_subclasses().filter(problem_group=gid, respondents__in=[account])) > 0:
+        return Response("شما قبلا از این دسته مسئله دریافت کرده اید.",status=status.HTTP_400_BAD_REQUEST)
+    if len(JudgeableSubmit.objects.all().select_subclasses().filter(problem_group=gid, respondents__in=[account])) > 0:
+        return Response("شما قبلا از این دسته مسئله دریافت کرده اید.",status=status.HTTP_400_BAD_REQUEST)
+    
     try:
         return problems.order_by('?')[0]
     except:
@@ -38,9 +51,9 @@ def get_random_problem_from_group(gid):
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def get_problem_from_group(request, gid):
-    print(request)
-    problem = get_random_problem_from_group(gid)
-    if not issubclass(Problem, problem.__class__):
+    account = request.user.account
+    problem = get_random_problem_from_group(gid, account)
+    if not issubclass(problem.__class__, Problem):
         return problem
     serializerClass = BaseSubmitSerializer.get_serializer(problem.problem_type)
     data = {}
@@ -51,9 +64,9 @@ def get_problem_from_group(request, gid):
     if not serializer.is_valid(raise_exception=True):
         return Response(status=status.HTTP_400_BAD_REQUEST)
     instance = serializer.create(serializer.validated_data)
-    account = request.user.account
     instance.respondents.add(account) #add other players
-    return Response(instance, status=status.HTTP_200_OK)
+    instance.save()
+    return Response(ProblemSerializer(problem).data, status=status.HTTP_200_OK)
     
 
 @api_view(['POST'])
