@@ -3,15 +3,12 @@ import csv
 from django.contrib import admin
 from django.contrib.auth.hashers import make_password
 from Account.models import User
-from Game.models import Game, Player
-
-admin.site.register(Game)
+from Game.models import Player
 
 
 def import_from_csv(a, b, c):
     with open('students_info.csv') as f:
         reader = csv.reader(f)
-        game = Game.objects.get(id=1)
         for row in reader:
             user1 = User.objects.filter(username=row[2]).first()
             if user1 is None:
@@ -26,8 +23,7 @@ def import_from_csv(a, b, c):
                 user.save()
                 p, created = Player.objects.get_or_create(
                     score=row[0],
-                    user=user,
-                    game=game)
+                    user=user)
 
 
 @admin.register(Player)
@@ -35,4 +31,4 @@ class PlayerAdmin(admin.ModelAdmin):
     import_from_csv.short_description = 'بارگذاری دانش‌آموزان در سایت'
     actions = [import_from_csv]
 
-    list_display = ('name', 'game', 'score', 'id')
+    list_display = ('name', 'id')

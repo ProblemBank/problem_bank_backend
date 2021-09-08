@@ -6,7 +6,7 @@ from rest_framework import permissions
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 
-from Game.models import Player, Game
+from Game.models import Player
 from Game.permissions import ReceiveProblem
 from Game.serializers import PlayerSerializer
 
@@ -15,9 +15,9 @@ class PlayerView(generics.GenericAPIView):
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = PlayerSerializer
 
-    def get(self, request, game_id):
+    def get(self, request):
         user = request.user
-        player = user.player_set.filter(game__id=game_id).first()
+        player = user.player_set.filter().first()
         if player is None:
             return Response({"message": "بازیکنی یافت نشد"}, status.HTTP_404_NOT_FOUND)
         player_serializer = self.get_serializer(player)
@@ -28,8 +28,8 @@ class ScoreboardView(generics.GenericAPIView):
     permission_classes = (permissions.AllowAny,)
     serializer_class = PlayerSerializer
 
-    def get(self, request, game_id):
-        players = Player.objects.filter(game__id=game_id).order_by('-score')
+    def get(self, request):
+        players = Player.objects.filter().order_by('-score')
         players_serializer = self.get_serializer(data=players, many=True)
         players_serializer.is_valid()
         return Response(players_serializer.data, status.HTTP_200_OK)
