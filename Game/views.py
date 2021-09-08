@@ -27,6 +27,7 @@ class PlayerView(generics.GenericAPIView):
 class ScoreboardView(generics.GenericAPIView):
     permission_classes = (permissions.AllowAny,)
     serializer_class = PlayerSerializer
+    queryset = Player.objects.all()
 
     def get(self, request):
         players = Player.objects.filter().order_by('-score')

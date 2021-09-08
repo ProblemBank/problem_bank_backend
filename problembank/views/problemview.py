@@ -10,13 +10,15 @@ from rest_framework.decorators import api_view, permission_classes
 from problembank.models import *
 from rest_framework import permissions
 # from problembank.views import permissions as customPermissions
-from problembank.serializers import ProblemSerializer, DescriptiveProblemSerializer, ShortAnswerProblemSerializer, ShortAnswerProblemSerializer
+from problembank.serializers import ProblemSerializer, DescriptiveProblemSerializer, ShortAnswerProblemSerializer, \
+    ShortAnswerProblemSerializer
 from django.utils import timezone
 import sys
 
+
 class ProblemView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixins.ListModelMixin,
-                   mixins.UpdateModelMixin, mixins.DestroyModelMixin):
-    #permission_classes = [permissions.IsAuthenticated, customPermissions.MentorPermission, ]
+                  mixins.UpdateModelMixin, mixins.DestroyModelMixin):
+    # permission_classes = [permissions.IsAuthenticated, customPermissions.MentorPermission, ]
     permission_classes = [permissions.IsAuthenticated]
     queryset = Problem.objects.all().select_subclasses()
     serializer_class = ProblemSerializer
@@ -26,13 +28,13 @@ class ProblemView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Cre
         print(self.request.user, self.request.method)
         if self.request.method == 'POST' or self.request.method == 'PATCH':
             try:
-                return ProblemSerializer.get_serializer(getattr(sys.modules[__name__],\
-                    self.request.data['problem_type']))
+                return ProblemSerializer.get_serializer(getattr(sys.modules[__name__], \
+                                                                self.request.data['problem_type']))
             except Exception as e:
                 print(e)
         instance = Problem.objects.filter(pk=self.kwargs['pk'])[0]
-        return ProblemSerializer.get_serializer(getattr(sys.modules[__name__],\
-                instance.problem_type))
+        return ProblemSerializer.get_serializer(getattr(sys.modules[__name__], \
+                                                        instance.problem_type))
 
     # @transaction.atomic
     # def create(self, request, *args, **kwargs):
@@ -61,4 +63,3 @@ def get_all_problems(request):
     problems = Problem.objects.all()
     problems_data = ProblemSerializer(problems.select_subclasses(), many=True).data
     return Response(problems_data, status=status.HTTP_200_OK)
-     
