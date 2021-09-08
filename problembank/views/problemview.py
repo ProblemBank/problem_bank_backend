@@ -53,3 +53,12 @@ class ProblemView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Cre
 
         response = serializer.to_representation(instance)
         return Response(response)
+
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def get_all_problems(request):
+    problems = Problem.objects.all()
+    problems_data = ProblemSerializer(problems.select_subclasses(), many=True).data
+    return Response(problems_data, status=status.HTTP_200_OK)
+     

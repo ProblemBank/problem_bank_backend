@@ -16,37 +16,47 @@ import sys
 from itertools import chain
 # data['juged_by'] = request.user.account #just for mentor not all the times!
 
-# class SubmitView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.CreateModelMixin,
-#                    mixins.UpdateModelMixin):
-#     #permission_classes = [permissions.IsAuthenticated, customPermissions.MentorPermission, ]
-#     permission_classes = [permissions.IsAuthenticated]
-#     serializer_class = BaseSubmit
-#     queryset = list(chain(JudgeableSubmit.objects.all(), AutoCheckSubmit.objects.all()))
+class JudgeableSubmitSerializer(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixins.ListModelMixin,
+                   mixins.UpdateModelMixin, mixins.DestroyModelMixin):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = JudgeableSubmitSerializer
+    queryset = JudgeableSubmit.objects.all()
 
-#     @transaction.atomic
-#     def get_serializer_class(self):
-#         print(self.request.user, self.request.method)
-#         if self.request.method == 'POST' or self.request.method == 'PATCH':
-#             try:
-#                 return BaseSubmitSerializer.get_serializer(self.request.data['problem_type'])
-#             except Exception as e:
-#                 print(e)
-#         instance = BaseSubmit.objects.filter(pk=self.kwargs['pk'])[0]
-#         return BaseSubmitSerializer.get_serializer(instance.problem_type)
 
-#     # @transaction.atomic
-#     # def create(self, request, *args, **kwargs):
-#     #     return super(ProblemView, self).create(request, *args, **kwargs)
+def get_random_problem_from_group(gid):
+    try:
+        problem_group = ProblemGroup.objects.filter(id=gid)[0]
+    except:
+        return Response("چنین گروه مسئله ای وجود ندارد.",status=status.HTTP_400_BAD_REQUEST)
 
-#     @transaction.atomic
-#     def create(self, request, *args, **kwargs):
-#         data = request.data
-#         serializerClass = self.get_serializer_class()
-#         serializer = serializerClass(data=data)
-#         if not serializer.is_valid(raise_exception=True):
-#             return Response(status=status.HTTP_400_BAD_REQUEST)
-#         data = serializer.validated_data
-#         instance = serializer.create(data)
-#         instance.save()
-#         response = serializer.to_representation(instance)
-#         return Response(response)
+    problems = problem_group.problems.all()
+    try:
+        return problems.order_by('?')[0]
+    except:
+        return Response("گروه مسئله خالی است.",status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def get_problem_from_group(request, gid):
+    print(request)
+    problem = get_random_problem_from_group(gid)
+    if not issubclass(Problem, problem.__class__):
+        return problem
+    serializerClass = BaseSubmitSerializer.get_serializer(problem.problem_type)
+    data = {}
+    data['problem'] = problem.pk
+    data['problem_group'] = gid
+    data['respondents'] = []
+    serializer = serializerClass(data=data)
+    if not serializer.is_valid(raise_exception=True):
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+    instance = serializer.create(serializer.validated_data)
+    account = request.user.account
+    instance.respondents.add(account) #add other players
+    return Response(instance, status=status.HTTP_200_OK)
+    
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def submit_answer(request):
+    pass

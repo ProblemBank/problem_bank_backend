@@ -284,10 +284,15 @@ class AutoCheckSubmitSerializer(serializers.ModelSerializer):
                         'received_at': {'read_only': True},
                         'delivered_at': {'read_only': True},
                         'judged_at': {'read_only': True},
+                        'respondents': {'read_only': True},
                         }
     @transaction.atomic
     def create(self, validated_data):
-        answer_data = validated_data.pop('answer')
+        try:
+            answer_data = validated_data.pop('answer')
+        except:
+            answer_data = {}
+            answer_data['text'] = "بدون پاسخ"
         answer_data['answer_type'] = 'ShortAnswer'
         answer = ShortAnswer.objects.create(**answer_data)
 
@@ -333,6 +338,7 @@ class JudgeableSubmitSerializer(serializers.ModelSerializer):
                         'delivered_at': {'read_only': True},
                         'judged_at': {'read_only': True},
                         'judged_by': {'read_only': True},
+                        'respondents': {'read_only': True},
                         }
     @transaction.atomic
     def create(self, validated_data):

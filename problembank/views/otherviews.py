@@ -4,14 +4,14 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 
 @api_view(['POST'])
-def add_problem_to_group(request, ppk, gpk):
+def add_problem_to_group(request, pid, gid):
     try:
-        problem = Problem.objects.filter(pk=ppk)[0]
+        problem = Problem.objects.filter(pk=pid)[0]
     except Exception:
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        problem_group = ProblemGroup.objects.filter(pk=gpk)[0]
+        problem_group = ProblemGroup.objects.filter(pk=gid)[0]
     except Exception:
         return Response(status=status.HTTP_400_BAD_REQUEST)
 

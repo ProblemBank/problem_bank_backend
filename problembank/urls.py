@@ -1,11 +1,11 @@
 from problembank.views.accountview import AccountView
 from problembank.views.otherviews import add_problem_to_group
-from problembank.views.problemview import ProblemView
+from problembank.views.problemview import ProblemView, get_all_problems
 from problembank.views.problemgroupview import ProblemGroupView
 from problembank.views.guidanceview import GuidanceView
 from problembank.views.eventview import EventView
 from problembank.views.topicsview import TopicView, SubtopicView, SourceView
-# from problembank.views.submitview import SubmitView
+from problembank.views.submitview import JudgeableSubmitSerializer, get_problem_from_group
 
 
 from django.urls import path
@@ -29,11 +29,12 @@ router.register('source', SourceView)
 router.register('source/<int:pk>', SourceView)
 router.register('account', AccountView)
 router.register('account/<int:pk>', AccountView)
-# router.register('submit', SubmitView)
-# router.register('submit/<int:pk>', SubmitView)
+router.register('jugeablesubmit', JudgeableSubmitSerializer)
+router.register('jugeablesubmit/<int:pk>', JudgeableSubmitSerializer)
 urlpatterns = [
-      path('addproblemtogroup/<int:ppk>/<int:gpk>', add_problem_to_group),
-    
+      path('addproblemtogroup/<int:pid>/<int:gid>', add_problem_to_group),
+      path('getproblemfromgroup/<int:gid>', get_problem_from_group),
+      path('getallproblems/', get_all_problems),
 ]
 
 urlpatterns += router.urls
