@@ -6,7 +6,7 @@ from problembank.views.problemgroupview import ProblemGroupView
 from problembank.views.guidanceview import GuidanceView
 from problembank.views.eventview import EventView
 from problembank.views.topicsview import TopicView, SubtopicView, SourceView
-from problembank.views.submitview import AutoCheckSubmitView, JudgeableSubmitView, get_problem_from_group
+from problembank.views.submitview import AutoCheckSubmitView, JudgeableSubmitView, get_problem_from_group, judge, submit_answer
 
 
 from django.urls import path
@@ -35,10 +35,12 @@ router.register('jugeablesubmit/<int:pk>', JudgeableSubmitView)
 router.register('autochecksubmit', AutoCheckSubmitView)
 router.register('autochecksubmit/<int:pk>', AutoCheckSubmitView)
 urlpatterns = [
-      path('addproblemtogroup/<int:pid>/<int:gid>', add_problem_to_group),
-      path('removeproblemfromgroup/<int:pid>/<int:gid>', remove_problem_from_group),
-      path('getproblemfromgroup/<int:gid>', get_problem_from_group),
+      path('addproblemtogroup/<int:pid>/<int:gid>/', add_problem_to_group),
+      path('removeproblemfromgroup/<int:pid>/<int:gid>/', remove_problem_from_group),
+      path('getproblemfromgroup/<int:gid>/', get_problem_from_group),
       path('getallproblems/', get_all_problems),
+      path('submitanswer/', submit_answer),
+      path('judge/<int:pid>/<int:mark>/', judge),
 ]
 
 urlpatterns += router.urls

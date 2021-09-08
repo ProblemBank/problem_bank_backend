@@ -16,15 +16,13 @@ import sys
 from itertools import chain
 # data['juged_by'] = request.user.account #just for mentor not all the times!
 
-class JudgeableSubmitView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,
-                   mixins.UpdateModelMixin):
+class JudgeableSubmitView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = JudgeableSubmitSerializer
     queryset = JudgeableSubmit.objects.all()
 
 
-class AutoCheckSubmitView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,
-                   mixins.UpdateModelMixin):
+class AutoCheckSubmitView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
     permission_classes = [permissions.IsAuthenticated]
     queryset = AutoCheckSubmit.objects.all()
     serializer_class = AutoCheckSubmitSerializer
@@ -83,4 +81,32 @@ def get_problem_from_group(request, gid):
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def submit_answer(request):
-    pass
+    data = request.data
+    problem = Problem.objects.filter(id=data['problem'])[0]
+    serializerClass = BaseSubmitSerializer.get_serializer(problem.problem_type)
+    instance = serializerClass.Meta.model.objects.filter(id=data['id'])[0]
+    serializer = serializerClass(data=data)
+    if not serializer.is_valid(raise_exception=True):
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+    data = serializer.validated_data
+    instance = serializer.update(instance, data)
+    instance.save()
+
+    response = serializer.to_representation(instance)
+    return Response(response ,status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def judge(request, pid , mark):
+    account = request.user.account
+    submit = JudgeableSubmit.objects.filter(id=pid)[0]
+    submit.judged_at = timezone.now()
+    submit.status = BaseSubmit.Status.Judged
+    submit.judged_by = account
+    submit.mark = mark
+    submit.save()
+    return Response(JudgeableSubmitSerializer(submit).data ,status=status.HTTP_200_OK)
+
+# instance.judged_at = timezone.now()
+# instance.status = BaseSubmit.Status.Judged
+# instance.judged_by = ??

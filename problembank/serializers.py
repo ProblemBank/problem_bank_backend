@@ -321,15 +321,20 @@ class AutoCheckSubmitSerializer(serializers.ModelSerializer):
         answer.save()
         instance.answer = answer    
         instance.save()
-        JudgeableSubmit.objects.filter(id=instance.id).update(**validated_data)
-        instance = JudgeableSubmit.objects.filter(id=instance.id)[0]
+        AutoCheckSubmit.objects.filter(id=instance.id).update(**validated_data)
+        instance = AutoCheckSubmit.objects.filter(id=instance.id)[0]
         
         instance.delivered_at = timezone.now()
         instance.mark = 0
         instance.status = BaseSubmit.Status.Delivered
         
         instance.judged_at = timezone.now()
-        instance.mark = 0 #calculate mark
+        problem = Problem.objects.all().select_subclasses().filter(id=instance.problem.id)[0]
+        print(problem.answer.text , instance.answer.text)
+        if problem.answer.text == instance.answer.text:
+            instance.mark = 10
+        else:
+            instance.mark = 0
         instance.status = BaseSubmit.Status.Judged
 
         instance.save()
@@ -360,18 +365,13 @@ class JudgeableSubmitSerializer(serializers.ModelSerializer):
         text_answer = DescriptiveAnswer.objects.create(**text_answer_data)
 
         try:
-                upload_file_answer_data = validated_data.pop('upload_file_answer')
+            validated_data.pop('upload_file_answer')
         except:
             pass
-        # upload_file_answer_data = {}
-        # upload_file_answer_data['text'] = "بدون پاسخ"
-        # upload_file_answer_data['answer_type'] = 'UploadFileAnswer'
-        # upload_file_answer = DescriptiveAnswer.objects.create(**upload_file_answer_data)
         
         print(validated_data)
         instance = JudgeableSubmit.objects.create(**validated_data)
         instance.text_answer = text_answer
-        # instance.upload_file_answer = upload_file_answer
         instance.received_at = timezone.now()
         instance.mark = 0
         instance.status = BaseSubmit.Status.Received
@@ -387,24 +387,22 @@ class JudgeableSubmitSerializer(serializers.ModelSerializer):
         text_answer.save()
         instance.text_answer = text_answer    
     
-        UploadFileAnswer.objects.filter(id=instance.upload_file_answer.id).update(**validated_data.pop('upload_file_answer'))
-        upload_file_answer = UploadFileAnswer.objects.filter(id=instance.upload_file_answer.id)[0]
-        upload_file_answer.answer_type = 'UploadFileAnswer'
-        upload_file_answer.save()
-        instance.upload_file_answer = upload_file_answer
-    
+        try:
+            upload_file_answer_data = validated_data.pop('upload_file_answer')
+            upload_file_answer_data['answer_type'] = 'UploadFileAnswer'
+            upload_file_answer = DescriptiveAnswer.objects.create(**upload_file_answer_data)
+            instance.upload_file_answer = upload_file_answer
+        except:
+            pass
+        
         instance.save()
         JudgeableSubmit.objects.filter(id=instance.id).update(**validated_data)
         instance = JudgeableSubmit.objects.filter(id=instance.id)[0]
         
-        # instance.delivered_at = timezone.now()
-        # instance.mark = 0
-        # instance.status = BaseSubmit.Status.Delivered
+        instance.delivered_at = timezone.now()
+        instance.mark = 0
+        instance.status = BaseSubmit.Status.Delivered
         
-        # instance.judged_at = timezone.now()
-        # instance.status = BaseSubmit.Status.Judged
-        # instance.judged_by = ??
-
         instance.save()
         return instance
 
