@@ -23,7 +23,7 @@ def get_random_problem_from_group(gid, account):
     try:
         problem_group = ProblemGroup.objects.filter(id=gid)[0]
     except:
-        return Response({"message":"چنین گروه مسئله ای وجود ندارد."},status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message":"چنین مسئله ای وجود ندارد."},status=status.HTTP_400_BAD_REQUEST)
 
     problems = problem_group.problems.all().select_subclasses()
     submit = None
@@ -47,12 +47,11 @@ def get_random_problem_from_group(gid, account):
             problem_data.pop('answer')
             data['problem'] = problem_data
             data['submit'] = submit
-            return Response(data, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data, status=status.HTTP_200_OK)
     
     player = Player.objects.filter(users__in=[account.user])[0]
     if player.coin < 1000 and not gid in mashahir_ids:
         return Response({"message":"سکه شما کافی نیست."},status=status.HTTP_400_BAD_REQUEST)
-    
     try:
         return problems.order_by('?')[0]
     except:
@@ -99,6 +98,26 @@ def remove_merchandise_from_player(player, object):
     player.black_toot -= merchandise.black_toot
     player.save()
     return True, Response(status=status.HTTP_200_OK)
+    
+@transaction.atomic
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def is_problem_goten_from_group(request, gid):
+    account = request.user.account
+    submit = None
+    try: 
+        submit = AutoCheckSubmit.objects.all().select_subclasses().filter(problem_group=gid, respondents__in=[account])[0]
+        submit = AutoCheckSubmitSerializer(submit).data
+    except:
+        pass
+    try: 
+        submit = JudgeableSubmit.objects.all().select_subclasses().filter(problem_group=gid, respondents__in=[account])[0]
+        submit = JudgeableSubmitSerializer(submit).data
+    except:
+        pass
+    if submit is not None:
+        return Response(status=status.HTTP_200_OK)
+    return Response(status=status.HTTP_400_BAD_REQUEST)
     
 @transaction.atomic
 @api_view(['POST'])

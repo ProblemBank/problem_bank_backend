@@ -13,6 +13,7 @@ urlpatterns = [
     path('exchange/', ExchangeView.as_view(), name='player exchange'),
 
     path('getproblemfromgroup/<int:gid>/', get_problem_from_group),
+    path('isproblemgotenfromgroup/<int:gid>/', is_problem_goten_from_group),
     path('submitanswer/<int:sid>/<int:pid>/', submit_answer),
     path('judge/<int:sid>/<int:mark>/', judge),
     path('checkobject/<int:cid>/', ckeck_object),
