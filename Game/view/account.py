@@ -44,13 +44,13 @@ class NotificationView(generics.GenericAPIView):
         return Response({}, status.HTTP_200_OK)
 
 
-class ScoreboardView(generics.GenericAPIView):
-    permission_classes = (permissions.AllowAny,)
-    serializer_class = PlayerSerializer
-    queryset = Player.objects.all()
+# class ScoreboardView(generics.GenericAPIView):
+#     permission_classes = (permissions.AllowAny,)
+#     serializer_class = PlayerSerializer
+#     queryset = Player.objects.all()
 
-    def get(self, request):
-        players = Player.objects.filter().order_by('-score')
-        players_serializer = self.get_serializer(data=players, many=True)
-        players_serializer.is_valid()
-        return Response(players_serializer.data, status.HTTP_200_OK)
+#     def get(self, request):
+#         players = Player.objects.filter().order_by('-score')
+#         players_serializer = self.get_serializer(data=players, many=True)
+#         players_serializer.is_valid()
+#         return Response(players_serializer.data, status.HTTP_200_OK)

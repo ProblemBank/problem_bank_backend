@@ -37,10 +37,10 @@ router.register('autochecksubmit/<int:pk>', AutoCheckSubmitView)
 urlpatterns = [
       path('addproblemtogroup/<int:pid>/<int:gid>/', add_problem_to_group),
       path('removeproblemfromgroup/<int:pid>/<int:gid>/', remove_problem_from_group),
-      path('getproblemfromgroup/<int:gid>/', get_problem_from_group),
+      # path('getproblemfromgroup/<int:gid>/', get_problem_from_group),
       path('getallproblems/', get_all_problems),
-      path('submitanswer/', submit_answer),
-      path('judge/<int:pid>/<int:mark>/', judge),
+      # path('submitanswer/', submit_answer),
+      # path('judge/<int:pid>/<int:mark>/', judge),
 ]
 
 urlpatterns += router.urls

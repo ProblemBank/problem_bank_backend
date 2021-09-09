@@ -9,7 +9,7 @@ class BankAccount(models.Model):
     first_name = models.CharField(max_length=30, default='None')
     last_name = models.CharField(max_length=30, default='None')
     phone_number = models.CharField(max_length=15, blank=False, null=False)
-    email = models.CharField(max_length=200, blank=False, null=False)
+    email = models.CharField(max_length=200, blank=True, null=True)
 
     class Position(models.TextChoices):
         Admin = 'Admin'

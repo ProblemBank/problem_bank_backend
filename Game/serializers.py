@@ -59,12 +59,6 @@ class CheckableObjectSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class PlayerCheckableObjectSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PlayerCheckableObject
-        exclude = ['player']
-
-
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
