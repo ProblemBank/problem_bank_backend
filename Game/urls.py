@@ -1,11 +1,17 @@
 from django.urls import path
-from .views import *
 from .gameviews.submitview import *
 
+from Game.view.exchange import get_all_exchanges, ExchangeView
+from Game.view.account import *
+from Gane.view.submitview import *
 urlpatterns = [
-    path('user/notification/', NotificationView.as_view(), name='get user newest 10 notifications'),
+    path('notification/', NotificationView.as_view(), name='user notifications'),
     path('player/', PlayerView.as_view(), name='get player info'),
-    path('player/scoreboard/', ScoreboardView.as_view(), name='get all player problems'),
+
+    path('scoreboard/', ScoreboardView.as_view(), name='get scoreboard'),
+
+    path('exchange/all/', get_all_exchanges, name='get all exchanges'),
+    path('exchange/', ExchangeView.as_view(), name='player exchange'),
 
     path('getproblemfromgroup/<int:gid>/', get_problem_from_group),
     path('submitanswer/', submit_answer),

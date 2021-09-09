@@ -24,18 +24,6 @@ class PlayerView(generics.GenericAPIView):
         return Response(player_serializer.data, status.HTTP_200_OK)
 
 
-class ScoreboardView(generics.GenericAPIView):
-    permission_classes = (permissions.AllowAny,)
-    serializer_class = PlayerSerializer
-    queryset = Player.objects.all()
-
-    def get(self, request):
-        players = Player.objects.filter().order_by('-score')
-        players_serializer = self.get_serializer(data=players, many=True)
-        players_serializer.is_valid()
-        return Response(players_serializer.data, status.HTTP_200_OK)
-
-
 class NotificationView(generics.GenericAPIView):
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = NotificationSerializer
@@ -43,7 +31,7 @@ class NotificationView(generics.GenericAPIView):
 
     def get(self, request):
         user = request.user
-        user_notifications = self.get_queryset().filter(user=user, has_seen=False).order_by('-pk')[:20]
+        user_notifications = self.get_queryset().filter(user=user, has_seen=False).order_by('-pk')[:10]
         user_notifications_serializer = self.get_serializer(data=user_notifications, many=True)
         user_notifications_serializer.is_valid()
         return Response(user_notifications_serializer.data, status.HTTP_200_OK)
@@ -56,29 +44,13 @@ class NotificationView(generics.GenericAPIView):
         return Response({}, status.HTTP_200_OK)
 
 
-@api_view(['GET'])
-@permission_classes([permissions.AllowAny])
-def get(request):
-    user = request.user
-    player = user.player_set.first()
-    player.has_find_TABOOT = True
-    player.save()
-    return Response({'message': 'تبریک! شما تابوت توتنخ‌عامو را پیدا کردید! به همین خاطر '}, status=status.HTTP_200_OK)
+class ScoreboardView(generics.GenericAPIView):
+    permission_classes = (permissions.AllowAny,)
+    serializer_class = PlayerSerializer
+    queryset = Player.objects.all()
 
-
-def get_random(query_set):
-    pks = query_set.values_list('pk', flat=True).order_by('id')
-    random_pk = choice(pks)
-    return query_set.get(pk=random_pk)
-
-
-@atomic
-def make_notification(player: Player, value: int):
-    player.save()
-
-    # new_transaction = Transaction()
-    # new_transaction.player = player
-    # new_transaction.title = title
-    # new_transaction.amount = value
-    #
-    # new_transaction.save()
+    def get(self, request):
+        players = Player.objects.filter().order_by('-score')
+        players_serializer = self.get_serializer(data=players, many=True)
+        players_serializer.is_valid()
+        return Response(players_serializer.data, status.HTTP_200_OK)

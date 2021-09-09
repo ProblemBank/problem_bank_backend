@@ -1,3 +1,4 @@
+from Game.models import GameProblem, Player
 from django.db import transaction
 from rest_framework import status, viewsets
 from rest_framework.parsers import JSONParser
@@ -51,12 +52,41 @@ def get_random_problem_from_group(gid, account):
         if submit['status'] == 'Delivered':
             return Response("شما قبلا از اینجا مسئله دریافت کرده اید و پاسخ آن را فرستاده اید.",status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response(submit,status=status.HTTP_400_BAD_REQUEST)
+            problem = Problem.objects.filter(id=submit['problem'])[0]
+            problem_data = ProblemSerializer(problem).data
+            data = {}
+            data['problem'] = problem_data
+            data['submit'] = submit
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
     try:
         return problems.order_by('?')[0]
     except:
         return Response("گروه مسئله خالی است.",status=status.HTTP_400_BAD_REQUEST)
 
+
+
+mashahir_ids = []
+def get_problem_cost(problem):
+    return 0 if problem.group.filter(id__in=mashahir_ids) else 1000
+
+def get_problem_reward(problem):
+    return 400 if problem.group.filter(id__in=mashahir_ids) else (
+           1000 + (750 if problem.difficulty == Problem.Difficulty.Hard else 
+                  (250 if problem.difficulty == Problem.Difficulty.Medium else 0)
+                  )
+            )
+def add_reward_to_player(player, submit, problem):
+    game_problem = GameProblem.objects.filter(problem_group=submit.problem_group)[0]
+    merchandise = game_problem.reward_merchandise
+    player.blue_toot += merchandise.blue_toot
+    player.red_toot += merchandise.red_toot
+    player.black_toot += merchandise.black_toot
+    player.coin += get_problem_reward(problem)
+    if game_problem.famous_person is not None:
+        player.famous_persons.add(game_problem.famous_person)
+    player.save()
+
+@transaction.atomic
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def get_problem_from_group(request, gid):
@@ -73,11 +103,19 @@ def get_problem_from_group(request, gid):
     if not serializer.is_valid(raise_exception=True):
         return Response(status=status.HTTP_400_BAD_REQUEST)
     instance = serializer.create(serializer.validated_data)
-    instance.respondents.add(account) #add other players
+    player = Player.objects.filter(users__in=[account.user])[0]
+    accounts = [user.account for user in player.users.all()]
+    instance.respondents.add(accounts)
     instance.save()
-    return Response(ProblemSerializer(problem).data, status=status.HTTP_200_OK)
-    
+    player.coin = player.coin - get_problem_cost(problem)
+    player.save()
+    data = {}
+    data['problem'] =  ProblemSerializer(problem).data
+    data['submit'] = serializerClass(instance).data
 
+    return Response(data, status=status.HTTP_200_OK)
+    
+@transaction.atomic
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def submit_answer(request):
@@ -88,25 +126,33 @@ def submit_answer(request):
     serializer = serializerClass(data=data)
     if not serializer.is_valid(raise_exception=True):
         return Response(status=status.HTTP_400_BAD_REQUEST)
+    if instance.status != BaseSubmit.Status.Received:
+        return Response("قبلا پاسخ این مسئله را ارسال کرده اید!",status=status.HTTP_400_BAD_REQUEST)
     data = serializer.validated_data
     instance = serializer.update(instance, data)
+    if serializerClass is AutoCheckSubmit:
+        if instance.mark == 1:
+            player = Player.objects.filter(users__in=[request.user])[0]
+            add_reward_to_player(player, instance, problem)
+            
     instance.save()
 
     response = serializer.to_representation(instance)
     return Response(response ,status=status.HTTP_200_OK)
 
+@transaction.atomic
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
-def judge(request, pid , mark):
+def judge(request, sid , mark):
     account = request.user.account
-    submit = JudgeableSubmit.objects.filter(id=pid)[0]
+    submit = JudgeableSubmit.objects.filter(id=sid)[0]
     submit.judged_at = timezone.now()
     submit.status = BaseSubmit.Status.Judged
     submit.judged_by = account
     submit.mark = mark
     submit.save()
+    if submit.mark == 1:
+        player = Player.objects.filter(users__in=[request.user])[0]
+        problem = Problem.objects.filter(id=submit.problem.id)[0]
+        add_reward_to_player(player, submit, problem)
     return Response(JudgeableSubmitSerializer(submit).data ,status=status.HTTP_200_OK)
-
-# instance.judged_at = timezone.now()
-# instance.status = BaseSubmit.Status.Judged
-# instance.judged_by = ??

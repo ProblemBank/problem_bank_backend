@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.contrib.auth.hashers import make_password
 from Account.models import User
 from Game.models import Player, Notification, Merchandise, CheckableObject, GameProblem, PlayerCheckableObject, \
-    Message, GroupMessage
+    Message, GroupMessage, FamousPerson, PlayerFamousPerson, Exchange
 
 admin.site.register(Merchandise)
 admin.site.register(CheckableObject)
@@ -13,6 +13,9 @@ admin.site.register(PlayerCheckableObject)
 admin.site.register(Message)
 admin.site.register(GroupMessage)
 admin.site.register(Notification)
+admin.site.register(FamousPerson)
+admin.site.register(PlayerFamousPerson)
+admin.site.register(Exchange)
 
 
 def import_from_csv(a, b, c):
