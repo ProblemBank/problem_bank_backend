@@ -62,7 +62,7 @@ class CheckableObjectSerializer(serializers.ModelSerializer):
 class PlayerCheckableObjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = PlayerCheckableObject
-        fields = '__all__'
+        exclude = ['player']
 
 
 class MessageSerializer(serializers.ModelSerializer):
@@ -80,4 +80,27 @@ class GroupMessageSerializer(serializers.ModelSerializer):
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
+        exclude = ['user']
+
+
+class FamousPersonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FamousPerson
+        fields = '__all__'
+
+
+class PlayerFamousPersonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PlayerFamousPerson
+        exclude = ['player']
+
+
+class ExchangeSerializer(serializers.ModelSerializer):
+    seller = PlayerSerializer()
+    buyer = PlayerSerializer()
+    sold_merchandise = MerchandiseSerializer()
+    bought_merchandise = MerchandiseSerializer()
+
+    class Meta:
+        model = Exchange
         fields = '__all__'

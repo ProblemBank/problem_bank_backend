@@ -17,13 +17,23 @@ class Player(models.Model):
     has_answered_first_problem = models.BooleanField(default=False, verbose_name='آیا سوال اولیه رو پاسخ داده است؟')
     number_of_free_check = models.IntegerField(default=0,
                                                verbose_name='تعداد بارهایی که بازیکن می‌تواند به صورت رایگان عمل چک‌کردن را انجام دهد')
-    has_found_famous_person1 = models.BooleanField(default=False,
-                                                   verbose_name='آیا نفر اول تو تالار مشاهیر رو یافته‌اند؟')
-    has_found_famous_person2 = models.BooleanField(default=False,
-                                                   verbose_name='آیا نفر دوم تو تالار مشاهیر رو یافته‌اند؟')
 
     def __str__(self):
         return f'{self.name}'
+
+
+class FamousPerson(models.Model):
+    name = models.CharField(max_length=50, verbose_name='نام')
+    image = models.ImageField(upload_to='famous_person/checkable_objects/', blank=True, null=True, verbose_name='تصویر')
+
+    def __str__(self):
+        return f'{self.name}'
+
+
+class PlayerFamousPerson(models.Model):
+    famous_person = models.ForeignKey(to=FamousPerson, on_delete=models.PROTECT, verbose_name='شخص معروف')
+    player = models.ForeignKey(to=Player, on_delete=models.PROTECT, verbose_name='بازیکن')
+    is_checked = models.BooleanField(default=False, verbose_name='آیا بازیکن، شی را بررسی کرده؟')
 
 
 class Merchandise(models.Model):
@@ -66,6 +76,18 @@ class Notification(models.Model):
     has_seen = models.BooleanField(default=False, verbose_name='آیا مشاهده کرده؟')
 
 
+class Exchange(models.Model):
+    seller = models.ForeignKey(to=Player, on_delete=models.PROTECT, verbose_name='فروشنده', related_name='seller')
+    sold_merchandise = models.ForeignKey(to=Merchandise, on_delete=models.PROTECT, verbose_name='کالایی فروخته‌شده',
+                                         related_name='sold_merchandise')
+    buyer = models.ForeignKey(to=Player, on_delete=models.PROTECT, null=True, blank=True, verbose_name='خریدار',
+                              related_name='buyer')
+    bought_merchandise = models.ForeignKey(to=Merchandise, on_delete=models.PROTECT, verbose_name='کالایی خریداری‌شده',
+                                           related_name='bought_merchandise')
+
+
 class GameProblem(models.Model):
     merchandise = models.ForeignKey(to=Merchandise, on_delete=models.PROTECT, verbose_name='کالا')
     problem = models.ForeignKey(to=Problem, on_delete=models.PROTECT, verbose_name='مسئله از بانک مسئله')
+    famous_person = models.ForeignKey(to=FamousPerson, null=True, blank=True, on_delete=models.PROTECT,
+                                      verbose_name='شخص معروف')
