@@ -2,8 +2,11 @@ from rest_framework.response import Response
 from problembank.models import Problem, ProblemGroup
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
+from problembank.permissions import DefualtPermission
+from rest_framework import permissions
 
 @api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated, DefualtPermission])
 def add_problem_to_group(request, pid, gid):
     try:
         problem = Problem.objects.filter(pk=pid)[0]
@@ -22,6 +25,7 @@ def add_problem_to_group(request, pid, gid):
 
 
 @api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated, DefualtPermission])
 def remove_problem_from_group(request, pid, gid):
     try:
         problem = Problem.objects.filter(pk=pid)[0]

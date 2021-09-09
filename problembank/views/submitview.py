@@ -15,15 +15,15 @@ from django.utils import timezone
 import sys
 from itertools import chain
 # data['juged_by'] = request.user.account #just for mentor not all the times!
-
+from problembank.permissions import DefualtPermission
 class JudgeableSubmitView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, DefualtPermission]
     serializer_class = JudgeableSubmitSerializer
     queryset = JudgeableSubmit.objects.all()
 
 
 class AutoCheckSubmitView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, DefualtPermission]
     queryset = AutoCheckSubmit.objects.all()
     serializer_class = AutoCheckSubmitSerializer
 
@@ -96,7 +96,7 @@ def submit_answer(request):
     return Response(response ,status=status.HTTP_200_OK)
 
 @api_view(['POST'])
-@permission_classes([permissions.IsAuthenticated])
+@permission_classes([permissions.IsAuthenticated, DefualtPermission])
 def judge(request, pid , mark):
     account = request.user.account
     submit = JudgeableSubmit.objects.filter(id=pid)[0]

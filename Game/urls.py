@@ -15,6 +15,7 @@ urlpatterns = [
     path('getproblemfromgroup/<int:gid>/', get_problem_from_group),
     path('submitanswer/<int:sid>/<int:pid>/', submit_answer),
     path('judge/<int:sid>/<int:mark>/', judge),
+    path('checkobject/<int:cid>/', ckeck_object),
     # path('<int:game_id>/subject/', SubjectView.as_view(), name='subjects'),
     # path('<int:game_id>/problem/', ProblemView.as_view(), name='get all player problems'),
     # path('<int:game_id>/problem/<int:problem_id>/',

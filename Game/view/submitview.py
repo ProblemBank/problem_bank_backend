@@ -1,4 +1,4 @@
-from Game.models import GameProblem, Player
+from Game.models import CheckableObject, GameProblem, Player
 from django.db import transaction
 from rest_framework import status, viewsets
 from rest_framework.parsers import JSONParser
@@ -43,6 +43,7 @@ def get_random_problem_from_group(gid, account):
             problem = Problem.objects.all().select_subclasses().filter(id=submit['problem'])[0]
             problem_data = ProblemSerializer(problem).data
             data = {}
+            problem_data.pop('answer')
             data['problem'] = problem_data
             data['submit'] = submit
             return Response(data, status=status.HTTP_400_BAD_REQUEST)
@@ -74,11 +75,34 @@ def add_reward_to_player(player, submit, problem):
         player.famous_persons.add(game_problem.famous_person)
     player.save()
 
+def remove_merchandise_from_player(player, object):
+    merchandise = object.merchandise
+    if len(player.checkable_objects.all().filter(id=object.id)) > 0:
+            return False, Response("قبلا این شی را بررسی کرده اید!",status=status.HTTP_400_BAD_REQUEST)
+        
+    if  player.coin < merchandise.coin or\
+            player.blue_toot < merchandise.blue_toot or\
+            player.red_toot < merchandise.red_toot or\
+            player.black_toot < merchandise.black_toot:
+
+        return False, Response("توت شما کافی نیست!",status=status.HTTP_400_BAD_REQUEST)    
+
+    player.coin -= merchandise.coin
+    player.blue_toot -= merchandise.blue_toot
+    player.red_toot -= merchandise.red_toot
+    player.black_toot -= merchandise.black_toot
+    player.save()
+    return True, Response(status=status.HTTP_200_OK)
+    
 @transaction.atomic
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def get_problem_from_group(request, gid):
     account = request.user.account
+    player = Player.objects.filter(users__in=[account.user])[0]
+    print(player.coin)
+    if player.coin < 1000 and not gid in mashahir_ids:
+        return Response("سکه شما کافی نیست.",status=status.HTTP_400_BAD_REQUEST)
     problem = get_random_problem_from_group(gid, account)
     if not issubclass(problem.__class__, Problem):
         return problem
@@ -100,7 +124,7 @@ def get_problem_from_group(request, gid):
     data = {}
     data['problem'] =  ProblemSerializer(problem).data
     data['submit'] = serializerClass(instance).data
-
+    data['problem'].pop('answer')
     return Response(data, status=status.HTTP_200_OK)
     
 @transaction.atomic
@@ -151,3 +175,16 @@ def judge(request, sid , mark):
         problem = Problem.objects.filter(id=submit.problem.id)[0]
         add_reward_to_player(player, submit, problem)
     return Response(JudgeableSubmitSerializer(submit).data ,status=status.HTTP_200_OK)
+
+
+@transaction.atomic
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def ckeck_object(request, cid):
+    object = CheckableObject.objects.filter(id=cid)[0]
+    player = Player.objects.filter(users__in=[request.user])[0]
+    is_ok, responce = remove_merchandise_from_player(player, object)
+    if is_ok:
+        player.checkable_objects.add(object)
+    return responce
+

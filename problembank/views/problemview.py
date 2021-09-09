@@ -9,6 +9,7 @@ from rest_framework.decorators import api_view, permission_classes
 
 from problembank.models import *
 from rest_framework import permissions
+from problembank.permissions import DefualtPermission
 # from problembank.views import permissions as customPermissions
 from problembank.serializers import ProblemSerializer, DescriptiveProblemSerializer, ShortAnswerProblemSerializer, \
     ShortAnswerProblemSerializer
@@ -19,7 +20,7 @@ import sys
 class ProblemView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixins.ListModelMixin,
                   mixins.UpdateModelMixin, mixins.DestroyModelMixin):
     # permission_classes = [permissions.IsAuthenticated, customPermissions.MentorPermission, ]
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, DefualtPermission]
     queryset = Problem.objects.all().select_subclasses()
     serializer_class = ProblemSerializer
 
@@ -58,7 +59,7 @@ class ProblemView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Cre
 
 
 @api_view(['GET'])
-@permission_classes([permissions.AllowAny])
+@permission_classes([permissions.IsAuthenticated, DefualtPermission])
 def get_all_problems(request):
     problems = Problem.objects.all()
     problems_data = ProblemSerializer(problems.select_subclasses(), many=True).data

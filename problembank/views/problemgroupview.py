@@ -11,13 +11,13 @@ from problembank.models import ProblemGroup
 from problembank.serializers import ProblemGroupSerializer
 
 from rest_framework import permissions
-
+from problembank.permissions import DefualtPermission
 
 class ProblemGroupView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixins.ListModelMixin,
                     mixins.UpdateModelMixin):
     # permission_classes = [permissions.IsAuthenticated, customPermissions.MentorPermission,]
 
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, DefualtPermission]
     queryset = ProblemGroup.objects.all()
     serializer_class = ProblemGroupSerializer    
 

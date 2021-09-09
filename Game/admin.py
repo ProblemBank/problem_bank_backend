@@ -3,13 +3,12 @@ import csv
 from django.contrib import admin
 from django.contrib.auth.hashers import make_password
 from Account.models import User
-from Game.models import Player, Notification, Merchandise, CheckableObject, GameProblem, PlayerCheckableObject, \
+from Game.models import Player, Notification, Merchandise, CheckableObject, GameProblem, \
     Message, GroupMessage, FamousPerson, Exchange
 
 admin.site.register(Merchandise)
 admin.site.register(CheckableObject)
 admin.site.register(GameProblem)
-admin.site.register(PlayerCheckableObject)
 admin.site.register(Message)
 admin.site.register(GroupMessage)
 admin.site.register(Notification)

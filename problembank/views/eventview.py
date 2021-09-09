@@ -11,13 +11,13 @@ from problembank.models import *
 from rest_framework import permissions
 # from problembank.views import permissions as customPermissions
 from problembank.serializers import EventSerializer
-
+from problembank.permissions import DefualtPermission
 import sys
 
 class EventView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixins.ListModelMixin,
                    mixins.UpdateModelMixin, mixins.DestroyModelMixin):
     #permission_classes = [permissions.IsAuthenticated, customPermissions.MentorPermission, ]
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, DefualtPermission]
     queryset = Event.objects.all()
     serializer_class = EventSerializer
 

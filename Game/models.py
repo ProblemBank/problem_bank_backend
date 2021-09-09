@@ -18,6 +18,7 @@ class Player(models.Model):
     number_of_free_check = models.IntegerField(default=0,
                                                verbose_name='تعداد بارهایی که بازیکن می‌تواند به صورت رایگان عمل چک‌کردن را انجام دهد')
     famous_persons = models.ManyToManyField('FamousPerson', blank=True, verbose_name='اشخاص معروف')
+    checkable_objects = models.ManyToManyField('CheckableObject', blank=True, verbose_name='اشیا')
     def __str__(self):
         return f'{self.name}'
 
@@ -52,10 +53,10 @@ class CheckableObject(models.Model):
     image = models.ImageField(upload_to='TootenkhAmoo/checkable_objects/', blank=True, null=True, verbose_name='تصویر')
 
 
-class PlayerCheckableObject(models.Model):
-    checkable_object = models.ForeignKey(to=CheckableObject, on_delete=models.PROTECT, verbose_name='شی')
-    player = models.ForeignKey(to=Player, on_delete=models.PROTECT, verbose_name='بازیکن')
-    is_checked = models.BooleanField(default=False, verbose_name='آیا بازیکن، شی را بررسی کرده؟')
+# class PlayerCheckableObject(models.Model):
+#     checkable_object = models.ForeignKey(to=CheckableObject, on_delete=models.PROTECT, verbose_name='شی')
+#     player = models.ForeignKey(to=Player, on_delete=models.PROTECT, verbose_name='بازیکن')
+#     is_checked = models.BooleanField(default=False, verbose_name='آیا بازیکن، شی را بررسی کرده؟')
 
 
 class Message(models.Model):
