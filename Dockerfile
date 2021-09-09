@@ -42,7 +42,7 @@ WORKDIR /usr/src/app/
 COPY ./entrypoint.prod.sh ./entrypoint.prod.sh
 
 ADD ["./karsoogh", "./karsoogh"]
-ADD ["./auction", "./auction"]
+ADD ["./problembank", "./problembank"]
 ADD ["./Game", "./Game"]
 ADD ["./Account", "./Account"]
 COPY ./manage.py ./manage.py
