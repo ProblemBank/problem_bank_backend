@@ -1,3 +1,4 @@
+from Game.serializers import CheckableObjectSerializer, FamousPersonSerializer
 from Game.models import CheckableObject, GameProblem, Player
 from django.db import transaction
 from rest_framework import status, viewsets
@@ -22,7 +23,7 @@ def get_random_problem_from_group(gid, account):
     try:
         problem_group = ProblemGroup.objects.filter(id=gid)[0]
     except:
-        return Response("چنین گروه مسئله ای وجود ندارد.",status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message":"چنین گروه مسئله ای وجود ندارد."},status=status.HTTP_400_BAD_REQUEST)
 
     problems = problem_group.problems.all().select_subclasses()
     submit = None
@@ -38,7 +39,7 @@ def get_random_problem_from_group(gid, account):
         pass
     if submit is not None:
         if submit['status'] != 'Received':
-                return Response("شما قبلا از اینجا مسئله دریافت کرده اید و پاسخ آن را فرستاده اید.",status=status.HTTP_400_BAD_REQUEST)
+                return Response({"message":"شما قبلا از اینجا مسئله دریافت کرده اید و پاسخ آن را فرستاده اید."},status=status.HTTP_400_BAD_REQUEST)
         else:
             problem = Problem.objects.all().select_subclasses().filter(id=submit['problem'])[0]
             problem_data = ProblemSerializer(problem).data
@@ -47,10 +48,15 @@ def get_random_problem_from_group(gid, account):
             data['problem'] = problem_data
             data['submit'] = submit
             return Response(data, status=status.HTTP_400_BAD_REQUEST)
+    
+    player = Player.objects.filter(users__in=[account.user])[0]
+    if player.coin < 1000 and not gid in mashahir_ids:
+        return Response({"message":"سکه شما کافی نیست."},status=status.HTTP_400_BAD_REQUEST)
+    
     try:
         return problems.order_by('?')[0]
     except:
-        return Response("گروه مسئله خالی است.",status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message":"گروه مسئله خالی است."},status=status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -78,14 +84,14 @@ def add_reward_to_player(player, submit, problem):
 def remove_merchandise_from_player(player, object):
     merchandise = object.merchandise
     if len(player.checkable_objects.all().filter(id=object.id)) > 0:
-            return False, Response("قبلا این شی را بررسی کرده اید!",status=status.HTTP_400_BAD_REQUEST)
+            return False, Response({"message":"قبلا این شی را بررسی کرده اید!"},status=status.HTTP_400_BAD_REQUEST)
         
     if  player.coin < merchandise.coin or\
             player.blue_toot < merchandise.blue_toot or\
             player.red_toot < merchandise.red_toot or\
             player.black_toot < merchandise.black_toot:
 
-        return False, Response("توت شما کافی نیست!",status=status.HTTP_400_BAD_REQUEST)    
+        return False, Response({"message":"توت شما کافی نیست!"},status=status.HTTP_400_BAD_REQUEST)    
 
     player.coin -= merchandise.coin
     player.blue_toot -= merchandise.blue_toot
@@ -99,10 +105,6 @@ def remove_merchandise_from_player(player, object):
 @permission_classes([permissions.IsAuthenticated])
 def get_problem_from_group(request, gid):
     account = request.user.account
-    player = Player.objects.filter(users__in=[account.user])[0]
-    print(player.coin)
-    if player.coin < 1000 and not gid in mashahir_ids:
-        return Response("سکه شما کافی نیست.",status=status.HTTP_400_BAD_REQUEST)
     problem = get_random_problem_from_group(gid, account)
     if not issubclass(problem.__class__, Problem):
         return problem
@@ -134,16 +136,40 @@ def submit_answer(request, sid, pid):
     data = {}
     data['id'] = sid
     data['problem'] = pid
-    data['answer'] = {}
-    data['answer']['text'] = request.data['answer']
-    problem = Problem.objects.filter(id=pid)[0]
+    try:
+        problem = Problem.objects.filter(id=pid)[0]
+    except:
+        return Response({"message":"مسئله موجود نیست!"},status=status.HTTP_400_BAD_REQUEST)
     serializerClass = BaseSubmitSerializer.get_serializer(problem.problem_type)
-    instance = serializerClass.Meta.model.objects.filter(id=sid)[0]
+    try:
+        instance = serializerClass.Meta.model.objects.filter(id=sid)[0]
+    except:
+        return Response({"message":"ابتدا باید صورت مسئله را دریافت کنید."},status=status.HTTP_400_BAD_REQUEST)
+    if len(instance.respondents.all().filter(id=request.user.account.id)) == 0:
+        return Response({"message":"این پاسخ مربوط به شما نیست!"},status=status.HTTP_400_BAD_REQUEST)
+    if serializerClass == AutoCheckSubmitSerializer:
+        data['answer'] = {}
+        try:
+            data['answer']['text'] = request.data['text']
+        except:
+            data['answer']['text'] = "بدون پاسخ تایپی"
+    else:
+        data['text_answer'] = {}
+        try:
+            data['text_answer']['text'] = request.data['text']
+        except:
+            data['text_answer']['text'] = "بدون پاسخ تایپی"
+        data['upload_file_answer'] = {}
+        try:
+            data['upload_file_answer']['answer_file'] = request.FILES['file']
+            data['upload_file_answer']['file_name'] = f'problem {pid} player {request.user.account.id}'
+        except:
+            data.pop('upload_file_answer')
     serializer = serializerClass(data=data)
     if not serializer.is_valid(raise_exception=True):
         return Response(status=status.HTTP_400_BAD_REQUEST)
     if instance.status != BaseSubmit.Status.Received:
-        return Response("قبلا پاسخ این مسئله را ارسال کرده اید!",status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message":"قبلا پاسخ این مسئله را ارسال کرده اید!"},status=status.HTTP_400_BAD_REQUEST)
     data = serializer.validated_data
     instance = serializer.update(instance, data)
     if instance.mark == 1:
@@ -161,10 +187,10 @@ def judge(request, sid , mark):
     account = request.user.account
     submit = JudgeableSubmit.objects.filter(id=sid)[0]
     if submit.status == BaseSubmit.Status.Received:
-        return Response("هنوز پاسخی برای این مسئله ارسال نشده است.",status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message":"هنوز پاسخی برای این مسئله ارسال نشده است."},status=status.HTTP_400_BAD_REQUEST)
     
     if submit.status == BaseSubmit.Status.Judged:
-        return Response("این مسئله قبلا تصحیح شده است.",status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message":"این مسئله قبلا تصحیح شده است."},status=status.HTTP_400_BAD_REQUEST)
     submit.judged_at = timezone.now()
     submit.status = BaseSubmit.Status.Judged
     submit.judged_by = account
@@ -174,17 +200,36 @@ def judge(request, sid , mark):
         player = Player.objects.filter(users__in=[request.user])[0]
         problem = Problem.objects.filter(id=submit.problem.id)[0]
         add_reward_to_player(player, submit, problem)
-    return Response(JudgeableSubmitSerializer(submit).data ,status=status.HTTP_200_OK)
+    return 
 
 
 @transaction.atomic
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def ckeck_object(request, cid):
-    object = CheckableObject.objects.filter(id=cid)[0]
+    try:
+        object = CheckableObject.objects.filter(id=cid)[0]
+    except:
+        return Response({"message":"چنین شی ای وجود ندارد."},status=status.HTTP_400_BAD_REQUEST)
     player = Player.objects.filter(users__in=[request.user])[0]
     is_ok, responce = remove_merchandise_from_player(player, object)
     if is_ok:
         player.checkable_objects.add(object)
     return responce
 
+@transaction.atomic
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def get_objects(request):
+    player = Player.objects.filter(users__in=[request.user])[0]
+    data = CheckableObjectSerializer(player.checkable_objects.all(), many=True).data
+    return Response(data ,status=status.HTTP_200_OK)
+
+
+@transaction.atomic
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def get_famous_persons(request):
+    player = Player.objects.filter(users__in=[request.user])[0]
+    data = FamousPersonSerializer(player.famous_persons.all(), many=True).data
+    return Response(data ,status=status.HTTP_200_OK)

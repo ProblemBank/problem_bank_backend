@@ -384,11 +384,11 @@ class JudgeableSubmitSerializer(serializers.ModelSerializer):
         text_answer.answer_type = 'DescriptiveAnswer'
         text_answer.save()
         instance.text_answer = text_answer    
-    
+        print(validated_data)
         try:
             upload_file_answer_data = validated_data.pop('upload_file_answer')
             upload_file_answer_data['answer_type'] = 'UploadFileAnswer'
-            upload_file_answer = DescriptiveAnswer.objects.create(**upload_file_answer_data)
+            upload_file_answer = UploadFileAnswer.objects.create(**upload_file_answer_data)
             instance.upload_file_answer = upload_file_answer
         except:
             pass

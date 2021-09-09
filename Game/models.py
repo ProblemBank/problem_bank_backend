@@ -31,11 +31,6 @@ class FamousPerson(models.Model):
         return f'{self.name}'
 
 
-# class PlayerFamousPerson(models.Model):
-#     famous_person = models.ForeignKey(to=FamousPerson, on_delete=models.PROTECT, verbose_name='شخص معروف')
-#     player = models.ForeignKey(to=Player, on_delete=models.PROTECT, verbose_name='بازیکن')
-#     is_checked = models.BooleanField(default=False, verbose_name='آیا بازیکن، شی را بررسی کرده؟')
-
 
 class Merchandise(models.Model):
     coin = models.IntegerField(default=0, verbose_name='سکه')
@@ -52,11 +47,6 @@ class CheckableObject(models.Model):
     merchandise = models.ForeignKey(to=Merchandise, on_delete=models.PROTECT, verbose_name='کالا')
     image = models.ImageField(upload_to='TootenkhAmoo/checkable_objects/', blank=True, null=True, verbose_name='تصویر')
 
-
-# class PlayerCheckableObject(models.Model):
-#     checkable_object = models.ForeignKey(to=CheckableObject, on_delete=models.PROTECT, verbose_name='شی')
-#     player = models.ForeignKey(to=Player, on_delete=models.PROTECT, verbose_name='بازیکن')
-#     is_checked = models.BooleanField(default=False, verbose_name='آیا بازیکن، شی را بررسی کرده؟')
 
 
 class Message(models.Model):
