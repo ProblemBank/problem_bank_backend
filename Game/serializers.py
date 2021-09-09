@@ -40,8 +40,44 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class PlayerSerializer(serializers.ModelSerializer):
-    users = UserSerializer()
+    users = UserSerializer(many=True)
 
     class Meta:
         model = Player
-        fields = ['name', 'users', 'score']
+        fields = '__all__'
+
+
+class MerchandiseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Merchandise
+        fields = '__all__'
+
+
+class CheckableObjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CheckableObject
+        fields = '__all__'
+
+
+class PlayerCheckableObjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PlayerCheckableObject
+        fields = '__all__'
+
+
+class MessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Message
+        fields = '__all__'
+
+
+class GroupMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GroupMessage
+        fields = '__all__'
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = '__all__'

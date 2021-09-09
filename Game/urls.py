@@ -2,8 +2,9 @@ from django.urls import path
 from .views import *
 
 urlpatterns = [
+    path('user/notification/', NotificationView.as_view(), name='get user newest 10 notifications'),
     path('player/', PlayerView.as_view(), name='get player info'),
-    path('problem/scoreboard/', ScoreboardView.as_view(), name='get all player problems'),
+    path('player/scoreboard/', ScoreboardView.as_view(), name='get all player problems'),
 
     # path('<int:game_id>/subject/', SubjectView.as_view(), name='subjects'),
     # path('<int:game_id>/problem/', ProblemView.as_view(), name='get all player problems'),

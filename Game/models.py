@@ -13,6 +13,7 @@ class Player(models.Model):
     red_toot = models.IntegerField(default=0, verbose_name='توت قرمز')
     black_toot = models.IntegerField(default=0, verbose_name='توت سیاه')
 
+    has_find_TABOOT = models.BooleanField(default=False, verbose_name='آیا تابوت توتنخ‌عامو رو پیدا کرده‌اند؟')
     has_answered_first_problem = models.BooleanField(default=False, verbose_name='آیا سوال اولیه رو پاسخ داده است؟')
     number_of_free_check = models.IntegerField(default=0,
                                                verbose_name='تعداد بارهایی که بازیکن می‌تواند به صورت رایگان عمل چک‌کردن را انجام دهد')
@@ -36,13 +37,9 @@ class Merchandise(models.Model):
 
 
 class CheckableObject(models.Model):
-    title = models.CharField(max_length=50, verbose_name='نام')
+    title = models.CharField(max_length=50, verbose_name='عنوان')
     merchandise = models.ForeignKey(to=Merchandise, on_delete=models.PROTECT, verbose_name='کالا')
-
-
-class GameProblem(models.Model):
-    merchandise = models.ForeignKey(to=Merchandise, on_delete=models.PROTECT, verbose_name='کالا')
-    problem = models.ForeignKey(to=Problem, on_delete=models.PROTECT, verbose_name='مسئله از بانک سوال:')
+    image = models.ImageField(upload_to='TootenkhAmoo/checkable_objects/', blank=True, null=True, verbose_name='تصویر')
 
 
 class PlayerCheckableObject(models.Model):
@@ -53,9 +50,22 @@ class PlayerCheckableObject(models.Model):
 
 class Message(models.Model):
     text = models.CharField(max_length=50, verbose_name='پیام')
-    image = models.ImageField(models.ImageField(upload_to='game/', blank=True, null=True))
+    image = models.ImageField(upload_to='TootenkhAmoo/messages/', blank=True, null=True, verbose_name='تصویر')
     order = models.IntegerField(default=0, verbose_name='ترتیب نسبی')
 
 
 class GroupMessage(models.Model):
     messages = models.ManyToManyField(to=Message, verbose_name='پیام‌ها')
+
+
+class Notification(models.Model):
+    title = models.CharField(max_length=50, verbose_name='عنوان')
+    body = models.TextField(verbose_name='متن')
+    user = models.ForeignKey(to=User, on_delete=models.CASCADE, verbose_name='کاربر')
+    time = models.TimeField(verbose_name='زمان')
+    has_seen = models.BooleanField(default=False, verbose_name='آیا مشاهده کرده؟')
+
+
+class GameProblem(models.Model):
+    merchandise = models.ForeignKey(to=Merchandise, on_delete=models.PROTECT, verbose_name='کالا')
+    problem = models.ForeignKey(to=Problem, on_delete=models.PROTECT, verbose_name='مسئله از بانک مسئله')
