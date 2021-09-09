@@ -49,10 +49,10 @@ def get_random_problem_from_group(gid, account):
     except:
         pass
     if submit is not None:
-        if submit['status'] == 'Delivered':
-            return Response("شما قبلا از اینجا مسئله دریافت کرده اید و پاسخ آن را فرستاده اید.",status=status.HTTP_400_BAD_REQUEST)
+        if submit['status'] != 'Received':
+                return Response("شما قبلا از اینجا مسئله دریافت کرده اید و پاسخ آن را فرستاده اید.",status=status.HTTP_400_BAD_REQUEST)
         else:
-            problem = Problem.objects.filter(id=submit['problem'])[0]
+            problem = Problem.objects.all().select_subclasses().filter(id=submit['problem'])[0]
             problem_data = ProblemSerializer(problem).data
             data = {}
             data['problem'] = problem_data
@@ -67,10 +67,10 @@ def get_random_problem_from_group(gid, account):
 
 mashahir_ids = []
 def get_problem_cost(problem):
-    return 0 if problem.group.filter(id__in=mashahir_ids) else 1000
+    return 0 if problem.groups.filter(id__in=mashahir_ids) else 1000
 
 def get_problem_reward(problem):
-    return 400 if problem.group.filter(id__in=mashahir_ids) else (
+    return 400 if problem.groups.filter(id__in=mashahir_ids) else (
            1000 + (750 if problem.difficulty == Problem.Difficulty.Hard else 
                   (250 if problem.difficulty == Problem.Difficulty.Medium else 0)
                   )
@@ -104,8 +104,8 @@ def get_problem_from_group(request, gid):
         return Response(status=status.HTTP_400_BAD_REQUEST)
     instance = serializer.create(serializer.validated_data)
     player = Player.objects.filter(users__in=[account.user])[0]
-    accounts = [user.account for user in player.users.all()]
-    instance.respondents.add(accounts)
+    for user in player.users.all():
+        instance.respondents.add(user.account)
     instance.save()
     player.coin = player.coin - get_problem_cost(problem)
     player.save()
@@ -130,13 +130,11 @@ def submit_answer(request):
         return Response("قبلا پاسخ این مسئله را ارسال کرده اید!",status=status.HTTP_400_BAD_REQUEST)
     data = serializer.validated_data
     instance = serializer.update(instance, data)
-    if serializerClass is AutoCheckSubmit:
-        if instance.mark == 1:
-            player = Player.objects.filter(users__in=[request.user])[0]
-            add_reward_to_player(player, instance, problem)
-            
+    if instance.mark == 1:
+        player = Player.objects.filter(users__in=[request.user])[0]
+        add_reward_to_player(player, instance, problem)
+        
     instance.save()
-
     response = serializer.to_representation(instance)
     return Response(response ,status=status.HTTP_200_OK)
 
@@ -146,6 +144,8 @@ def submit_answer(request):
 def judge(request, sid , mark):
     account = request.user.account
     submit = JudgeableSubmit.objects.filter(id=sid)[0]
+    if submit.status == BaseSubmit.Status.Judged:
+        return Response("این مسئله قبلا تصحیح شده است.",status=status.HTTP_400_BAD_REQUEST)
     submit.judged_at = timezone.now()
     submit.status = BaseSubmit.Status.Judged
     submit.judged_by = account

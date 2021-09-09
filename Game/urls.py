@@ -1,9 +1,8 @@
 from django.urls import path
-from .gameviews.submitview import *
 
 from Game.view.exchange import get_all_exchanges, ExchangeView
 from Game.view.account import *
-from Gane.view.submitview import *
+from Game.view.submitview import *
 urlpatterns = [
     path('notification/', NotificationView.as_view(), name='user notifications'),
     path('player/', PlayerView.as_view(), name='get player info'),
@@ -15,7 +14,7 @@ urlpatterns = [
 
     path('getproblemfromgroup/<int:gid>/', get_problem_from_group),
     path('submitanswer/', submit_answer),
-    path('judge/<int:pid>/<int:mark>/', judge),
+    path('judge/<int:sid>/<int:mark>/', judge),
     # path('<int:game_id>/subject/', SubjectView.as_view(), name='subjects'),
     # path('<int:game_id>/problem/', ProblemView.as_view(), name='get all player problems'),
     # path('<int:game_id>/problem/<int:problem_id>/',

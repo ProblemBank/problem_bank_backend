@@ -1,7 +1,7 @@
 from django.db import models
 
 from Account.models import User
-from problembank.models import Problem
+from problembank.models import ProblemGroup
 
 
 class Player(models.Model):
@@ -17,7 +17,7 @@ class Player(models.Model):
     has_answered_first_problem = models.BooleanField(default=False, verbose_name='آیا سوال اولیه رو پاسخ داده است؟')
     number_of_free_check = models.IntegerField(default=0,
                                                verbose_name='تعداد بارهایی که بازیکن می‌تواند به صورت رایگان عمل چک‌کردن را انجام دهد')
-    famous_persons = models.ManyToManyField('FamousPerson', verbose_name='اشخاص معروف')
+    famous_persons = models.ManyToManyField('FamousPerson', blank=True, verbose_name='اشخاص معروف')
     def __str__(self):
         return f'{self.name}'
 
@@ -88,7 +88,7 @@ class Exchange(models.Model):
 
 class GameProblem(models.Model):
     reward_merchandise = models.ForeignKey(to=Merchandise, on_delete=models.PROTECT, verbose_name='کالا')
-    problem_group = models.OneToOneField('ProblemGroup', on_delete=models.PROTECT,
+    problem_group = models.OneToOneField(ProblemGroup, null=True, on_delete=models.PROTECT,
                                   related_name='submit_answer', verbose_name='مسئله از بانک مسئله')
     famous_person = models.ForeignKey(to=FamousPerson, null=True, blank=True, on_delete=models.PROTECT,
                                       verbose_name='شخص معروف')

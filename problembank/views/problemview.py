@@ -54,7 +54,7 @@ class ProblemView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Cre
         instance.save()
 
         response = serializer.to_representation(instance)
-        return Response(response)
+        return Response(response, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])

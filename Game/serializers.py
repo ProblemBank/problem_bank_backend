@@ -89,11 +89,6 @@ class FamousPersonSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class PlayerFamousPersonSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PlayerFamousPerson
-        exclude = ['player']
-
 
 class ExchangeSerializer(serializers.ModelSerializer):
     seller = PlayerSerializer()
