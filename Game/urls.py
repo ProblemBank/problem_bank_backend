@@ -1,11 +1,15 @@
 from django.urls import path
 from .views import *
+from .gameviews.submitview import *
 
 urlpatterns = [
     path('user/notification/', NotificationView.as_view(), name='get user newest 10 notifications'),
     path('player/', PlayerView.as_view(), name='get player info'),
     path('player/scoreboard/', ScoreboardView.as_view(), name='get all player problems'),
 
+    path('getproblemfromgroup/<int:gid>/', get_problem_from_group),
+    path('submitanswer/', submit_answer),
+    path('judge/<int:pid>/<int:mark>/', judge),
     # path('<int:game_id>/subject/', SubjectView.as_view(), name='subjects'),
     # path('<int:game_id>/problem/', ProblemView.as_view(), name='get all player problems'),
     # path('<int:game_id>/problem/<int:problem_id>/',
