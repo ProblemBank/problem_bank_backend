@@ -331,7 +331,7 @@ class AutoCheckSubmitSerializer(serializers.ModelSerializer):
         problem = Problem.objects.all().select_subclasses().filter(id=instance.problem.id)[0]
         print(problem.answer.text , instance.answer.text)
         if problem.answer.text == instance.answer.text:
-            instance.mark = 10
+            instance.mark = 1
         else:
             instance.mark = 0
         instance.status = BaseSubmit.Status.Judged
