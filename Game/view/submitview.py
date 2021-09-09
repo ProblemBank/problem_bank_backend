@@ -17,18 +17,6 @@ import sys
 from itertools import chain
 # data['juged_by'] = request.user.account #just for mentor not all the times!
 
-class JudgeableSubmitView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
-    permission_classes = [permissions.IsAuthenticated]
-    serializer_class = JudgeableSubmitSerializer
-    queryset = JudgeableSubmit.objects.all()
-
-
-class AutoCheckSubmitView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
-    permission_classes = [permissions.IsAuthenticated]
-    queryset = AutoCheckSubmit.objects.all()
-    serializer_class = AutoCheckSubmitSerializer
-
-
 
 def get_random_problem_from_group(gid, account):
     try:
@@ -118,11 +106,15 @@ def get_problem_from_group(request, gid):
 @transaction.atomic
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
-def submit_answer(request):
-    data = request.data
-    problem = Problem.objects.filter(id=data['problem'])[0]
+def submit_answer(request, sid, pid):
+    data = {}
+    data['id'] = sid
+    data['problem'] = pid
+    data['answer'] = {}
+    data['answer']['text'] = request.data['answer']
+    problem = Problem.objects.filter(id=pid)[0]
     serializerClass = BaseSubmitSerializer.get_serializer(problem.problem_type)
-    instance = serializerClass.Meta.model.objects.filter(id=data['id'])[0]
+    instance = serializerClass.Meta.model.objects.filter(id=sid)[0]
     serializer = serializerClass(data=data)
     if not serializer.is_valid(raise_exception=True):
         return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -144,6 +136,9 @@ def submit_answer(request):
 def judge(request, sid , mark):
     account = request.user.account
     submit = JudgeableSubmit.objects.filter(id=sid)[0]
+    if submit.status == BaseSubmit.Status.Received:
+        return Response("هنوز پاسخی برای این مسئله ارسال نشده است.",status=status.HTTP_400_BAD_REQUEST)
+    
     if submit.status == BaseSubmit.Status.Judged:
         return Response("این مسئله قبلا تصحیح شده است.",status=status.HTTP_400_BAD_REQUEST)
     submit.judged_at = timezone.now()
