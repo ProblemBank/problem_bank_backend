@@ -228,7 +228,7 @@ def judge_view(request, sid , mark):
     submit.mark = mark
     submit.save()
     if submit.mark == 1:
-        user = submit.respondents.all()[0]
+        user = submit.respondents.all()[0].user
         player = Player.objects.filter(users__in=[user])[0]
         problem = Problem.objects.filter(id=submit.problem.id)[0]
         add_reward_to_player(player, submit, problem)
@@ -253,7 +253,7 @@ def judge(request, sid , mark):
     submit.mark = mark
     submit.save()
     if submit.mark == 1:
-        user = submit.respondents.all()[0]
+        user = submit.respondents.all()[0].user
         player = Player.objects.filter(users__in=[user])[0]
         problem = Problem.objects.filter(id=submit.problem.id)[0]
         add_reward_to_player(player, submit, problem)
