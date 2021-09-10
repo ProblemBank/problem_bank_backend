@@ -540,3 +540,25 @@ def create_many_problem_with_global_problem_json(problems_json):
         create_problem_with_global_problem_json(problem_json_object)
     
 '[{"base_problem": {"title": "erty", "topics": ["ترکیبیات"], "subtopics": [{"topic": "ترکیبیات", "title": "لانه کبوتری"}, {"topic": "ترکیبیات", "title": "استقرا"}], "source": null, "difficulty": "VeryEasy", "suitable_for_over": 1, "suitable_for_under": 12, "is_checked": false}, "problem_type": "DescriptiveProblem", "title": "erty", "author": {"first_name": "sdf", "last_name": "None", "email": "wef", "phone_number": "09"}, "text": "derfghjn", "publish_date": "2021-09-06T17:49:54.043791+04:30", "last_change_date": null, "is_private": false, "upvoteCount": 0}, {"base_problem": {"title": "lkjpo;lasfdasdf", "topics": ["ترکیبیات"], "subtopics": [{"topic": "ترکیبیات", "title": "لانه کبوتری"}, {"topic": "ترکیبیات", "title": "استقرا"}], "source": "آنالیز ترکیبی", "difficulty": "Easy", "suitable_for_over": 1, "suitable_for_under": 12, "is_checked": false}, "problem_type": "DescriptiveProblem", "title": "lkjpo;lasfdasdf", "author": {"first_name": "sdf", "last_name": "None", "email": "wef", "phone_number": "09"}, "text": "slkdnf;sdf;llefwef", "publish_date": "2021-09-07T00:16:58.108720+04:30", "last_change_date": null, "is_private": false, "upvoteCount": 0}, {"base_problem": {"title": "mm", "topics": ["ترکیبیات", "هندسه"], "subtopics": [{"topic": "ترکیبیات", "title": "ناوردایی"}, {"topic": "هندسه", "title": "همساز"}], "source": "آنالیز ترکیبی", "difficulty": "Hard", "suitable_for_over": 5, "suitable_for_under": 7, "is_checked": false}, "problem_type": "DescriptiveProblem", "title": "mm", "author": {"first_name": "sdf", "last_name": "None", "email": "wef", "phone_number": "09"}, "text": "لاذتدنمپک", "publish_date": "2021-09-07T00:17:52.200124+04:30", "last_change_date": null, "is_private": false, "upvoteCount": 0}]'
+
+
+# datas = []
+# for registerrec in RegistrationReceipt.objects.all():
+#     if registerrec.is_participating:
+#         data = {}
+#         data['password'] = registerrec.user.password
+#         try:
+#             data['team'] = registerrec.team.id
+#         except:
+#             data['team'] = None
+#         data['first_name'] = registerrec.user.first_name
+#         data['last_name'] = registerrec.user.last_name
+#         data['phone_number'] = registerrec.user.username
+#         datas.append(data)
+
+# with file:
+#     header = ['password', 'team', 'first_name', 'last_name', 'phone_number']
+#     writer = csv.DictWriter(file, fieldnames = header)
+#     writer.writeheader()
+#     for i in range(0, len(datas)):
+#     writer.writerow(datas[i])
