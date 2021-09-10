@@ -16,7 +16,7 @@ urlpatterns = [
     path('getproblemfromgroup/<int:gid>/', get_problem_from_group),
     path('isproblemgotenfromgroup/<int:gid>/', is_problem_goten_from_group),
     path('submitanswer/<int:sid>/<int:pid>/', submit_answer),
-    path('judge/<int:sid>/<int:mark>/', judge),
+    # path('judge/<int:sid>/<int:mark>/', judge),
     path('checkobject/<int:cid>/', ckeck_object),
     path('getmyobjects/', get_my_objects),
     path('getallobjects/', get_all_objects),

@@ -211,11 +211,12 @@ def send_notification(user, problem_group, mark):
     data['time'] = timezone.now()
     Notification.objects.create(**data)
 
+# @transaction.atomic
+# @api_view(['POST'])
+# @permission_classes([permissions.IsAuthenticated])
 @transaction.atomic
-@api_view(['POST'])
-@permission_classes([permissions.IsAuthenticated])
 def judge(request, sid , mark):
-    account = request.user.account
+    # account = request.user.account
     submit = JudgeableSubmit.objects.filter(id=sid)[0]
     if submit.status == BaseSubmit.Status.Received:
         return Response({"message":"هنوز پاسخی برای این مسئله ارسال نشده است."},status=status.HTTP_400_BAD_REQUEST)
@@ -224,14 +225,16 @@ def judge(request, sid , mark):
         return Response({"message":"این مسئله قبلا تصحیح شده است."},status=status.HTTP_400_BAD_REQUEST)
     submit.judged_at = timezone.now()
     submit.status = BaseSubmit.Status.Judged
-    submit.judged_by = account
+    # submit.judged_by = account
     submit.mark = mark
     submit.save()
     if submit.mark == 1:
-        player = Player.objects.filter(users__in=[request.user])[0]
+        user = submit.respondents.all()[0]
+        player = Player.objects.filter(users__in=[user])[0]
         problem = Problem.objects.filter(id=submit.problem.id)[0]
         add_reward_to_player(player, submit, problem)
-    send_notification(request.user, submit.problem_group, submit.mark)
+    for user in submit.respondents.all():
+        send_notification(user, submit.problem_group, submit.mark)
     return Response(JudgeableSubmitSerializer(submit).data ,status=status.HTTP_200_OK)
 
 

@@ -173,7 +173,7 @@ class BaseSubmit(models.Model):
                                       verbose_name='دسته مسئله', related_name='%(class)s')
 
     objects = InheritanceManager()
-
+    
     def __str__(self):
         if self.status == self.Status.Received:
             time = self.received_at.time()
@@ -218,7 +218,12 @@ class JudgeableSubmit(BaseSubmit):
                                   on_delete=models.SET_NULL,
                                   null=True,
                                   blank=True, related_name='judged_problems', verbose_name='مصحح')
-
+    def get_answer(self):
+        return self.text_answer.text
+    def get_file(self):
+        return self.upload_file_answer.answer_file
+    def get_problem(self):
+        return self.problem.text
 
 class Comment(models.Model):
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='comments', verbose_name='مسئله')
