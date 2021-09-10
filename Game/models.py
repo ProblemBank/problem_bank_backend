@@ -5,7 +5,7 @@ from problembank.models import ProblemGroup
 
 
 class Player(models.Model):
-    name = models.CharField(max_length=50, verbose_name='نام')
+    name = models.CharField(max_length=100, verbose_name='نام')
     users = models.ManyToManyField(User, verbose_name='کاربر(ان)')
 
     coin = models.IntegerField(default=0, verbose_name='سکه')
