@@ -46,7 +46,7 @@ ADD ["./problembank", "./problembank"]
 ADD ["./Game", "./Game"]
 ADD ["./Account", "./Account"]
 COPY ./manage.py ./manage.py
-COPY ./problembank/templates ./staticfiels/templates
+COPY ./problembank/templates ./staticfiles/templates
 
 RUN adduser -D game_backend
 
