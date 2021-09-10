@@ -228,7 +228,9 @@ class ProblemGroup(models.Model):
     event = models.ForeignKey('Event', on_delete=models.CASCADE, verbose_name='رویداد', related_name='problem_groups')
     problems = models.ManyToManyField(Problem, verbose_name='مسئله(ها)', related_name='groups')
     is_visible = models.BooleanField(default=True, verbose_name='آیا قابل نمایش است؟')
-
+    
+    def __str__(self):
+        return self.title
 
 class Event(models.Model):
     title = models.CharField(max_length=100, verbose_name='عنوان')

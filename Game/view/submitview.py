@@ -239,10 +239,18 @@ def ckeck_object(request, cid):
 @transaction.atomic
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
-def get_objects(request):
+def get_my_objects(request):
     player = Player.objects.filter(users__in=[request.user])[0]
     data = CheckableObjectSerializer(player.checkable_objects.all(), many=True).data
     return Response(data ,status=status.HTTP_200_OK)
+
+@transaction.atomic
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def get_all_objects(request):
+    data = CheckableObjectSerializer(CheckableObject.objects.all(), many=True).data
+    return Response(data ,status=status.HTTP_200_OK)
+
 
 
 @transaction.atomic

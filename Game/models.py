@@ -83,3 +83,5 @@ class GameProblem(models.Model):
                                   related_name='submit_answer', verbose_name='مسئله از بانک مسئله')
     famous_person = models.ForeignKey(to=FamousPerson, null=True, blank=True, on_delete=models.PROTECT,
                                       verbose_name='شخص معروف')
+    def __str__(self) -> str:
+        return f'{self.problem_group.title} ' + (f'{self.famous_person.name}' if self.famous_person else "")
