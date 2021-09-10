@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 from rest_framework import viewsets
 from rest_framework import mixins
 from rest_framework.decorators import api_view, permission_classes
-
+from problembank.permissions import DefualtPermission
 from problembank.models import *
 from rest_framework import permissions
 # from problembank.views import permissions as customPermissions
@@ -260,3 +260,14 @@ def get_famous_persons(request):
     player = Player.objects.filter(users__in=[request.user])[0]
     data = FamousPersonSerializer(player.famous_persons.all(), many=True).data
     return Response(data ,status=status.HTTP_200_OK)
+
+from Account.serializers import add_accounts, add_players
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated, DefualtPermission])
+def initial_players(request):
+    try:
+        add_accounts()
+    except:
+        pass
+    add_players()
