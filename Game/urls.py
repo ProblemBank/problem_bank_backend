@@ -1,6 +1,6 @@
 from django.urls import path
 
-from Game.view.exchange import get_all_exchanges, ExchangeView
+from Game.view.exchange import get_all_exchanges, ExchangeView, create_new_exchange
 from Game.view.account import *
 from Game.view.submitview import *
 urlpatterns = [
@@ -10,6 +10,7 @@ urlpatterns = [
     # path('scoreboard/', ScoreboardView.as_view(), name='get scoreboard'),
 
     path('exchange/all/', get_all_exchanges, name='get all exchanges'),
+    path('exchange/create/', create_new_exchange, name='create new exchange'),
     path('exchange/', ExchangeView.as_view(), name='player exchange'),
 
     path('getproblemfromgroup/<int:gid>/', get_problem_from_group),
