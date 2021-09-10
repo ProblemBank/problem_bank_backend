@@ -17,7 +17,7 @@ admin.site.register(Exchange)
 
 
 def import_from_csv(a, b, c):
-    with open('students_info.csv') as f:
+    with open('secret.csv') as f:
         reader = csv.reader(f)
         for row in reader:
             user1 = User.objects.filter(username=row[2]).first()
