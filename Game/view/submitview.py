@@ -199,6 +199,13 @@ def submit_answer(request, sid, pid):
         send_notification(request.user, instance.problem_group, instance.mark)
     instance.save()
     response = serializer.to_representation(instance)
+    
+    player = Player.objects.filter(users__in=[request.user])[0]
+    game_problem = GameProblem.objects.filter(problem_group=instance.problem_group)[0]
+    if game_problem.famous_person is not None:
+        player.famous_persons.add(game_problem.famous_person)
+    player.save()
+
     return Response(response ,status=status.HTTP_200_OK)
 
 from Game.serializers import NotificationSerializer
