@@ -59,7 +59,7 @@ def get_random_problem_from_group(gid, account):
 
 
 
-mashahir_ids = []
+mashahir_ids = [10, 11, 12, 13, 14, 15, 16, 30, 31, 32, 33, 34]
 def get_problem_cost(problem):
     return 0 if problem.groups.filter(id__in=mashahir_ids) else 1000
 
@@ -284,4 +284,13 @@ def initial_players(request):
     except:
         pass
     add_players()
+    return Response(status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def decrease_coin(request):
+    player = Player.objects.filter(users__in=[request.user.id])
+    player.coin -= 7500
+    player.save()
     return Response(status=status.HTTP_200_OK)
