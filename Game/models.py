@@ -19,17 +19,17 @@ class Player(models.Model):
                                                verbose_name='تعداد بارهایی که بازیکن می‌تواند به صورت رایگان عمل چک‌کردن را انجام دهد')
     famous_persons = models.ManyToManyField('FamousPerson', blank=True, verbose_name='اشخاص معروف')
     checkable_objects = models.ManyToManyField('CheckableObject', blank=True, verbose_name='اشیا')
+
     def __str__(self):
         return f'{self.name}'
 
 
 class FamousPerson(models.Model):
     name = models.CharField(max_length=50, verbose_name='نام')
-    image = models.ImageField(upload_to='famous_person/checkable_objects/', blank=True, null=True, verbose_name='تصویر')
+    is_fake = models.BooleanField(default=False, verbose_name='آیا تقلبی است؟')
 
     def __str__(self):
-        return f'{self.name}'
-
+        return f'{self.name} | {self.is_fake}'
 
 
 class Merchandise(models.Model):
@@ -46,7 +46,6 @@ class CheckableObject(models.Model):
     title = models.CharField(max_length=50, verbose_name='عنوان')
     merchandise = models.ForeignKey(to=Merchandise, on_delete=models.PROTECT, verbose_name='کالا')
     image = models.ImageField(upload_to='TootenkhAmoo/checkable_objects/', blank=True, null=True, verbose_name='تصویر')
-
 
 
 class Message(models.Model):
@@ -80,8 +79,9 @@ class Exchange(models.Model):
 class GameProblem(models.Model):
     reward_merchandise = models.ForeignKey(to=Merchandise, on_delete=models.PROTECT, verbose_name='کالا')
     problem_group = models.OneToOneField(ProblemGroup, null=True, on_delete=models.PROTECT,
-                                  related_name='submit_answer', verbose_name='مسئله از بانک مسئله')
+                                         related_name='submit_answer', verbose_name='مسئله از بانک مسئله')
     famous_person = models.ForeignKey(to=FamousPerson, null=True, blank=True, on_delete=models.PROTECT,
                                       verbose_name='شخص معروف')
+
     def __str__(self) -> str:
         return f'{self.problem_group.title} ' + (f'{self.famous_person.name}' if self.famous_person else "")
