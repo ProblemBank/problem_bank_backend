@@ -175,7 +175,14 @@ class BaseSubmit(models.Model):
     objects = InheritanceManager()
 
     def __str__(self):
-        return f'Submit for problem {self.problem.title} with status {self.status}'
+        if self.status == self.Status.Received:
+            time = self.received_at.time()
+        if self.status == self.Status.Delivered:
+            time = self.delivered_at.time()
+        if self.status == self.Status.Judged:
+            time = self.judged_at.time()
+
+        return f'Submit for problem {self.problem_group.title} where {self.status} at {time}'
 
     class Meta:
         abstract = True

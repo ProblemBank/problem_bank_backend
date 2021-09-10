@@ -66,6 +66,7 @@ class ResetPasswordSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'error': 'please enter valid crendentials'})
 
 import csv
+
 def add_accounts():
     with open('g4g.csv') as f:
         reader = csv.reader(f)
