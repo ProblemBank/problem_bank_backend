@@ -199,6 +199,14 @@ def submit_answer(request, sid, pid):
     response = serializer.to_representation(instance)
     return Response(response ,status=status.HTTP_200_OK)
 
+def send_notification(user, problem_group, mark):
+    data = {}
+    data['title'] = "مسئله شما تصحیح شد."
+    data['body'] = f"شما نمره {mark} را از  {problem_group.title} بدست أوزدید."
+    data['user'] = user
+    data['time'] = timezone.now()
+    
+
 @transaction.atomic
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])

@@ -21,7 +21,10 @@ class Player(models.Model):
     checkable_objects = models.ManyToManyField('CheckableObject', blank=True, verbose_name='اشیا')
 
     def __str__(self):
-        return f'{self.name}'
+        name = ''
+        for user in self.users.all():
+            name = name + f' {user.first_name} {user.last_name},'
+        return name
 
 
 class FamousPerson(models.Model):
