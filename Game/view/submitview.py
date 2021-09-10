@@ -271,3 +271,4 @@ def initial_players(request):
     except:
         pass
     add_players()
+    return Response(status=status.HTTP_200_OK)
