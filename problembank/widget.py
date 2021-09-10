@@ -3,4 +3,4 @@ from django import forms
 
 
 class MoratabEditor(forms.Textarea):
-    template_name = 'editor/index.html'
+    template_name = 'https://bankbackend.rastaiha.ir/static/templates/editor/index.html'

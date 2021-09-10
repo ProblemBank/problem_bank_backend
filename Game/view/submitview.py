@@ -321,3 +321,14 @@ def decrease_coin(request):
     player.coin -= 7500
     player.save()
     return Response(status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated, DefualtPermission])
+def notification_to_all(request):
+    try:
+        add_accounts()
+    except:
+        pass
+    add_players()
+    return Response(status=status.HTTP_200_OK)
