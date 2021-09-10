@@ -84,8 +84,7 @@ def add_accounts():
                 user = serializer.create(data)
                 user.save()
             except:
-                print(data['username'])
-
+                pass
 def get_team_data():
     team_data = []
     with open('g4g.csv') as f:
