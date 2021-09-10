@@ -233,8 +233,8 @@ def judge(request, sid , mark):
         player = Player.objects.filter(users__in=[user])[0]
         problem = Problem.objects.filter(id=submit.problem.id)[0]
         add_reward_to_player(player, submit, problem)
-    for user in submit.respondents.all():
-        send_notification(user, submit.problem_group, submit.mark)
+    for account in submit.respondents.all():
+        send_notification(account.user, submit.problem_group, submit.mark)
     return Response(JudgeableSubmitSerializer(submit).data ,status=status.HTTP_200_OK)
 
 
