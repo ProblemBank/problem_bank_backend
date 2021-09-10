@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models.fields import TextField
 from Account.models import User
 from model_utils.managers import InheritanceManager
 from django.utils import timezone
@@ -206,6 +207,8 @@ class AutoCheckSubmit(BaseSubmit):
 
 
 class JudgeableSubmit(BaseSubmit):
+    text_tmp1 = TextField(null=True, blank=True, verbose_name='صورت مسئله')
+    text_tmp2 = TextField(null=True, blank=True, verbose_name='پاسخ ارسالی')
     text_answer = models.OneToOneField('DescriptiveAnswer', blank=True, null=True, on_delete=models.SET_NULL,
                                        unique=True,
                                        related_name='submit_answer', verbose_name='پاسخ متنی')
@@ -221,7 +224,7 @@ class JudgeableSubmit(BaseSubmit):
     def get_answer(self):
         return self.text_answer.text
     def get_file(self):
-        return self.upload_file_answer.answer_file
+        return 'https://bankbackend.rastaiha.ir/media/' + str(self.upload_file_answer.answer_file)   
     def get_problem(self):
         return self.problem.text
 

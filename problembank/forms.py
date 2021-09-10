@@ -1,9 +1,7 @@
 from django import forms
-from .widgets import MoratabEditor
-from .models import Account, Hardness
+from problembank.widget import MoratabEditor
 
 class QuestionForm(forms.ModelForm):
-
-    text = forms.CharField(widget=MoratabEditor)
-    answer = forms.CharField(widget=MoratabEditor, required=False)
+    text_tmp1 = forms.CharField(widget=MoratabEditor, required=False)
+    text_tmp2 = forms.CharField(widget=MoratabEditor, required=False)
     
