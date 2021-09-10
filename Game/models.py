@@ -26,10 +26,9 @@ class Player(models.Model):
 
 class FamousPerson(models.Model):
     name = models.CharField(max_length=50, verbose_name='نام')
-    is_fake = models.BooleanField(default=False, verbose_name='آیا تقلبی است؟')
 
     def __str__(self):
-        return f'{self.name} | {self.is_fake}'
+        return f'{self.name}'
 
 
 class Merchandise(models.Model):
@@ -45,7 +44,10 @@ class Merchandise(models.Model):
 class CheckableObject(models.Model):
     title = models.CharField(max_length=50, verbose_name='عنوان')
     merchandise = models.ForeignKey(to=Merchandise, on_delete=models.PROTECT, verbose_name='کالا')
-    image = models.ImageField(upload_to='TootenkhAmoo/checkable_objects/', blank=True, null=True, verbose_name='تصویر')
+    is_fake = models.BooleanField(default=False, verbose_name='آیا تقلبی است؟')
+
+    def __str__(self):
+        return f'{self.title} | {self.is_fake}'
 
 
 class Message(models.Model):

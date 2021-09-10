@@ -1,4 +1,4 @@
-from Game.serializers import CheckableObjectSerializer, FamousPersonSerializer
+from Game.serializers import CheckableObjectSerializer, FamousPersonSerializer, PrivateCheckableObjectSerializer
 from Game.models import CheckableObject, GameProblem, Player
 from django.db import transaction
 from rest_framework import status, viewsets
@@ -248,7 +248,7 @@ def get_my_objects(request):
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
 def get_all_objects(request):
-    data = CheckableObjectSerializer(CheckableObject.objects.all(), many=True).data
+    data = PrivateCheckableObjectSerializer(CheckableObject.objects.all(), many=True).data
     return Response(data ,status=status.HTTP_200_OK)
 
 

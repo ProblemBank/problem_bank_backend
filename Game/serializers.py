@@ -54,9 +54,19 @@ class MerchandiseSerializer(serializers.ModelSerializer):
 
 
 class CheckableObjectSerializer(serializers.ModelSerializer):
+    merchandise = MerchandiseSerializer()
+
     class Meta:
         model = CheckableObject
         fields = '__all__'
+
+
+class PrivateCheckableObjectSerializer(serializers.ModelSerializer):
+    merchandise = MerchandiseSerializer()
+
+    class Meta:
+        model = CheckableObject
+        exclude = ['is_fake']
 
 
 class MessageSerializer(serializers.ModelSerializer):
@@ -81,7 +91,6 @@ class FamousPersonSerializer(serializers.ModelSerializer):
     class Meta:
         model = FamousPerson
         fields = '__all__'
-
 
 
 class ExchangeSerializer(serializers.ModelSerializer):
