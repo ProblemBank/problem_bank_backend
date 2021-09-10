@@ -5,10 +5,8 @@ from django.contrib import admin
 from problembank.models import *
 from Game.view.submitview import *
 from problembank.forms import QuestionForm
-class AnswerInline(admin.TabularInline):  # StackedInline
-    model = DescriptiveAnswer
-    extra = 1
 
+admin.site.register(BankAccount)
 @admin.register(JudgeableSubmit)
 class JugeableSubmitAdmin(admin.ModelAdmin):
 
