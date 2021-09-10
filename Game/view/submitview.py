@@ -1,3 +1,4 @@
+from django.core.checks import messages
 from Game.serializers import CheckableObjectSerializer, FamousPersonSerializer, PrivateCheckableObjectSerializer
 from Game.models import CheckableObject, GameProblem, Notification, Player
 from django.db import transaction
@@ -330,12 +331,21 @@ def decrease_coin(request):
     return Response(status=status.HTTP_200_OK)
 
 
+from Game.serializers import NotificationSerializer
+def send_note(user, message):
+    data = {}
+    data['title'] = "مسئله شما تصحیح شد."
+    data['body'] = message
+    data['user'] = user
+    data['time'] = timezone.now()
+    Notification.objects.create(**data)
+
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated, DefualtPermission])
 def notification_to_all(request):
-    try:
-        add_accounts()
-    except:
-        pass
-    add_players()
+    for account in BankAccount.objects.all():
+        try:
+            send_note(account.user, message=request['message'])
+        except:
+            pass
     return Response(status=status.HTTP_200_OK)
