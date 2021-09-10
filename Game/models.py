@@ -24,7 +24,7 @@ class Player(models.Model):
         name = ''
         for user in self.users.all():
             name = name + f' {user.first_name} {user.last_name},'
-        return name
+        return f'{name}| {self.name}'
 
 
 class FamousPerson(models.Model):
