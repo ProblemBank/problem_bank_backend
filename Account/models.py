@@ -27,5 +27,8 @@ class User(AbstractUser):
     gender = models.CharField(max_length=10, null=True, blank=True, choices=Gender.choices)
     grade = models.CharField(max_length=10, null=True, blank=True, choices=Grade.choices)
 
+    def user_name(self):
+        return f'{self.first_name} {self.last_name}'
+
     def __str__(self):
         return f'{self.first_name} {self.last_name} | {self.username}'

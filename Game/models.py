@@ -26,6 +26,11 @@ class Player(models.Model):
             name = name + f' {user.first_name} {user.last_name},'
         return f'{name}| {self.name}'
 
+    def fake_checkable_objects(self):
+        return len(self.checkable_objects.all().filter(is_fake=True))
+    
+    def not_fake_checkable_objects(self):
+        return len(self.checkable_objects.all().filter(is_fake=False))
 
 class FamousPerson(models.Model):
     name = models.CharField(max_length=50, verbose_name='نام')
