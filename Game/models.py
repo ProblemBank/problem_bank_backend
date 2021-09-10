@@ -5,7 +5,7 @@ from problembank.models import ProblemGroup
 
 
 class Player(models.Model):
-    name = models.CharField(max_length=50, verbose_name='نام')
+    name = models.CharField(max_length=100, verbose_name='نام')
     users = models.ManyToManyField(User, verbose_name='کاربر(ان)')
 
     coin = models.IntegerField(default=0, verbose_name='سکه')
@@ -21,7 +21,10 @@ class Player(models.Model):
     checkable_objects = models.ManyToManyField('CheckableObject', blank=True, verbose_name='اشیا')
 
     def __str__(self):
-        return f'{self.name}'
+        name = ''
+        for user in self.users.all():
+            name = name + f' {user.first_name} {user.last_name},'
+        return name
 
 
 class FamousPerson(models.Model):

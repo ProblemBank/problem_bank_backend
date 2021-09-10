@@ -14,7 +14,7 @@ admin.site.register(GroupMessage)
 admin.site.register(Notification)
 admin.site.register(FamousPerson)
 admin.site.register(Exchange)
-
+admin.site.register(Player)
 
 def import_from_csv(a, b, c):
     with open('secret.csv') as f:
@@ -38,9 +38,3 @@ def import_from_csv(a, b, c):
                     user=user)
 
 
-@admin.register(Player)
-class PlayerAdmin(admin.ModelAdmin):
-    import_from_csv.short_description = 'بارگذاری دانش‌آموزان در سایت'
-    actions = [import_from_csv]
-
-    list_display = ('name', 'id')

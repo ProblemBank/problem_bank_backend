@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 from rest_framework import viewsets
 from rest_framework import mixins
 from rest_framework.decorators import api_view, permission_classes
-
+from problembank.permissions import DefualtPermission
 from problembank.models import *
 from rest_framework import permissions
 # from problembank.views import permissions as customPermissions
@@ -199,6 +199,14 @@ def submit_answer(request, sid, pid):
     response = serializer.to_representation(instance)
     return Response(response ,status=status.HTTP_200_OK)
 
+def send_notification(user, problem_group, mark):
+    data = {}
+    data['title'] = "مسئله شما تصحیح شد."
+    data['body'] = f"شما نمره {mark} را از  {problem_group.title} بدست أوزدید."
+    data['user'] = user
+    data['time'] = timezone.now()
+    
+
 @transaction.atomic
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
@@ -260,3 +268,15 @@ def get_famous_persons(request):
     player = Player.objects.filter(users__in=[request.user])[0]
     data = FamousPersonSerializer(player.famous_persons.all(), many=True).data
     return Response(data ,status=status.HTTP_200_OK)
+
+from Account.serializers import add_accounts, add_players
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated, DefualtPermission])
+def initial_players(request):
+    try:
+        add_accounts()
+    except:
+        pass
+    add_players()
+    return Response(status=status.HTTP_200_OK)
