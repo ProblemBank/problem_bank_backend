@@ -230,7 +230,7 @@ class ProblemGroup(models.Model):
     is_visible = models.BooleanField(default=True, verbose_name='آیا قابل نمایش است؟')
     
     def __str__(self):
-        return self.title
+        return f'{self.title} {self.id}'
 
 class Event(models.Model):
     title = models.CharField(max_length=100, verbose_name='عنوان')

@@ -1,5 +1,5 @@
 from Game.serializers import CheckableObjectSerializer, FamousPersonSerializer, PrivateCheckableObjectSerializer
-from Game.models import CheckableObject, GameProblem, Player
+from Game.models import CheckableObject, GameProblem, Notification, Player
 from django.db import transaction
 from rest_framework import status, viewsets
 from rest_framework.parsers import JSONParser
@@ -194,18 +194,22 @@ def submit_answer(request, sid, pid):
     if instance.mark == 1:
         player = Player.objects.filter(users__in=[request.user])[0]
         add_reward_to_player(player, instance, problem)
-        
+    
+    if serializerClass == AutoCheckSubmitSerializer:
+        send_notification(request.user, instance.problem_group, instance.mark)
     instance.save()
     response = serializer.to_representation(instance)
     return Response(response ,status=status.HTTP_200_OK)
 
+from Game.serializers import NotificationSerializer
 def send_notification(user, problem_group, mark):
     data = {}
     data['title'] = "مسئله شما تصحیح شد."
-    data['body'] = f"شما نمره {mark} را از  {problem_group.title} بدست أوزدید."
+    mark = 'کامل' if mark == 1 else 'صفر'
+    data['body'] = f"شما نمره {mark} را از  {problem_group.title} کسب کردید."
     data['user'] = user
     data['time'] = timezone.now()
-    
+    Notification.objects.create(**data)
 
 @transaction.atomic
 @api_view(['POST'])
@@ -227,7 +231,8 @@ def judge(request, sid , mark):
         player = Player.objects.filter(users__in=[request.user])[0]
         problem = Problem.objects.filter(id=submit.problem.id)[0]
         add_reward_to_player(player, submit, problem)
-    return 
+    send_notification(request.user, submit.problem_group, submit.mark)
+    return Response(JudgeableSubmitSerializer(submit).data ,status=status.HTTP_200_OK)
 
 
 @transaction.atomic
