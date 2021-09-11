@@ -8,6 +8,7 @@ from problembank.forms import ProblemForm
 
 admin.site.register(Event)
 admin.site.register(BankAccount)
+admin.site.register(DescriptiveAnswer)
 # @admin.register(JudgeableSubmit)
 # class JugeableSubmitAdmin(admin.ModelAdmin):
 

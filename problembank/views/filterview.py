@@ -9,31 +9,22 @@ from problembank.permissions import ProblemPermission
 from django.conf import settings
 from problembank.serializers import FilterSerializer
 
-def get_problems_by_filter(orderField=None ,topics=-1, sub_topics=[], \
-                         event=-1, sources=[], authors=[], \
-                         publish_date_from=None, publish_date_until=None, \
+def get_problems_by_filter(orderField=None ,topics=-1, subtopics=[], \
+                         sources=[], author=-1, \
                          grades=[], difficalties=[], page=None):
     problems = Problem.objects.all()
     if len(topics) != 0:
         problems = problems.filter(topics__in=topics).distinct()
 
-    if len(sub_topics) != 0:
-        problems = problems.filter(sub_topics__in=sub_topics).distinct()
+    if len(subtopics) != 0:
+        problems = problems.filter(subtopics__in=subtopics).distinct()
 
-    if event != -1:
-        problems = problems.filter(events__in=event).distinct()
-
+    
     if len(sources) != 0:
         problems = problems.filter(source__in=sources)
 
-    if len(authors) != 0:
-        problems = problems.filter(author__in=authors)
-
-    if publish_date_until is not None:
-        problems = problems.filter(publish_date__lte=publish_date_until)
-
-    if publish_date_from is not None:
-        problems = problems.filter(publish_date__gte=publish_date_from)
+    if author != -1:
+        problems = problems.filter(author__in=author)
 
     if grades != -1:
         problems = problems.filter(grade__in=grades)
@@ -68,5 +59,5 @@ def get_problem_by_filter_view(request):
     page = paginator.get_page(data.get('page'))
     
     data = {'problems':ProblemSerializer(page.object_list, many=True).data,
-            'num_pages':paginator.num_pages}
+            'pages_count':paginator.num_pages}
     return Response(data, status=status.HTTP_200_OK)

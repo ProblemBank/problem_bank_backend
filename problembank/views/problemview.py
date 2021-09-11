@@ -72,6 +72,16 @@ def get_all_problems(request):
 def copy_problem_to_group(request, pid, gid):
     problem = Problem.objects.all().select_subclasses().filter(id=pid)[0]
     problem_group = ProblemGroup.objects.filter(id=gid)[0]
-    problem.id = None
-    problem.pk = None
-    problem.save()
+    last_answer = problem.answer.pk
+    answer = problem.answer
+    problem.answer = None
+    answer.pk = None
+    answer.id = None
+    # answer.save() .
+    print(answer.id, last_answer)
+    # problem.pk = None
+    # problem.answer = answer
+    # problem.save()
+    # problem.answer.id = answer
+    # problem.save()
+    return Response(status=status.HTTP_200_OK)
