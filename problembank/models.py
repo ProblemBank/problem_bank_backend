@@ -193,22 +193,7 @@ class AutoCheckSubmit(BaseSubmit):
     answer = models.OneToOneField('ShortAnswer', null=True, on_delete=models.SET_NULL, unique=True,
                                   related_name='submit_answer', verbose_name='پاسخ')
 
-    def check_answer(self):
-        pass
-        # is_correct = False
-        # try:
-        #     is_correct = self.answer.text == self.problem.answer.text
-
-        # except ValueError:
-        #     logger.warn('Type mismatch for %s' % self) #is it true log?
-        # selfstatus = BaseSubmit.Status. if is_correct else BaseSubmit.SubmitStatus.Wrong
-        # self.judged_at = timezone.now()
-        # self.save()
-
-
 class JudgeableSubmit(BaseSubmit):
-    text_tmp1 = TextField(null=True, blank=True, verbose_name='صورت مسئله')
-    text_tmp2 = TextField(null=True, blank=True, verbose_name='پاسخ ارسالی')
     text_answer = models.OneToOneField('DescriptiveAnswer', blank=True, null=True, on_delete=models.SET_NULL,
                                        unique=True,
                                        related_name='submit_answer', verbose_name='پاسخ متنی')
@@ -221,12 +206,6 @@ class JudgeableSubmit(BaseSubmit):
                                   on_delete=models.SET_NULL,
                                   null=True,
                                   blank=True, related_name='judged_problems', verbose_name='مصحح')
-    def get_answer(self):
-        return self.text_answer.text
-    def get_file(self):
-        return 'https://bankbackend.rastaiha.ir/media/' + str(self.upload_file_answer.answer_file)   
-    def get_problem(self):
-        return self.problem.text
 
 class Comment(models.Model):
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='comments', verbose_name='مسئله')

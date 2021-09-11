@@ -21,7 +21,6 @@ urlpatterns = [
     path('getmyobjects/', get_my_objects),
     path('getallobjects/', get_all_objects),
     path('getfamousepersons/', get_famous_persons),
-    path('initial/', initial_players),
     path('decreasecoin/', decrease_coin),
     path('notificationtoall/', notification_to_all),
     # path('<int:game_id>/subject/', SubjectView.as_view(), name='subjects'),
