@@ -64,3 +64,14 @@ def get_all_problems(request):
     problems = Problem.objects.all()
     problems_data = ProblemSerializer(problems.select_subclasses(), many=True).data
     return Response(problems_data, status=status.HTTP_200_OK)
+
+
+@transaction.atomic
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def copy_problem_to_group(request, pid, gid):
+    problem = Problem.objects.all().select_subclasses().filter(id=pid)[0]
+    problem_group = ProblemGroup.objects.filter(id=gid)[0]
+    problem.id = None
+    problem.pk = None
+    problem.save()
