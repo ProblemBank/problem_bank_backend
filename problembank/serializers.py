@@ -444,3 +444,15 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = '__all__'
 
+
+class FilterSerializer(serializers.Serializer):
+    sub_topics = serializers.ListField(child=serializers.IntegerField())
+    topics = serializers.ListField(child=serializers.IntegerField())
+    events = serializers.IntegerField(default=-1)
+    sources = serializers.ListField(child=serializers.IntegerField())
+    authors = serializers.ListField(child=serializers.IntegerField())
+    publish_date_from = serializers.DateTimeField()
+    publish_date_until = serializers.DateTimeField()
+    grades = serializers.ListField(child=serializers.CharField())
+    difficulties = serializers.ListField(child=serializers.CharField())
+    page = serializers.IntegerField()
