@@ -6,9 +6,12 @@ from problembank.models import *
 from Game.view.submitview import *
 from problembank.forms import ProblemForm
 
+admin.site.register(Topic)
+admin.site.register(Subtopic)
 admin.site.register(Event)
 admin.site.register(BankAccount)
 admin.site.register(DescriptiveAnswer)
+admin.site.register(DescriptiveProblem)
 # @admin.register(JudgeableSubmit)
 # class JugeableSubmitAdmin(admin.ModelAdmin):
 

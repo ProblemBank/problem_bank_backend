@@ -151,6 +151,7 @@ class DescriptiveProblemSerializer(serializers.ModelSerializer):
         instance.publish_date = timezone.now()
         instance.last_change_date = timezone.now()
         instance.upvote_count = 0
+        instance.is_checked = False
         instance.save()
     
         return instance

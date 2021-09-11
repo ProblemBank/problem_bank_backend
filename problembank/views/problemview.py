@@ -72,16 +72,15 @@ def get_all_problems(request):
 def copy_problem_to_group(request, pid, gid):
     problem = Problem.objects.all().select_subclasses().filter(id=pid)[0]
     problem_group = ProblemGroup.objects.filter(id=gid)[0]
-    last_answer = problem.answer.pk
-    answer = problem.answer
-    problem.answer = None
-    answer.pk = None
-    answer.id = None
-    # answer.save() .
-    print(answer.id, last_answer)
-    # problem.pk = None
-    # problem.answer = answer
-    # problem.save()
-    # problem.answer.id = answer
-    # problem.save()
+    problem_data = ProblemSerializer(problem).data
+    problem_data['copied_from'] = problem.id
+    problem_data['id'] = None
+    problem_data['is_private'] = True
+    problem_serializer = ProblemSerializer.get_serializer(problem.__class__)(data=problem_data)
+    problem_serializer.is_valid()
+    problem_data = problem_serializer.validated_data
+    problem_data['author'] = request.user.account
+    problem = problem_serializer.create(problem_data)
+    problem_group.problems.add(problem)
+    problem_group.save()
     return Response(status=status.HTTP_200_OK)
