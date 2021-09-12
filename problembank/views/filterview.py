@@ -9,9 +9,9 @@ from problembank.permissions import ProblemPermission
 from django.conf import settings
 from problembank.serializers import FilterSerializer
 
-def get_problems_by_filter(orderField=None ,topics=-1, subtopics=[], \
-                         sources=[], author=-1, event=-1, \
-                         grades=[], difficulties=[], page=None):
+def get_problems_by_filter(orderField=None ,topics=[], subtopics=[], \
+                           sources=[], author=None, \
+                           grades=[], difficulties=[]):
     problems = Problem.objects.all()
     if len(topics) != 0:
         problems = problems.filter(topics__in=topics).distinct()
@@ -23,12 +23,9 @@ def get_problems_by_filter(orderField=None ,topics=-1, subtopics=[], \
     if len(sources) != 0:
         problems = problems.filter(source__in=sources)
 
-    if author != -1:
+    if author is not None:
         problems = problems.filter(author=author)
    
-    if event != -1:
-        problems = problems.filter(event=event)
-    
     if len(grades) != 0:
         problems = problems.filter(grade__in=grades)
 
@@ -58,9 +55,10 @@ def get_problem_by_filter_view(request):
     if not serializer.is_valid(raise_exception=True):
         return Response(status=status.HTTP_400_BAD_REQUEST)
     data = serializer.validated_data
+    page = data.pop("page")
     q_list = get_problems_by_filter(**data)
     paginator = Paginator(q_list, settings.CONSTANTS['PAGINATION_NUMBER'])
-    page = paginator.get_page(data.get('page'))
+    page = paginator.get_page(page)
     problems_data = ProblemSerializer(page.object_list.select_subclasses(), many=True).data
     data = {'problems':problems_data,
             'pages_count':paginator.num_pages}

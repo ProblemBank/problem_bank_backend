@@ -449,9 +449,8 @@ class CommentSerializer(serializers.ModelSerializer):
 class FilterSerializer(serializers.Serializer):
     subtopics = serializers.ListField(child=serializers.IntegerField())
     topics = serializers.ListField(child=serializers.IntegerField())
-    event = serializers.IntegerField(default=-1)
     sources = serializers.ListField(child=serializers.IntegerField())
-    author = serializers.IntegerField(default=-1)
+    author = serializers.IntegerField(allow_null=True)
     grades = serializers.ListField(child=serializers.CharField())
     difficulties = serializers.ListField(child=serializers.CharField())
-    page = serializers.IntegerField()
+    page = serializers.IntegerField(default=1)
