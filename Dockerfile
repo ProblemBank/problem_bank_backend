@@ -58,5 +58,6 @@ USER game_backend
 
 
 # run entrypoint.prod.sh
-ENTRYPOINT ["bash", "/usr/src/app/entrypoint.prod.sh"]
+RUN ["chmod", "+x", "/usr/src/app/entrypoint.prod.sh"]
+ENTRYPOINT ["/usr/src/app/entrypoint.prod.sh"]
 

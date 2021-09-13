@@ -7,6 +7,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 AUTH_USER_MODEL = 'Account.User'
 
+
 def get_environment_var(var_name, default, prefixed=True):
     if prefixed:
         var_name = 'GAME_BACKEND_%s' % var_name
@@ -137,8 +138,3 @@ MEDIA_ROOT = rel('media')
 # payment properties:
 API_TOKEN = '19e8961b-ad5a-4a65-807a-087c777f6e1b'
 SANDBOX = '0'
-
-CONSTANTS = {
-    "PAGINATION_NUMBER": 10,
-
-}
