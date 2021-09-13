@@ -12,7 +12,7 @@ ALLOWED_HOSTS = get_environment_var('ALLOWED_HOSTS', '*').split(',')
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-DB_NAME = get_environment_var('DB_NAME', 'workshop')
+DB_NAME = get_environment_var('DB_NAME', 'bank')
 DB_USER = get_environment_var('DB_USER', 'user')
 DB_PASS = get_environment_var('DB_PASS', 'p4s$pAsS')
 DB_HOST = get_environment_var('DB_HOST', 'localhost')
@@ -31,4 +31,7 @@ DATABASES = {
 
 
 STATIC_ROOT = get_environment_var('STATIC_ROOT', 'staticfiles')
+LOG_LEVEL = get_environment_var('LOG_LEVEL', 'INFO')
+
+
 TESTING = False
