@@ -10,7 +10,7 @@ AUTH_USER_MODEL = 'Account.User'
 
 def get_environment_var(var_name, default, prefixed=True):
     if prefixed:
-        var_name = 'GAME_BACKEND_%s' % var_name
+        var_name = 'BANK_SERVER_%s' % var_name
     return os.getenv(var_name, default)
 
 
