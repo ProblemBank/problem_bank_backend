@@ -151,7 +151,6 @@ class DescriptiveProblemSerializer(serializers.ModelSerializer):
         instance.publish_date = timezone.now()
         instance.last_change_date = timezone.now()
         instance.upvote_count = 0
-        instance.is_checked = False
         instance.save()
     
         return instance
@@ -445,12 +444,3 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = '__all__'
 
-
-class FilterSerializer(serializers.Serializer):
-    subtopics = serializers.ListField(child=serializers.IntegerField())
-    topics = serializers.ListField(child=serializers.IntegerField())
-    sources = serializers.ListField(child=serializers.IntegerField())
-    author = serializers.IntegerField(allow_null=True)
-    grades = serializers.ListField(child=serializers.CharField())
-    difficulties = serializers.ListField(child=serializers.CharField())
-    page = serializers.IntegerField(default=1)

@@ -1,13 +1,13 @@
 from problembank.serializers import AutoCheckSubmitSerializer
 from problembank.views.accountview import AccountView
 from problembank.views.otherviews import add_problem_to_group, remove_problem_from_group
-from problembank.views.problemview import ProblemView, get_all_problems, copy_problem_to_group
+from problembank.views.problemview import ProblemView, get_all_problems
 from problembank.views.problemgroupview import ProblemGroupView
 from problembank.views.guidanceview import GuidanceView
 from problembank.views.eventview import EventView
 from problembank.views.topicsview import TopicView, SubtopicView, SourceView
 from problembank.views.submitview import AutoCheckSubmitView, JudgeableSubmitView
-from problembank.views.filterview import get_problem_by_filter_view
+
 
 from django.urls import path
 from rest_framework.routers import DefaultRouter
@@ -38,8 +38,6 @@ urlpatterns = [
       path('addproblemtogroup/<int:pid>/<int:gid>/', add_problem_to_group),
       path('removeproblemfromgroup/<int:pid>/<int:gid>/', remove_problem_from_group),
       path('getallproblems/', get_all_problems),
-      path('getproblembyfilter/', get_problem_by_filter_view),
-      path('copyproblemtogroup/<int:pid>/<int:gid>/', copy_problem_to_group),
 ]
 
 urlpatterns += router.urls

@@ -33,6 +33,3 @@ class DefualtPermission(BasePermission):
             return self.has_admin_prmission(request, view)
         else :
             return False
-
-class ProblemPermission(DefualtPermission):
-    pass

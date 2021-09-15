@@ -187,7 +187,6 @@ def get_famous_persons(request):
     data = FamousPersonSerializer(player.famous_persons.all(), many=True).data
     return Response(data ,status=status.HTTP_200_OK)
 
-
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
 def decrease_coin(request):
