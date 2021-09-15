@@ -14,8 +14,7 @@ RUN apk add --no-cache --virtual .build-deps gcc musl-dev
 RUN apk update \
     && apk add --virtual .build-deps gcc libc-dev libxslt-dev \
     && apk add libffi-dev openssl-dev linux-headers \
-    && apk add --no-cache libxslt \
-    && pip install lxml==4.5.0
+    && apk add --no-cache libxslt
 
 # install psycopg2
 RUN apk update \
@@ -57,5 +56,8 @@ RUN chown -R game_backend /usr/src/app/
 
 USER game_backend
 
+
 # run entrypoint.prod.sh
+RUN ["chmod", "+x", "/usr/src/app/entrypoint.prod.sh"]
 ENTRYPOINT ["/usr/src/app/entrypoint.prod.sh"]
+
