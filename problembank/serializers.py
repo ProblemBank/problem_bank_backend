@@ -450,7 +450,6 @@ class FilterSerializer(serializers.Serializer):
     subtopics = serializers.ListField(child=serializers.IntegerField())
     topics = serializers.ListField(child=serializers.IntegerField())
     sources = serializers.ListField(child=serializers.IntegerField())
-    author = serializers.IntegerField(allow_null=True)
     grades = serializers.ListField(child=serializers.CharField())
     difficulties = serializers.ListField(child=serializers.CharField())
     page = serializers.IntegerField(default=1)

@@ -10,7 +10,7 @@ from django.conf import settings
 from problembank.serializers import FilterSerializer
 
 def get_problems_by_filter(orderField=None ,topics=[], subtopics=[], \
-                           sources=[], author=None, \
+                           sources=[],
                            grades=[], difficulties=[]):
     problems = Problem.objects.all()
     if len(topics) != 0:
@@ -22,9 +22,6 @@ def get_problems_by_filter(orderField=None ,topics=[], subtopics=[], \
     
     if len(sources) != 0:
         problems = problems.filter(source__in=sources)
-
-    if author is not None:
-        problems = problems.filter(author=author)
    
     if len(grades) != 0:
         problems = problems.filter(grade__in=grades)
