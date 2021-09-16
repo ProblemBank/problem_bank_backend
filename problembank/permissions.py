@@ -6,13 +6,13 @@ import datetime
 
 JUST_VIEW_METHODS = ['GET']
 JUST_ADD_METHODS = ['POST', 'GET']
-EDIT_AND_DELET_METHODS = ['POST', 'GET', 'PUT', 'DELET', 'PATCH']
-SAFE_METHODS = ['POST', 'GET', 'PUT', 'DELET', 'PATCH']
+EDIT_AND_DELET_METHODS = ['POST', 'GET', 'PUT', 'DELETE', 'PATCH']
+SAFE_METHODS = ['POST', 'GET', 'PUT', 'DELETE', 'PATCH']
 """
 POST = ADD NEW ONE
 PUT = CHANGE
 GET = READ
-DELET = DELET
+DELETE = DELETE
 """
 class DefualtPermission(BasePermission):
     def has_anonymous_permission(self, request, view):
