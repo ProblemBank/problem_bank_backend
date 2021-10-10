@@ -7,6 +7,7 @@ from problembank.views.guidanceview import GuidanceView
 from problembank.views.eventview import EventView
 from problembank.views.topicsview import TopicView, SubtopicView, SourceView
 from problembank.views.submitview import AutoCheckSubmitView, JudgeableSubmitView
+from problembank.views.submitview import  submit_answer_to_problem, judge_answer_view, get_judgeable_submits
 from problembank.views.filterview import get_problem_by_filter_view
 
 
@@ -41,6 +42,9 @@ urlpatterns = [
       path('getallproblems/', get_all_problems),
       path('getproblembyfilter/', get_problem_by_filter_view),
       path('copyproblemtogroup/<int:pid>/<int:gid>/', copy_problem_to_group),
+      path('submit/<int:pid>/<int:gid>/', submit_answer_to_problem),
+      path('judge/<int:pk>/<int:mark>/', judge_answer_view),
+      path('getsubmits/', get_judgeable_submits),
 ]
 
 urlpatterns += router.urls
