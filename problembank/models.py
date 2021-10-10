@@ -22,7 +22,12 @@ class BankAccount(models.Model):
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
 
-
+    def is_mentor(self):
+        return self.position == BankAccount.Position.Member
+        
+    def is_admin(self):
+        return self.position == BankAccount.Position.Admin
+        
 class Source(models.Model):
     title = models.CharField(max_length=50, verbose_name='عنوان')
 
@@ -232,5 +237,5 @@ class Event(models.Model):
     owner = models.ForeignKey(BankAccount, null=True, blank=True, on_delete=models.SET_NULL, verbose_name='صاحب',
                               related_name='owned_events')
     mentors = models.ManyToManyField(BankAccount, blank=True, verbose_name='همیار(ها)', related_name='editable_events')
-    prticipants = models.ManyToManyField(BankAccount, blank=True, verbose_name='بیننده(ها)',
+    participants = models.ManyToManyField(BankAccount, blank=True, verbose_name='بیننده(ها)',
                                          related_name='participated_events')

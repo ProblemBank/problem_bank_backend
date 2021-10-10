@@ -267,17 +267,17 @@ class EventSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         mentors_data = validated_data.pop('mentors')
-        prticipants_data = validated_data.pop('prticipants')
+        participants_data = validated_data.pop('participants')
         
         instance = Event.objects.create(**validated_data)
         instance.mentors.set(mentors_data)
-        instance.prticipants.set(prticipants_data)
+        instance.participants.set(participants_data)
         instance.save()
         return instance
 
     def update(self, instance, validated_data):
         instance.mentors.set(validated_data.pop('mentors'))
-        instance.prticipants.set(validated_data.pop('prticipants'))
+        instance.participants.set(validated_data.pop('participants'))
         instance.save()
         Event.objects.filter(id=instance.id).update(**validated_data)
         instance = Event.objects.filter(id=instance.id)[0]

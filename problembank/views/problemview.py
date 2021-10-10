@@ -9,7 +9,7 @@ from rest_framework.decorators import api_view, permission_classes
 
 from problembank.models import *
 from rest_framework import permissions
-from problembank.permissions import DefualtPermission
+from problembank.permissions import DefualtPermission, ProblemPermission
 # from problembank.views import permissions as customPermissions
 from problembank.serializers import ProblemSerializer, DescriptiveProblemSerializer, ShortAnswerProblemSerializer, \
     ShortAnswerProblemSerializer
@@ -20,7 +20,7 @@ import sys
 class ProblemView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixins.ListModelMixin,
                   mixins.UpdateModelMixin, mixins.DestroyModelMixin):
     # permission_classes = [permissions.IsAuthenticated, customPermissions.MentorPermission, ]
-    permission_classes = [permissions.IsAuthenticated, DefualtPermission]
+    permission_classes = [permissions.IsAuthenticated, ProblemPermission]
     queryset = Problem.objects.all().select_subclasses()
     serializer_class = ProblemSerializer
 
@@ -59,7 +59,7 @@ class ProblemView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Cre
 
 
 @api_view(['GET'])
-@permission_classes([permissions.IsAuthenticated, DefualtPermission])
+@permission_classes([permissions.IsAuthenticated, ProblemPermission])
 def get_all_problems(request):
     problems = Problem.objects.all()
     problems_data = ProblemSerializer(problems.select_subclasses(), many=True).data
@@ -68,7 +68,7 @@ def get_all_problems(request):
 
 @transaction.atomic
 @api_view(['GET'])
-@permission_classes([permissions.IsAuthenticated])
+@permission_classes([permissions.IsAuthenticated, ProblemPermission])
 def copy_problem_to_group(request, pid, gid):
     problem = Problem.objects.all().select_subclasses().filter(id=pid)[0]
     problem_group = ProblemGroup.objects.filter(id=gid)[0]

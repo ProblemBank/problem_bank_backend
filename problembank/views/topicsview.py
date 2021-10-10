@@ -9,7 +9,7 @@ from rest_framework.decorators import api_view, permission_classes
 
 from problembank.models import *
 from rest_framework import permissions
-from problembank.permissions import DefualtPermission
+from problembank.permissions import DefualtPermission, SourcePermission, SubtopicPermission, TopicPermission
 # from problembank.views import permissions as customPermissions
 from problembank.serializers import SourceSerializer, SubtopicSerializer, TopicSerializer
 
@@ -18,7 +18,7 @@ import sys
 class TopicView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixins.ListModelMixin,
                    mixins.UpdateModelMixin, mixins.DestroyModelMixin):
     #permission_classes = [permissions.IsAuthenticated, customPermissions.MentorPermission, ]
-    permission_classes = [permissions.IsAuthenticated, DefualtPermission]
+    permission_classes = [permissions.IsAuthenticated, TopicPermission]
     queryset = Topic.objects.all()
     serializer_class = TopicSerializer
 
@@ -26,7 +26,7 @@ class TopicView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Creat
 class SubtopicView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixins.ListModelMixin,
                    mixins.UpdateModelMixin, mixins.DestroyModelMixin):
     #permission_classes = [permissions.IsAuthenticated, customPermissions.MentorPermission, ]
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated, SubtopicPermission]
     queryset = Subtopic.objects.all()
     serializer_class = SubtopicSerializer
 
@@ -34,7 +34,7 @@ class SubtopicView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Cr
 class SourceView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixins.ListModelMixin,
                    mixins.UpdateModelMixin, mixins.DestroyModelMixin):
     #permission_classes = [permissions.IsAuthenticated, customPermissions.MentorPermission, ]
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated, SourcePermission]
     queryset = Source.objects.all()
     serializer_class = SourceSerializer
 
