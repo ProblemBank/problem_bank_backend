@@ -154,6 +154,7 @@ class ProblemGroupPermission(ModelPermission):
                 return Event.objects.get(pk=request.data['event'])
             except:
                 None
+
     def is_mentor(self, request):
         account = request.user.account
         event = self.get_event(request)

@@ -42,8 +42,8 @@ def get_problems_by_remove_permissions(request, problems):
     for q in problems:
         request.parser_context['kwargs']['pk'] = q.pk
         if qp.has_permission(request, None):
-            out_list.append(q)
-    return out_list
+            out_list.append(q.id)
+    return Problem.objects.filter(id__in=out_list)
 
 
 @api_view(['POST'])
@@ -54,6 +54,7 @@ def get_problem_by_filter_view(request):
     data = serializer.validated_data
     page = data.pop("page")
     q_list = get_problems_by_filter(**data)
+    q_list = get_problems_by_remove_permissions(request, q_list)
     paginator = Paginator(q_list, settings.CONSTANTS['PAGINATION_NUMBER'])
     page = paginator.get_page(page)
     problems_data = ProblemSerializer(page.object_list.select_subclasses(), many=True).data
