@@ -10,6 +10,8 @@ admin.site.register(Event)
 admin.site.register(BankAccount)
 admin.site.register(ShortAnswerProblem)
 admin.site.register(DescriptiveProblem)
+admin.site.register(Topic)
+admin.site.register(Subtopic)
 # @admin.register(JudgeableSubmit)
 # class JugeableSubmitAdmin(admin.ModelAdmin):
 
