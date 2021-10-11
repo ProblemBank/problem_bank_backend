@@ -53,7 +53,7 @@ def get_event(request, pk):
     data.pop("mentors")
     data.pop("participants")
     data.pop("owner")
-    id = request.user.id
+    id = request.user.account.id
     if len(event.mentors.all().filter(id=id)) > 0:
         role = "mentor"
     elif len(event.participants.all().filter(id=id)) > 0:
