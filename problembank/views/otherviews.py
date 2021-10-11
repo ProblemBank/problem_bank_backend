@@ -1,9 +1,11 @@
+from problembank.serializers import EventSerializer
 from rest_framework.response import Response
-from problembank.models import Problem, ProblemGroup
+from problembank.models import Event, Problem, ProblemGroup
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from problembank.permissions import DefualtPermission, AddProblemToGroupPermission
+from problembank.permissions import DefualtPermission, AddProblemToGroupPermission, EventPermission
 from rest_framework import permissions
+from django.db import transaction
 
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated, AddProblemToGroupPermission])
@@ -41,3 +43,25 @@ def remove_problem_from_group(request, pid, gid):
     problem_group.save()
 
     return Response(f'مسئله {problem.pk} با موفقیت از گروه {problem_group.pk} حذف شد.', status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([EventPermission])
+@transaction.atomic
+def get_event(request, pk):
+    event = Event.objects.get(id=pk)
+    data = EventSerializer(event).data
+    data.pop("mentors")
+    data.pop("participants")
+    data.pop("owner")
+    id = request.user.id
+    if len(event.mentors.all().filter(id=id)) > 0:
+        role = "mentor"
+    elif len(event.participants.all().filter(id=id)) > 0:
+        role = "participant"
+    elif event.owner.id == id:
+        role = "owner"
+    else:
+        role = "anonymouse"
+    data['role'] = role
+    return Response(data=data, status=status.HTTP_200_OK)
+    

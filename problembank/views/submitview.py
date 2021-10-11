@@ -117,7 +117,7 @@ def request_problem_from_group_view(account, gid, game_problem_request_handler=N
         return data["data"]
     problem = data["problem"]
     if game_problem_request_permission_chcker is not None and\
-        game_problem_request_permission_chcker(gid, account.user):
+        game_problem_request_permission_chcker(gid, account):
         return {"status": False, "data":{"message":"بازی اجازه گرفتن مسئله را نمیدهد."}}
     
     serializerClass = BaseSubmitSerializer.get_serializer(problem.problem_type)
@@ -129,7 +129,7 @@ def request_problem_from_group_view(account, gid, game_problem_request_handler=N
     if not serializer.is_valid(raise_exception=True):
         return Response(status=status.HTTP_400_BAD_REQUEST)
     instance = serializer.create(serializer.validated_data)
-    instance.respondents.add(account.user)
+    instance.respondents.add(account)
     instance.save()
     if game_problem_request_handler is not None:
         game_problem_request_handler(account.user, instance)
@@ -207,7 +207,7 @@ def judge_view(account, sid , mark, game_judge_handler=None):
 @permission_classes([SubmitAnswerPermission])
 def submit_answer_to_problem(request, gid, pid):
     response = request_problem_from_group_view(request.user.account, gid, pid=pid)
-    if response.status != status.HTTP_200_OK:
+    if response.status_code != status.HTTP_200_OK:
         return response
     sid = response.data['submit']['id']
     data = {}

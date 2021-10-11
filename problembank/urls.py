@@ -1,6 +1,6 @@
 from problembank.serializers import AutoCheckSubmitSerializer
 from problembank.views.accountview import AccountView
-from problembank.views.otherviews import add_problem_to_group, remove_problem_from_group
+from problembank.views.otherviews import add_problem_to_group, remove_problem_from_group, get_event
 from problembank.views.problemview import ProblemView, get_all_problems, copy_problem_to_group
 from problembank.views.problemgroupview import ProblemGroupView
 from problembank.views.guidanceview import GuidanceView
@@ -45,6 +45,7 @@ urlpatterns = [
       path('submit/<int:pid>/<int:gid>/', submit_answer_to_problem),
       path('judge/<int:pk>/<int:mark>/', judge_answer_view),
       path('getsubmits/', get_judgeable_submits),
+      path('getevent/<int:pk>/', get_event),
 ]
 
 urlpatterns += router.urls
