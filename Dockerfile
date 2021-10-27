@@ -49,7 +49,7 @@ COPY ./manage.py ./manage.py
 
 RUN adduser -D game_backend
 
-RUN mkdir -p mkdir -p /usr/src/app/staticfiles && chown -R game_backend /usr/src/app/staticfiles \
+RUN mkdir -p /usr/src/app/staticfiles && chown -R game_backend /usr/src/app/staticfiles \
         && mkdir -p /usr/src/app/media && chown -R game_backend /usr/src/app/media
 
 RUN chown -R game_backend /usr/src/app/
