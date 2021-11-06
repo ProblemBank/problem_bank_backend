@@ -253,9 +253,6 @@ class ProblemGroupSerializerWithoutProblems(serializers.ModelSerializer):
         exclude = ('problems',)
 
 
-
-
-
 class EventSerializer(serializers.ModelSerializer):
     problem_groups = ProblemGroupSerializerWithoutProblems(many=True, required=False)
 
