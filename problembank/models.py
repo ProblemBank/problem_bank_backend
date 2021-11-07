@@ -103,8 +103,7 @@ class Problem(models.Model):
     upvote_count = models.IntegerField(default=0, verbose_name='تعداد آرای مثبت')
 
     def __str__(self):
-        return f'{self.title} ({self.problem_type}، ' \
-               f'{self.difficulty})'
+        return f'{self.title} {self.id} - {self.author}'
 
     objects = InheritanceManager()
 
@@ -229,7 +228,7 @@ class ProblemGroup(models.Model):
     is_visible = models.BooleanField(default=True, verbose_name='آیا قابل نمایش است؟')
     
     def __str__(self):
-        return f'{self.title} {self.id}'
+        return f'{self.event}| {self.title} {self.id}'
 
 class Event(models.Model):
     title = models.CharField(max_length=100, verbose_name='عنوان')
@@ -239,3 +238,6 @@ class Event(models.Model):
     mentors = models.ManyToManyField(BankAccount, blank=True, verbose_name='همیار(ها)', related_name='editable_events')
     participants = models.ManyToManyField(BankAccount, blank=True, verbose_name='بیننده(ها)',
                                          related_name='participated_events')
+
+    def __str__(self):
+        return f'{self.title} {self.id}'

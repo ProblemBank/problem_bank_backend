@@ -7,6 +7,7 @@ from Game.view.submitview import *
 from problembank.forms import ProblemForm
 
 admin.site.register(Event)
+admin.site.register(ProblemGroup)
 admin.site.register(BankAccount)
 admin.site.register(ShortAnswerProblem)
 admin.site.register(DescriptiveProblem)
