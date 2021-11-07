@@ -173,7 +173,7 @@ def submit_answer_view(account, input_data, sid, pid, game_submit_handler=None):
         data['upload_file_answer'] = {}
         try:
             data['upload_file_answer']['answer_file'] = input_data['file']
-            data['upload_file_answer']['file_name'] = f'problem {pid} player {account.id}'
+            data['upload_file_answer']['file_name'] = f'problem {pid} account {account.id}'
         except:
             data.pop('upload_file_answer')
     
