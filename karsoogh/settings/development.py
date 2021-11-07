@@ -22,3 +22,4 @@ DATABASES = {
 TESTING = sys.argv[1] == 'test'
 
 STATIC_ROOT = get_environment_var('STATIC_ROOT', 'staticfiles')
+MEDIA_ROOT = get_environment_var('MEDIA_ROOT', 'media')
