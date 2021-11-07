@@ -158,6 +158,13 @@ class ProblemPermission(ModelPermission):
 class JudgePermission(ModelPermission):
     model = JudgeableSubmit
 
+    def is_my_object(self, request):
+        obj = self.get_object(request)
+        if obj is None:
+            return False
+        
+        return obj.respondents.all().filter(id=request.user.account.id) > 0
+    
     def get_problem_group(self, request):
         obj = self.get_object(request)
         if obj is None or obj.problem_group is None:
@@ -172,7 +179,7 @@ class JudgePermission(ModelPermission):
         problem_group = self.get_problem_group(request)
         if problem_group is not None and problem_group is not None:
             return len(problem_group.event.mentors.all().filter(id=account.id)) > 0 or\
-                    self.is_my_object(request)
+                    (problem_group.event.owner.id == account.id)
         return False
 
     def has_member_permission(self, request, view):

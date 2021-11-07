@@ -19,7 +19,7 @@ from itertools import chain
 # data['juged_by'] = request.user.account #just for mentor not all the times!
 from problembank.permissions import DefualtPermission
 class JudgeableSubmitView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
-    permission_classes = []
+    permission_classes = [permissions.IsAuthenticated]
     serializer_class = JudgeableSubmitSerializer
     queryset = JudgeableSubmit.objects.filter(status=BaseSubmit.Status.Delivered)
 
