@@ -87,15 +87,22 @@ class ProblemPermission(ModelPermission):
         account = request.user.account
         problem = self.get_object(request)
         my_events = Event.objects.filter(participants__in=[account])
-        problem_groups = ProblemGroup.objects.filter(event__in=my_events, problems__in=[problem]) | \
-                        ProblemGroup.objects.filter(is_visible=True, problems__in=[problem])
+        problem_groups = ProblemGroup.objects.filter(event__in=my_events, problems__in=[problem], is_visible=True)
         return len(problem_groups) > 0
     
+    def is_visibale(self, request):
+        obj = self.get_object(request)
+        if obj is not None:
+            return not obj.is_private
+        else:
+            return False
+
     def has_member_permission(self, request, view):
         return  (request.method in JUST_ADD_METHODS) or\
                 (request.method in JUST_VIEW_METHODS and self.some_where_is_participant(request)) or\
                 (request.method in EDIT_AND_DELET_METHODS and self.some_where_is_mentor(request)) or\
-                (request.method in EDIT_AND_DELET_METHODS and self.is_my_object(request))
+                (request.method in EDIT_AND_DELET_METHODS and self.is_my_object(request)) or\
+                (request.method in JUST_VIEW_METHODS and self.is_visibale(request))
     
 # class SubmitPermission(ModelPermission):
 #     model = None
