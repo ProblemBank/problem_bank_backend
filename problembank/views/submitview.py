@@ -79,6 +79,7 @@ def get_random_problem_from_group(gid, account):
         return {"status": False, "data": data}
     return {"status":True, "problem": problems.order_by('?')[0]}
 
+##  return status = True or False means get nre problem is ok
 def get_problem_for_submit(pid, gid, account):
     if not ProblemGroup.objects.filter(id=gid).exists():
         return {"status":False, "data":{"message":"چنین مسئله ای وجود ندارد."}}
@@ -90,7 +91,7 @@ def get_problem_for_submit(pid, gid, account):
         return {"status": False, "data":{"message":"چنین مسئله ای در این گروه وجود ندارد."}}
     submit = get_submit_from_problem(pid, account)
     if submit is not None and submit['status'] != 'Received':
-        return {"status": False, "data":{"message":"شما قبلا از این گروه مسئله دریافت کرده اید و پاسخ آن را فرستاده اید."}}
+        return {"status": False, "data":{"message":"شما قبلا از این گروه این مسئله را دریافت کرده اید و پاسخ آن را فرستاده اید."}}
     if submit is not None:
         problem = Problem.objects.all().select_subclasses().filter(id=submit['problem'])[0]
         problem_data = ProblemSerializer(problem).data
@@ -107,6 +108,7 @@ def is_problem_goten_from_group_view(account, gid):
         return Response(status=status.HTTP_200_OK)
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
+##  return responce with data
 def request_problem_from_group_view(account, gid, game_problem_request_handler=None, game_problem_request_permission_chcker=None, pid=None):
     if pid is None:
         data = get_random_problem_from_group(gid, account)
@@ -114,11 +116,12 @@ def request_problem_from_group_view(account, gid, game_problem_request_handler=N
         data = get_problem_for_submit(pid, gid, account)
 
     if not data["status"]:
-        return data["data"]
+        return Response(data["data"], status=status.HTTP_400_BAD_REQUEST)
+
     problem = data["problem"]
     if game_problem_request_permission_chcker is not None and\
         game_problem_request_permission_chcker(gid, account):
-        return {"status": False, "data":{"message":"بازی اجازه گرفتن مسئله را نمیدهد."}}
+        return Response({"message":"بازی اجازه گرفتن مسئله را نمیدهد."}, status=status.HTTP_400_BAD_REQUEST)
     
     serializerClass = BaseSubmitSerializer.get_serializer(problem.problem_type)
     data = {}
@@ -207,12 +210,19 @@ def judge_view(account, sid , mark, game_judge_handler=None):
 @permission_classes([SubmitAnswerPermission])
 def submit_answer_to_problem(request, gid, pid):
     response = request_problem_from_group_view(request.user.account, gid, pid=pid)
+
     if response.status_code != status.HTTP_200_OK:
         return response
     sid = response.data['submit']['id']
     data = {}
-    data['text'] = request.data['text']
-    data['file'] = request.FILES['file']
+    try:
+        data['text'] = request.data['text']
+    except:
+        pass
+    try:
+        data['file'] = request.FILES['file']
+    except:
+        pass
     return submit_answer_view(request.user.account, data, sid, pid)
     
 @transaction.atomic

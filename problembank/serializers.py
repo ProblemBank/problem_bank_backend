@@ -198,7 +198,6 @@ class ProblemSerializer(serializers.ModelSerializer):
         return serializer.update(instance, validated_data)
 
     def to_representation(self, instance):
-        print(instance, instance.__class__)
         serializer = ProblemSerializer.get_serializer(instance.__class__)
         return serializer(instance, context=self.context).data
 
@@ -327,7 +326,6 @@ class AutoCheckSubmitSerializer(serializers.ModelSerializer):
         
         instance.judged_at = timezone.now()
         problem = Problem.objects.all().select_subclasses().filter(id=instance.problem.id)[0]
-        print(problem.answer.text , instance.answer.text)
         if problem.answer.text == instance.answer.text:
             instance.mark = 1
         else:
@@ -382,7 +380,6 @@ class JudgeableSubmitSerializer(serializers.ModelSerializer):
         text_answer.answer_type = 'DescriptiveAnswer'
         text_answer.save()
         instance.text_answer = text_answer    
-        print(validated_data)
         try:
             upload_file_answer_data = validated_data.pop('upload_file_answer')
             upload_file_answer_data['answer_type'] = 'UploadFileAnswer'

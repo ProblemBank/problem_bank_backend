@@ -180,7 +180,6 @@ class JudgePermission(ModelPermission):
                 
 class SubmitAnswerPermission(ModelPermission):
     def get_problem_group(self, request):
-        print(request.parser_context['kwargs'])
         if 'gid' not in request.parser_context['kwargs'].keys():
             return None
         try:
