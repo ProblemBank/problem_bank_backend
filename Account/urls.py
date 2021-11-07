@@ -2,7 +2,6 @@ from django.urls import path
 from rest_framework_simplejwt import views as jwt_views
 from .views import *
 
-app_name = 'Account'
 
 urlpatterns = [
     path('create/', CreateUserAPI.as_view(), name='create_user'),
