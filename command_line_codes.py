@@ -116,40 +116,14 @@ def convert_all():
 
 
 
-global_problem_json_example =''' {
-    "base_problem": {
-        "title": "پترسن اول",
-        "topics": ["ترکیبیات"],from problembank.serializers import BankAccountSerializer, create_or_get_topic
+global_problem_json_example ='''[{"title": "جایگشت آینه ای", "topics": ["ترکیبیات"],
+ "subtopics": [{"topic": "ترکیبیات", "title": "ناوردایی"}], "source": "غیره",
+  "difficulty": "Hard", "grade": "HighSchoolFirstHalf", "is_checked": false,
+   "problem_type": "DescriptiveProblem", "author": {"first_name": "اضافه کننده",
+    "last_name": "اضافه کننده زاده", "email": "moeini.erfan@yahoo.com", "phone_number": "09"},
+    "text": "<p><span class=\\" author-d-1gg9uz65z1iz85zgdz68zmqkz84zo2qoxwz73zz70zz73zz78zydafz65zz84z5vm3wz72zz89zz80z0ogz88zdv3er1fz71z\\">از جایگشت </span><span class=\\" author-d-1gg9uz65z1iz85zgdz68zmqkz84zo2qoxwz73zz70zz73zz78zydafz65zz84z5vm3wz72zz89zz80z0ogz88zdv3er1fz71z\\"><span class=\\"inline-latex\\" data-inline-magic=\\"latex\\" data-current-latex-value=\\"a_1,a_2,\\\\cdots , a_n\\"><span class=\\"tiny-math\\" data-latex=\\"a_1,a_2,\\\\cdots , a_n\\"></span></span></span><span class=\\" author-d-1gg9uz65z1iz85zgdz68zmqkz84zo2qoxwz73zz70zz73zz78zydafz65zz84z5vm3wz72zz89zz80z0ogz88zdv3er1fz71z\\">باشد؟</span></p>", "publish_date": "2021-01-31T14:52:35.897617+03:30",
+    "last_change_date": null, "is_private": false, "upvote_count": 0}]'''
 
-        "subtopics": [
-                {
-                    "topic": "ترکیبیات", "title": "لانه کبوتری"
-                },
-                {
-                    "topic": "ترکیبیات", "title": "استقرا"
-                }
-            ],
-        "source": null,
-        "difficulty": "VeryHard",
-        "suitable_for_over": 10,
-        "suitable_for_under": 12,
-        "is_checked": false
-        },
-    "problem_type": "DescriptiveProblem",
-    "title": "پترسن اول",
-    "author": {
-        "first_name": "erfan",
-        "last_name": "moeini",
-        "email": "erfan@google.com",
-        "phone_number": "0912345"
-        }, 
-    "text": "ویژگی های زیر را در گراف پترسن بررسی کنید:\\r\\n\\r\\n![گراف پترسن](https://drive.google.com/open?id=1ZRkMeW100FgBJvzzaUhemVXebPamyOrZ)\\r\\n\\r\\n1. هر جفت راس که به هم متصل نیستند، دقیقا یک همسایه دارند.\\r\\n2. دور به طول هفت نداریم.\\r\\n3. دو دور به طول پنج، همه ی راس ها را پوشش میدهند.\\r\\n4. اندازه ی بزرگترین مجموعه مستقل در این گراف چهار است.", 
-    "publish_date": "2021-05-25T20:08:17.081083+04:30",
-    "last_change_date": null, 
-    "is_private": false, 
-    "upvoteCount": -6
-}
-'''
 def create_or_get_account(account):
     try:
         return BankAccount.objects.filter(email=account['email'])[0].pk
@@ -189,28 +163,80 @@ def create_or_get_source_pk(title):
     except:
         return Source.objects.create(title=title).pk
 
+class DescriptiveProblemSerializerForConvert(serializers.ModelSerializer):
+    answer = DescriptiveAnswerSerializer(required=False)
+    class Meta:
+        model = DescriptiveProblem
+        fields = '__all__'
+       
+    @transaction.atomic
+    def create(self, validated_data):
+        topics_data = validated_data.pop('topics')
+        subtopics_data = validated_data.pop('subtopics') 
+        answer_data = validated_data.pop('answer')
+        answer_data['answer_type'] = 'DescriptiveAnswer'
+        answer = DescriptiveAnswer.objects.create(**answer_data)
+        validated_data['answer'] = answer
+        instance = DescriptiveProblem.objects.create(**validated_data)
+        instance.topics.set(topics_data)
+        instance.subtopics.set(subtopics_data)
+        instance.answer = answer
+        instance.is_checked = False
+        instance.save()
+    
+        return instance
+def craete_or_get_problem_group(event, problem_group):
+    try:
+        return ProblemGroup.objects.get(title=problem_group, event=event)
+    except:
+        pass
+    return ProblemGroup.objects.create(title=problem_group, event=event)
+
 def create_problem_with_global_problem_json(problem_json_object):
-    base_problem_data = problem_json_object['base_problem']
-    base_problem_data['topics'] = [create_or_get_topic(topic).pk for topic in base_problem_data['topics']]
-    base_problem_data['subtopics'] = [create_or_get_subtopic(subtopic['topic'], subtopic['title']).pk for subtopic in base_problem_data['subtopics']]
-    base_problem_data['source'] = create_or_get_source_pk(base_problem_data['source'])
+    problem_data = problem_json_object.copy()
+    problem_data['topics'] = [create_or_get_topic(topic).pk for topic in problem_data['topics']]
+    problem_data['subtopics'] = [create_or_get_subtopic(subtopic['topic'], subtopic['title']).pk for subtopic in problem_data['subtopics']]
+    problem_data['source'] = create_or_get_source_pk(problem_data['source'])
 
-    # baseProblemSerializer = BaseProblemSerializer(data=base_problem_data)
-    # baseProblemSerializer.is_valid(raise_exception=True)
+    problem_data['author'] = create_or_get_account(problem_data['author'])
+    problem_data['answer'] = json.loads('{"text":"بدون پاسخ"}')
 
-    # problem_json_object['base_problem'] = baseProblemSerializer.create(baseProblemSerializer.validated_data).pk
-    problem_json_object['author'] = create_or_get_account(problem_json_object['author'])
-    problem_json_object['answer'] = json.loads('{"text":"بدون پاسخ"}')
-    descriptiveProblemSerializer = DescriptiveProblemSerializer(data=problem_json_object)
+    event = None
+    problem_group = None
+    for topic in problem_json_object['topics']:
+        if topic == 'فرمول صفر':
+            problem_data['grade'] = 'HighSchoolSecondHalf'
+            problem_data['is_private'] = True
+            event = 'فرمول صفر'
+            for subtopic in problem_json_object['subtopics']:
+                if subtopic['topic'] == 'فرمول صفر':
+                    problem_group = subtopic['title']
+        if topic == 'کارسوق':
+            problem_data['is_private'] = True
+            event = 'کارسوق'
+            problem_group = 'همه'
+    if event is None:
+        event = 'بانک کارسوق'
+        problem_group = 'همه'
+    descriptiveProblemSerializer = DescriptiveProblemSerializerForConvert(data=problem_data)
     descriptiveProblemSerializer.is_valid(raise_exception=True)
-    return descriptiveProblemSerializer.create(descriptiveProblemSerializer.validated_data)
+    data = descriptiveProblemSerializer.validated_data
+    instance = descriptiveProblemSerializer.create(data)
+    if event is not None:
+        event = Event.objects.get(title=event)
+        if problem_group is not None:
+            problem_group = craete_or_get_problem_group(event, problem_group)
+            problem_group.problems.add(instance)
+            problem_group.save()
+        else:
+            print("error!!", event.title)
+    return instance
 
 def create_many_problem_with_global_problem_json(problems_json):
     problems_json_object = json.loads(problems_json)
     for problem_json_object in problems_json_object:
         create_problem_with_global_problem_json(problem_json_object)
     
-'[{"base_problem": {"title": "erty", "topics": ["ترکیبیات"], "subtopics": [{"topic": "ترکیبیات", "title": "لانه کبوتری"}, {"topic": "ترکیبیات", "title": "استقرا"}], "source": null, "difficulty": "VeryEasy", "suitable_for_over": 1, "suitable_for_under": 12, "is_checked": false}, "problem_type": "DescriptiveProblem", "title": "erty", "author": {"first_name": "sdf", "last_name": "None", "email": "wef", "phone_number": "09"}, "text": "derfghjn", "publish_date": "2021-09-06T17:49:54.043791+04:30", "last_change_date": null, "is_private": false, "upvoteCount": 0}, {"base_problem": {"title": "lkjpo;lasfdasdf", "topics": ["ترکیبیات"], "subtopics": [{"topic": "ترکیبیات", "title": "لانه کبوتری"}, {"topic": "ترکیبیات", "title": "استقرا"}], "source": "آنالیز ترکیبی", "difficulty": "Easy", "suitable_for_over": 1, "suitable_for_under": 12, "is_checked": false}, "problem_type": "DescriptiveProblem", "title": "lkjpo;lasfdasdf", "author": {"first_name": "sdf", "last_name": "None", "email": "wef", "phone_number": "09"}, "text": "slkdnf;sdf;llefwef", "publish_date": "2021-09-07T00:16:58.108720+04:30", "last_change_date": null, "is_private": false, "upvoteCount": 0}, {"base_problem": {"title": "mm", "topics": ["ترکیبیات", "هندسه"], "subtopics": [{"topic": "ترکیبیات", "title": "ناوردایی"}, {"topic": "هندسه", "title": "همساز"}], "source": "آنالیز ترکیبی", "difficulty": "Hard", "suitable_for_over": 5, "suitable_for_under": 7, "is_checked": false}, "problem_type": "DescriptiveProblem", "title": "mm", "author": {"first_name": "sdf", "last_name": "None", "email": "wef", "phone_number": "09"}, "text": "لاذتدنمپک", "publish_date": "2021-09-07T00:17:52.200124+04:30", "last_change_date": null, "is_private": false, "upvoteCount": 0}]'
 
 
 # datas = []
