@@ -12,7 +12,10 @@ admin.site.register(BankAccount)
 admin.site.register(ShortAnswerProblem)
 admin.site.register(DescriptiveProblem)
 admin.site.register(Topic)
-admin.site.register(Subtopic)
+
+@admin.register(Subtopic)
+class QuestionAdmin(admin.ModelAdmin):
+    list_filter = ['topic']
 # @admin.register(JudgeableSubmit)
 # class JugeableSubmitAdmin(admin.ModelAdmin):
 
