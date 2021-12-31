@@ -26,7 +26,7 @@ def add_problem_to_group(request, pid, gid):
     return Response(f'مسئله {problem.pk} با موفقیت به گروه {problem_group.pk} اضافه شد.', status=status.HTTP_200_OK)
 
 
-@api_view(['POST'])
+@api_view(['DELETE'])
 @permission_classes([permissions.IsAuthenticated, AddProblemToGroupPermission])
 def remove_problem_from_group(request, pid, gid):
     try:
