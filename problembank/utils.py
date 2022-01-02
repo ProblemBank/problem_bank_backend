@@ -6,3 +6,4 @@ def generate_password(size):
         j = ord(os.urandom(1)) % 3
         password += chr(ord(os.urandom(1)) % (chars[j][1] - chars[j][0]) + chars[j][0])
     return password
+

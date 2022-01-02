@@ -76,6 +76,8 @@ def copy_problem_to_group(request, pid, gid):
     problem_data['copied_from'] = problem.id
     problem_data['id'] = None
     problem_data['is_private'] = True
+    problem_data['upvote_count'] = 0
+    problem_data['is_checked'] = False
     problem_serializer = ProblemSerializer.get_serializer(problem.__class__)(data=problem_data)
     problem_serializer.is_valid()
     problem_data = problem_serializer.validated_data
@@ -84,3 +86,5 @@ def copy_problem_to_group(request, pid, gid):
     problem_group.problems.add(problem)
     problem_group.save()
     return Response(status=status.HTTP_200_OK)
+
+    
