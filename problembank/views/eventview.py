@@ -80,7 +80,7 @@ def get_event(request, pk):
 
 @api_view(['GET'])
 def get_events(request):
-    event_list = Problem.objects.all()
+    event_list = Event.objects.all()
     event_list = get_events_by_remove_permissions(request, event_list)
     events_data = []
     for event in event_list:
@@ -89,6 +89,16 @@ def get_events(request):
     data = {'events':events_data}
     return Response(data, status=status.HTTP_200_OK)
 
+
+@api_view(['GET'])
+def get_all_events(request):
+    event_list = Event.objects.all()
+    events_data = []
+    for event in event_list:
+        events_data.append(get_minimal_event_data(event.pk, request.user.account.id))
+    
+    data = {'events':events_data}
+    return Response(data, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
