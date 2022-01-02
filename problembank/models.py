@@ -230,6 +230,15 @@ class ProblemGroup(models.Model):
     def __str__(self):
         return f'{self.event}| {self.title} {self.id}'
 
+import os
+def generate_password(size):
+    password = ""
+    chars = [(48, 57), (65, 90), (97, 122)]
+    for i in range(size):
+        j = ord(os.urandom(1)) % 3
+        password += chr(ord(os.urandom(1)) % (chars[j][1] - chars[j][0]) + chars[j][0])
+    return password
+
 class Event(models.Model):
     title = models.CharField(max_length=100, verbose_name='عنوان')
 
@@ -239,5 +248,8 @@ class Event(models.Model):
     participants = models.ManyToManyField(BankAccount, blank=True, verbose_name='بیننده(ها)',
                                          related_name='participated_events')
 
+    mentor_password = models.CharField(max_length=30, default=generate_password(8), verbose_name='رمز منتور')
+    participant_password = models.CharField(max_length=30,default=generate_password(8) , verbose_name='رمز شرکت کننده')
+    
     def __str__(self):
         return f'{self.title} {self.id}'

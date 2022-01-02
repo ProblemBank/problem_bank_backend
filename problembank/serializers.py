@@ -257,9 +257,9 @@ class EventSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Event
-        fields = '__all__'
+        exclude = ['mentor_password', 'participant_password']
         extra_kwargs = {'owner': {'read_only': True}}
-
+                        
 
     def create(self, validated_data):
         mentors_data = validated_data.pop('mentors')

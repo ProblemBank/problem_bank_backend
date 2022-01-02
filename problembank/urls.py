@@ -1,6 +1,6 @@
 from problembank.serializers import AutoCheckSubmitSerializer
 from problembank.views.accountview import AccountView
-from problembank.views.otherviews import add_problem_to_group, remove_problem_from_group
+from problembank.views.problemgroupview import add_problem_to_group, remove_problem_from_group
 from problembank.views.problemview import ProblemView, get_all_problems, copy_problem_to_group
 from problembank.views.problemgroupview import ProblemGroupView
 from problembank.views.guidanceview import GuidanceView
