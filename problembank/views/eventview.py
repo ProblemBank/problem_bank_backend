@@ -55,12 +55,12 @@ def get_minimal_event_data(event_pk, account_id):
     data.pop("mentors")
     data.pop("participants")
     data.pop("owner")
-    if len(event.mentors.all().filter(id=account_id)) > 0:
+    if event.owner.id == account_id:
+        role = "owner"
+    elif len(event.mentors.all().filter(id=account_id)) > 0:
         role = "mentor"
     elif len(event.participants.all().filter(id=account_id)) > 0:
         role = "participant"
-    elif event.owner.id == account_id:
-        role = "owner"
     else:
         role = "anonymouse"
         
@@ -88,3 +88,24 @@ def get_events(request):
     
     data = {'events':events_data}
     return Response(data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def add_to_event(request, pk):
+    account = request.user.account
+    event = Event.objects.get(pk=pk)
+    if not event:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+    if not 'password' in request.data:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+    
+    password = request.data['password']
+    if password == event.mentor_password:
+        event.mentors.add(account)
+        return Response(status=status.HTTP_200_OK)
+    elif password == event.participant_password:
+        event.participants.add(account)
+        return Response(status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_400_BAD_REQUEST)

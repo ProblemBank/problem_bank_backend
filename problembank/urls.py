@@ -4,7 +4,7 @@ from problembank.views.problemgroupview import add_problem_to_group, remove_prob
 from problembank.views.problemview import ProblemView, get_all_problems, copy_problem_to_group
 from problembank.views.problemgroupview import ProblemGroupView
 from problembank.views.guidanceview import GuidanceView
-from problembank.views.eventview import EventView, get_events, get_event
+from problembank.views.eventview import EventView, get_events, get_event, add_to_event
 from problembank.views.topicsview import TopicView, SubtopicView, SourceView
 from problembank.views.submitview import AutoCheckSubmitView, JudgeableSubmitView
 from problembank.views.submitview import  submit_answer_to_problem, judge_answer_view, get_judgeable_submits
@@ -47,6 +47,7 @@ urlpatterns = [
       path('getsubmits/', get_judgeable_submits),
       path('getevent/<int:pk>/', get_event),
       path('getevents/', get_events),
+      path('addtoevent/<int:pk>/', add_to_event),
 ]
 
 urlpatterns += router.urls
