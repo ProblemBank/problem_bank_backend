@@ -249,17 +249,10 @@ class ProblemGroupPermission(ModelPermission):
             return len(event.participants.all().filter(id=account.id)) > 0
         return False
     
-    def is_problem_collection_event(self, request):
-        event = self.get_event(request)
-        if event is not None:
-            return event.id == 7 #karsoogh 1401
-        return False
-    
     def has_member_permission(self, request, view):
         return (request.method in JUST_VIEW_METHODS and self.is_participant(request)) or\
-                (request.method in EDIT_AND_DELET_METHODS and self.is_mentor(request)) or\
-                (request.method in JUST_ADD_AND_VIEW_METHODS and self.is_problem_collection_event(request))
-
+                (request.method in EDIT_AND_DELET_METHODS and self.is_mentor(request))
+               
 class AddProblemToGroupPermission(ProblemGroupPermission):
     def get_object(self, request):
         if 'gid' not in request.parser_context['kwargs'].keys():
@@ -288,14 +281,8 @@ class EventPermission(ModelPermission):
                     self.is_my_object(request)
         return False
     
-    def is_problem_collection_event(self, request):
-        event = self.get_object(request)
-        if event is not None:
-            return event.id == 7 #karsoogh 1401
-        return False
     
     def has_member_permission(self, request, view):
         return request.method in JUST_ADD_METHODS or\
                 (request.method in JUST_VIEW_METHODS and self.is_member(request)) or\
-                (request.method in EDIT_AND_DELET_METHODS and self.is_my_object(request)) or\
-                (request.method in JUST_VIEW_METHODS and self.is_problem_collection_event(request))
+                (request.method in EDIT_AND_DELET_METHODS and self.is_my_object(request))

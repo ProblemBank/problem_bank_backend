@@ -63,9 +63,6 @@ def get_minimal_event_data(event_pk, account_id):
         role = "participant"
     else:
         role = "anonymouse"
-        
-    if event.id == 7: #karsoogh 1401
-        role = "mentor"
 
     data['role'] = role
     return data
