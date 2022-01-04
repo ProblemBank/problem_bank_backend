@@ -3,7 +3,6 @@ from django.db.models.fields import TextField
 from Account.models import User
 from model_utils.managers import InheritanceManager
 from django.utils import timezone
-from problembank.utils import generate_password
 
 class BankAccount(models.Model):
     user = models.OneToOneField(User, null=True, on_delete=models.SET_NULL, unique=True, related_name='account')

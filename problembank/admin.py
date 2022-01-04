@@ -5,8 +5,8 @@ from django.contrib import admin
 from problembank.models import *
 from Game.view.submitview import *
 from problembank.forms import ProblemForm
+from problembank.utils import generate_password
 
-admin.site.register(Event)
 admin.site.register(ProblemGroup)
 admin.site.register(BankAccount)
 admin.site.register(ShortAnswerProblem)
@@ -14,7 +14,7 @@ admin.site.register(DescriptiveProblem)
 admin.site.register(Topic)
 
 @admin.register(Subtopic)
-class QuestionAdmin(admin.ModelAdmin):
+class SubTopicAdmin(admin.ModelAdmin):
     list_filter = ['topic']
 # @admin.register(JudgeableSubmit)
 # class JugeableSubmitAdmin(admin.ModelAdmin):
@@ -33,3 +33,14 @@ class QuestionAdmin(admin.ModelAdmin):
 #         form = super(JugeableSubmitAdmin, self).get_form(request, obj, **kwargs)
 #         obj.save()
 #         return form
+@admin.register(Event)
+class EventAdmin(admin.ModelAdmin):
+       
+    # all defualt saved for each users
+    def save_model(self, request, obj, form, change):
+        if obj.mentor_password == 'gen':
+            obj.mentor_password = generate_password(8)
+        if obj.participant_password == 'gen':
+            obj.participant_password = generate_password(8)
+        
+        obj.save()

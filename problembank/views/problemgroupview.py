@@ -9,7 +9,7 @@ from rest_framework.decorators import api_view, permission_classes
 
 
 from problembank.models import ProblemGroup, Problem
-from problembank.serializers import ProblemGroupSerializer
+from problembank.serializers import ProblemGroupSerializer, ProblemSerializer
 
 from rest_framework import permissions
 from problembank.permissions import DefualtPermission, ProblemGroupPermission, AddProblemToGroupPermission
@@ -59,6 +59,27 @@ def add_problem_to_group(request, pid, gid):
 
     return Response(f'مسئله {problem.pk} با موفقیت به گروه {problem_group.pk} اضافه شد.', status=status.HTTP_200_OK)
 
+@transaction.atomic
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated, ProblemGroupPermission])
+def copy_problem_to_group(request, pid, gid):
+    problem = Problem.objects.all().select_subclasses().filter(id=pid)[0]
+    problem_group = ProblemGroup.objects.filter(id=gid)[0]
+    problem_data = ProblemSerializer(problem).data
+    problem_data['copied_from'] = problem.id
+    problem_data['id'] = None
+    problem_data['is_private'] = True
+    problem_data['upvote_count'] = 0
+    problem_data['is_checked'] = False
+    problem_serializer = ProblemSerializer.get_serializer(problem.__class__)(data=problem_data)
+    problem_serializer.is_valid()
+    problem_data = problem_serializer.validated_data
+    problem_data['author'] = request.user.account
+    problem = problem_serializer.create(problem_data)
+    problem_group.problems.add(problem)
+    problem_group.save()
+    return Response(status=status.HTTP_200_OK)
+
 
 @api_view(['DELETE'])
 @permission_classes([permissions.IsAuthenticated, AddProblemToGroupPermission])
@@ -77,3 +98,4 @@ def remove_problem_from_group(request, pid, gid):
     problem_group.save()
 
     return Response(f'مسئله {problem.pk} با موفقیت از گروه {problem_group.pk} حذف شد.', status=status.HTTP_200_OK)
+
