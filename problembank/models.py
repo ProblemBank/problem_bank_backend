@@ -242,7 +242,7 @@ class Event(models.Model):
     mentor_password = models.CharField(max_length=30, default='04tja5YV', verbose_name='رمز منتور')
     participant_password = models.CharField(max_length=30,default='M4IgJXmH' , verbose_name='رمز شرکت کننده')
     
-    picture_link = models.CharField(max_length=200, default="https://problembank.ir/logo.png", verbose_name='عکس')
+    image_link = models.CharField(max_length=200, default="https://problembank.ir/logo.png", verbose_name='عکس')
 
     def __str__(self):
         return f'{self.title} {self.id}'
