@@ -47,7 +47,7 @@ def get_problems_by_remove_permissions(request, problems):
 def get_problems_by_remove_permissions_2(request, problems):
     account = request.user.account
     events = Event.objects.filter(mentors__in=[account]) | Event.objects.filter(owner=account) |\
-                Event.objects.filter(participants__in=[account])
+             Event.objects.filter(participants__in=[account])
     problem_groups = ProblemGroup.objects.filter(event__in=events)
     problems = Problem.objects.filter(is_private=False) | Problem.objects.filter(author=account)
     for problem_group in problem_groups:
