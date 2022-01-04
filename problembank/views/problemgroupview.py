@@ -12,7 +12,7 @@ from problembank.models import ProblemGroup, Problem
 from problembank.serializers import ProblemGroupSerializer, ProblemSerializer
 
 from rest_framework import permissions
-from problembank.permissions import DefualtPermission, ProblemGroupPermission, AddProblemToGroupPermission
+from problembank.permissions import DefualtPermission, ProblemGroupPermission, AddProblemToGroupPermission, CopyProblemToGroupPermission
 
 class ProblemGroupView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixins.ListModelMixin,
                     mixins.UpdateModelMixin, mixins.DestroyModelMixin):
@@ -61,7 +61,7 @@ def add_problem_to_group(request, pid, gid):
 
 @transaction.atomic
 @api_view(['POST'])
-@permission_classes([permissions.IsAuthenticated, ProblemGroupPermission])
+@permission_classes([permissions.IsAuthenticated, CopyProblemToGroupPermission])
 def copy_problem_to_group(request, pid, gid):
     problem = Problem.objects.all().select_subclasses().filter(id=pid)[0]
     problem_group = ProblemGroup.objects.filter(id=gid)[0]

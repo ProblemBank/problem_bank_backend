@@ -57,6 +57,7 @@ class ModelPermission(DefualtPermission):
         return obj
         
     def is_my_object(self, request):
+        print( request.parser_context['kwargs'], "my obj")
         return request.user.account.id == self.get_owner_id(request)
         
  
@@ -252,7 +253,19 @@ class ProblemGroupPermission(ModelPermission):
     def has_member_permission(self, request, view):
         return (request.method in JUST_VIEW_METHODS and self.is_participant(request)) or\
                 (request.method in EDIT_AND_DELET_METHODS and self.is_mentor(request))
-               
+
+class CopyProblemToGroupPermission(ProblemGroupPermission):
+    def get_object(self, request):
+        if 'gid' not in request.parser_context['kwargs'].keys():
+            return None
+        try:
+            pk = request.parser_context['kwargs']['gid']
+            obj = self.model.objects.get(pk=pk)
+        except:
+            return None
+        return obj
+
+
 class AddProblemToGroupPermission(ProblemGroupPermission):
     def get_object(self, request):
         if 'gid' not in request.parser_context['kwargs'].keys():
@@ -263,6 +276,24 @@ class AddProblemToGroupPermission(ProblemGroupPermission):
         except:
             return None
         return obj
+
+    
+    def can_edit_problem(self, request, view):
+        pid = request.parser_context['kwargs']['pid']
+        request.parser_context['kwargs']['pk'] = pid
+        method = request.method
+        request.method = 'PATCH'
+        problem_permission = ProblemPermission()
+        resualt = problem_permission.has_permission(request, view)
+        request.method = method
+        request.parser_context['kwargs'].pop('pk')
+        print(resualt)
+        return resualt
+
+    def has_member_permission(self, request, view):
+        return (request.method in JUST_VIEW_METHODS and self.is_participant(request)) or\
+                (request.method in EDIT_AND_DELET_METHODS and self.is_mentor(request) and self.can_edit_problem(request, view))
+    
     
 class EventPermission(ModelPermission):
     model = Event
