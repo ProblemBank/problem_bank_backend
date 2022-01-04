@@ -240,8 +240,10 @@ class Event(models.Model):
     participants = models.ManyToManyField(BankAccount, blank=True, verbose_name='بیننده(ها)',
                                          related_name='participated_events')
 
-    mentor_password = models.CharField(max_length=30, default=generate_password(8), verbose_name='رمز منتور')
-    participant_password = models.CharField(max_length=30,default=generate_password(8) , verbose_name='رمز شرکت کننده')
+    mentor_password = models.CharField(max_length=30, default='04tja5YV', verbose_name='رمز منتور')
+    participant_password = models.CharField(max_length=30,default='M4IgJXmH' , verbose_name='رمز شرکت کننده')
     
+    picture_link = models.CharField(max_length=200, default="https://problembank.ir/logo.png", verbose_name='عکس')
+
     def __str__(self):
         return f'{self.title} {self.id}'
