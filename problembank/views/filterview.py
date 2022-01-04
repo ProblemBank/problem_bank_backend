@@ -63,9 +63,9 @@ def get_problem_by_filter_view(request):
     data = serializer.validated_data
     page = data.pop("page")
     problems = Problem.objects.all()
-    q_list = get_problems_by_remove_permissions_2(request, problems)
-    q_list = get_problems_by_filter(problems=problems, **data)
-    paginator = Paginator(q_list, settings.CONSTANTS['PAGINATION_NUMBER'])
+    problems = get_problems_by_remove_permissions_2(request, problems)
+    problems = get_problems_by_filter(problems=problems, **data)
+    paginator = Paginator(problems, settings.CONSTANTS['PAGINATION_NUMBER'])
     page = paginator.get_page(page)
     problems_data = ProblemSerializer(page.object_list.select_subclasses(), many=True).data
     data = {'problems':problems_data,
