@@ -12,7 +12,10 @@ admin.site.register(BankAccount)
 admin.site.register(ShortAnswerProblem)
 admin.site.register(DescriptiveProblem)
 admin.site.register(Topic)
-admin.site.register(AutoCheckSubmit)
+
+@admin.register(AutoCheckSubmit)
+class AutoCheckSubmitAdmin(admin.ModelAdmin):
+    list_filter = ['problem', 'respondents']
 
 @admin.register(Subtopic)
 class SubTopicAdmin(admin.ModelAdmin):
