@@ -38,7 +38,8 @@ class Topic(models.Model):
     title = models.CharField(max_length=30, verbose_name='عنوان')
 
     def __str__(self):
-        return self.title
+        return f'{self.title}| {self.id}'
+    
 
 
 class Subtopic(models.Model):
@@ -46,7 +47,7 @@ class Subtopic(models.Model):
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE, verbose_name='موضوع', related_name='subtopics')
 
     def __str__(self):
-        return f'{self.topic.title} - {self.title}'
+        return f'{self.topic.title} - {self.title} | {self.id}'
 
 
 class Problem(models.Model):
