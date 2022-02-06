@@ -185,6 +185,30 @@ class DescriptiveProblemSerializerForConvert(serializers.ModelSerializer):
         instance.save()
     
         return instance
+
+class ShortAnswerProblemSerializerForConvert(serializers.ModelSerializer):
+    answer = ShortAnswerSerializer(required=False)
+    class Meta:
+        model = ShortAnswerProblem
+        fields = '__all__'
+       
+    @transaction.atomic
+    def create(self, validated_data):
+        topics_data = validated_data.pop('topics')
+        subtopics_data = validated_data.pop('subtopics') 
+        answer_data = validated_data.pop('answer')
+        answer_data['answer_type'] = 'ShortAnswer'
+        answer = ShortAnswer.objects.create(**answer_data)
+        validated_data['answer'] = answer
+        instance = ShortAnswerProblem.objects.create(**validated_data)
+        instance.topics.set(topics_data)
+        instance.subtopics.set(subtopics_data)
+        instance.answer = answer
+        instance.is_checked = False
+        instance.save()
+    
+        return instance
+
 def craete_or_get_problem_group(event, problem_group):
     try:
         return ProblemGroup.objects.get(title=problem_group, event=event)
@@ -201,27 +225,29 @@ def create_problem_with_global_problem_json(problem_json_object):
     problem_data['author'] = create_or_get_account(problem_data['author'])
     problem_data['answer'] = json.loads('{"text":"بدون پاسخ"}')
 
+    problem_data['is_private'] = True
+            
     event = None
     problem_group = None
-    for topic in problem_json_object['topics']:
-        if topic == 'فرمول صفر':
-            problem_data['grade'] = 'HighSchoolSecondHalf'
-            problem_data['is_private'] = True
-            event = 'فرمول صفر'
-            for subtopic in problem_json_object['subtopics']:
-                if subtopic['topic'] == 'فرمول صفر':
-                    problem_group = subtopic['title']
-        if topic == 'کارسوق':
-            problem_data['is_private'] = True
-            event = 'کارسوق'
-            problem_group = 'همه'
+    try:
+        for pg in problem_data['problem_groups']:
+            event = pg['event']
+            problem_group = pg['title']
+    except:
+        print("bad")
+        pass
     if event is None:
-        event = 'بانک کارسوق'
+        event = 'مسابقه‌ی توتنخ‌عامو'
         problem_group = 'همه'
-    descriptiveProblemSerializer = DescriptiveProblemSerializerForConvert(data=problem_data)
-    descriptiveProblemSerializer.is_valid(raise_exception=True)
-    data = descriptiveProblemSerializer.validated_data
-    instance = descriptiveProblemSerializer.create(data)
+    
+    if problem_data['problem_type'] == Problem.Type.ShortAnswerProblem:
+        problemSerializer = ShortAnswerProblemSerializerForConvert(data=problem_data)
+    else:
+        problemSerializer = DescriptiveProblemSerializerForConvert(data=problem_data)
+    problemSerializer.is_valid(raise_exception=True)
+    data = problemSerializer.validated_data
+    instance = problemSerializer.create(data)
+
     if event is not None:
         event = Event.objects.get(title=event)
         if problem_group is not None:
@@ -237,8 +263,9 @@ def create_many_problem_with_global_problem_json(problems_json):
     for problem_json_object in problems_json_object:
         create_problem_with_global_problem_json(problem_json_object)
     
-
-
+f = open("out.json", "r")
+create_many_problem_with_global_problem_json(f.read())
+f.close()
 # datas = []
 # for registerrec in RegistrationReceipt.objects.all():
 #     if registerrec.is_participating:
@@ -320,3 +347,13 @@ def add_players():
 #     writer.writeheader()
 #     for i in range(0, len(datas)):
 #     writer.writerow(datas[i])
+
+
+# from problembank.models import *
+# pgs = ProblemGroup.objects.filter(event=3)
+# q = Problem.objects.filter(pk=-1)
+# for pg in pgs:
+#     q = q | pg.problems.all()
+# for p in q:
+#     p.grade = Problem.Grade.HighSchoolFirstHalf
+#     p.save()
