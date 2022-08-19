@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 from rest_framework import viewsets
 from rest_framework import mixins
 from rest_framework.decorators import api_view, permission_classes
-from problembank.permissions import DefualtPermission
+from problembank.permissions import DefaultPermission
 from problembank.models import *
 from rest_framework import permissions
 # from problembank.views import permissions as customPermissions
@@ -206,7 +206,7 @@ def send_note(user, message):
     Notification.objects.create(**data)
 
 @api_view(['GET'])
-@permission_classes([permissions.IsAuthenticated, DefualtPermission])
+@permission_classes([permissions.IsAuthenticated, DefaultPermission])
 def notification_to_all(request):
     for account in BankAccount.objects.all():
         try:

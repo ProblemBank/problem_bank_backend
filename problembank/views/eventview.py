@@ -11,7 +11,7 @@ from problembank.models import *
 from rest_framework import permissions
 # from problembank.views import permissions as customPermissions
 from problembank.serializers import EventSerializer
-from problembank.permissions import DefualtPermission, EventPermission
+from problembank.permissions import DefaultPermission, EventPermission
 import sys
 
 class EventView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixins.ListModelMixin,

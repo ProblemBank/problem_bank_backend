@@ -15,31 +15,35 @@ PUT, PATCH = CHANGE
 GET = READ
 DELETE = DELETE
 """
-class DefualtPermission(BasePermission):
+
+
+class DefaultPermission(BasePermission):
     def is_get_list_request(self, request):
         return 'pk' not in request.parser_context['kwargs'].keys() and request.method in ['GET']
 
     def has_anonymous_permission(self, request, view):
-        return False 
-        
+        return False
+
     def has_member_permission(self, request, view):
-        return request.method in JUST_ADD_AND_VIEW_METHODS    
-    
-    def has_admin_prmission(self, request, view):
+        return request.method in JUST_ADD_AND_VIEW_METHODS
+
+    def has_admin_permission(self, request, view):
         return request.method in EDIT_AND_DELET_METHODS
 
     def has_permission(self, request, view):
-        if request.user.is_anonymous :
+        if request.user.is_anonymous:
             return self.has_anonymous_permission(request, view)
-        elif request.user.account.is_mentor() :
+        elif request.user.account.is_mentor():
             return self.has_member_permission(request, view)
         elif request.user.account.is_admin():
-            return self.has_admin_prmission(request, view)
-        else :
+            return self.has_admin_permission(request, view)
+        else:
             return False
 
-class ModelPermission(DefualtPermission):
+
+class ModelPermission(DefaultPermission):
     model = None
+
     def get_owner_id(self, request):
         obj = self.get_object(request)
         if obj is None:
@@ -55,18 +59,20 @@ class ModelPermission(DefualtPermission):
         except:
             return None
         return obj
-        
+
     def is_my_object(self, request):
-        print( request.parser_context['kwargs'], "my obj")
+        print(request.parser_context['kwargs'], "my obj")
         return request.user.account.id == self.get_owner_id(request)
-        
- 
+
+
 class TopicPermission(ModelPermission):
     def has_member_permission(self, request, view):
-        return request.method in JUST_VIEW_METHODS    
+        return request.method in JUST_VIEW_METHODS
+
 
 class SubtopicPermission(ModelPermission):
-    pass   
+    pass
+
 
 class SourcePermission(ModelPermission):
     pass
@@ -74,23 +80,27 @@ class SourcePermission(ModelPermission):
 
 class ProblemPermission(ModelPermission):
     model = Problem
+
     def has_anonymous_permission(self, request, view):
-        return False 
-    
+        return False
+
     def some_where_is_mentor(self, request):
         account = request.user.account
         problem = self.get_object(request)
-        my_events = Event.objects.filter(mentors__in=[account]) | Event.objects.filter(owner=account)
-        problem_groups = ProblemGroup.objects.filter(event__in=my_events, problems__in=[problem])
+        my_events = Event.objects.filter(
+            mentors__in=[account]) | Event.objects.filter(owner=account)
+        problem_groups = ProblemGroup.objects.filter(
+            event__in=my_events, problems__in=[problem])
         return len(problem_groups) > 0
-    
+
     def some_where_is_participant(self, request):
         account = request.user.account
         problem = self.get_object(request)
         my_events = Event.objects.filter(participants__in=[account])
-        problem_groups = ProblemGroup.objects.filter(event__in=my_events, problems__in=[problem], is_visible=True)
+        problem_groups = ProblemGroup.objects.filter(
+            event__in=my_events, problems__in=[problem], is_visible=True)
         return len(problem_groups) > 0
-    
+
     def is_visibale(self, request):
         obj = self.get_object(request)
         if obj is not None:
@@ -99,12 +109,12 @@ class ProblemPermission(ModelPermission):
             return False
 
     def has_member_permission(self, request, view):
-        return  (request.method in JUST_ADD_METHODS) or\
-                (request.method in JUST_VIEW_METHODS and self.some_where_is_participant(request)) or\
-                (request.method in EDIT_AND_DELET_METHODS and self.some_where_is_mentor(request)) or\
-                (request.method in EDIT_AND_DELET_METHODS and self.is_my_object(request)) or\
-                (request.method in JUST_VIEW_METHODS and self.is_visibale(request))
-    
+        return (request.method in JUST_ADD_METHODS) or\
+            (request.method in JUST_VIEW_METHODS and self.some_where_is_participant(request)) or\
+            (request.method in EDIT_AND_DELET_METHODS and self.some_where_is_mentor(request)) or\
+            (request.method in EDIT_AND_DELET_METHODS and self.is_my_object(request)) or\
+            (request.method in JUST_VIEW_METHODS and self.is_visibale(request))
+
 # class SubmitPermission(ModelPermission):
 #     model = None
 #     def get_object(self, request):
@@ -127,8 +137,8 @@ class ProblemPermission(ModelPermission):
 #     def get_problem(self, request):
 #         return None
 #     def has_anonymous_permission(self, request, view):
-#         return False 
-    
+#         return False
+
 #     def is_mentor(self, request):
 #         account = request.user.account
 #         problem_group = self.get_problem_group(request)
@@ -143,14 +153,14 @@ class ProblemPermission(ModelPermission):
 #         if problem_group is not None and problem_group is not None:
 #             return len(problem_group.event.participants.all().filter(id=account.id)) > 0
 #         return False
-    
+
 #     def is_my_object(self, request):
 #         obj = self.get_object(request)
 #         account = request.user.account
 #         if obj is None:
 #             return False
 #         return len(obj.respondents.all().filter(id=account.id)) > 0
-        
+
 #     def is_poblic_problem(self, request):
 #         problem = self.get_problem(request)
 #         if problem is None:
@@ -163,6 +173,7 @@ class ProblemPermission(ModelPermission):
 #                 (request.method in EDIT_AND_DELET_METHODS and self.is_mentor(request)) or\
 #                 (request.method in JUST_ADD_METHODS and self.is_poblic_problem(request))
 
+
 class JudgePermission(ModelPermission):
     model = JudgeableSubmit
 
@@ -170,29 +181,30 @@ class JudgePermission(ModelPermission):
         obj = self.get_object(request)
         if obj is None:
             return False
-        
+
         return obj.respondents.all().filter(id=request.user.account.id) > 0
-    
+
     def get_problem_group(self, request):
         obj = self.get_object(request)
         if obj is None or obj.problem_group is None:
             return False
         return obj.problem_group
-    
+
     def has_anonymous_permission(self, request, view):
-        return False 
-    
+        return False
+
     def is_mentor(self, request):
         account = request.user.account
         problem_group = self.get_problem_group(request)
         if problem_group is not None and problem_group is not None:
             return len(problem_group.event.mentors.all().filter(id=account.id)) > 0 or\
-                    (problem_group.event.owner.id == account.id)
+                (problem_group.event.owner.id == account.id)
         return False
 
     def has_member_permission(self, request, view):
         return request.method in JUST_ADD_METHODS and self.is_mentor(request)
-                
+
+
 class SubmitAnswerPermission(ModelPermission):
     def get_problem_group(self, request):
         if 'gid' not in request.parser_context['kwargs'].keys():
@@ -205,21 +217,22 @@ class SubmitAnswerPermission(ModelPermission):
         return obj
 
     def has_anonymous_permission(self, request, view):
-        return False 
-    
+        return False
+
     def is_participant(self, request):
         account = request.user.account
         problem_group = self.get_problem_group(request)
         if problem_group is not None and problem_group is not None:
             return len(problem_group.event.participants.all().filter(id=account.id)) > 0
         return False
-    
+
     def has_member_permission(self, request, view):
         return request.method in JUST_ADD_METHODS and self.is_participant(request)
 
 
 class ProblemGroupPermission(ModelPermission):
     model = ProblemGroup
+
     def get_owner_id(self, request):
         event = self.get_event(request)
         if event is not None:
@@ -240,7 +253,7 @@ class ProblemGroupPermission(ModelPermission):
         event = self.get_event(request)
         if event is not None:
             return len(event.mentors.all().filter(id=account.id)) > 0 or\
-                    self.is_my_object(request)
+                self.is_my_object(request)
         return False
 
     def is_participant(self, request):
@@ -249,10 +262,11 @@ class ProblemGroupPermission(ModelPermission):
         if event is not None:
             return len(event.participants.all().filter(id=account.id)) > 0
         return False
-    
+
     def has_member_permission(self, request, view):
         return (request.method in JUST_VIEW_METHODS and self.is_participant(request)) or\
-                (request.method in EDIT_AND_DELET_METHODS and self.is_mentor(request))
+            (request.method in EDIT_AND_DELET_METHODS and self.is_mentor(request))
+
 
 class CopyProblemToGroupPermission(ProblemGroupPermission):
     def get_object(self, request):
@@ -277,7 +291,6 @@ class AddProblemToGroupPermission(ProblemGroupPermission):
             return None
         return obj
 
-    
     def can_edit_problem(self, request, view):
         pid = request.parser_context['kwargs']['pid']
         request.parser_context['kwargs']['pk'] = pid
@@ -292,11 +305,13 @@ class AddProblemToGroupPermission(ProblemGroupPermission):
 
     def has_member_permission(self, request, view):
         return (request.method in JUST_VIEW_METHODS and self.is_participant(request)) or\
-                (request.method in EDIT_AND_DELET_METHODS and self.is_mentor(request) and self.can_edit_problem(request, view))
-    
-    
+            (request.method in EDIT_AND_DELET_METHODS and self.is_mentor(
+                request) and self.can_edit_problem(request, view))
+
+
 class EventPermission(ModelPermission):
     model = Event
+
     def get_owner_id(self, request):
         obj = self.get_object(request)
         if obj is None:
@@ -308,12 +323,11 @@ class EventPermission(ModelPermission):
         account = request.user.account
         if event is not None:
             return len(event.mentors.all().filter(id=account.id)) > 0 or\
-                    len(event.participants.all().filter(id=account.id)) > 0 or\
-                    self.is_my_object(request)
+                len(event.participants.all().filter(id=account.id)) > 0 or\
+                self.is_my_object(request)
         return False
-    
-    
+
     def has_member_permission(self, request, view):
         return request.method in JUST_ADD_METHODS or\
-                (request.method in JUST_VIEW_METHODS and self.is_member(request)) or\
-                (request.method in EDIT_AND_DELET_METHODS and self.is_my_object(request))
+            (request.method in JUST_VIEW_METHODS and self.is_member(request)) or\
+            (request.method in EDIT_AND_DELET_METHODS and self.is_my_object(request))

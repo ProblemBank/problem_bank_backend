@@ -9,7 +9,7 @@ from rest_framework.decorators import api_view, permission_classes
 
 from problembank.models import *
 from rest_framework import permissions
-from problembank.permissions import DefualtPermission, SourcePermission, SubtopicPermission, TopicPermission
+from problembank.permissions import DefaultPermission, SourcePermission, SubtopicPermission, TopicPermission
 # from problembank.views import permissions as customPermissions
 from problembank.serializers import SourceSerializer, SubtopicSerializer, TopicSerializer
 
