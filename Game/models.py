@@ -32,6 +32,7 @@ class Player(models.Model):
     def not_fake_checkable_objects(self):
         return len(self.checkable_objects.all().filter(is_fake=False))
 
+
 class FamousPerson(models.Model):
     name = models.CharField(max_length=50, verbose_name='نام')
 

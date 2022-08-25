@@ -4,6 +4,7 @@ from Account.models import User
 from model_utils.managers import InheritanceManager
 from django.utils import timezone
 
+
 class BankAccount(models.Model):
     user = models.OneToOneField(User, null=True, on_delete=models.SET_NULL, unique=True, related_name='account')
     first_name = models.CharField(max_length=30, default='None')
@@ -26,7 +27,8 @@ class BankAccount(models.Model):
         
     def is_admin(self):
         return self.position == BankAccount.Position.Admin
-        
+
+
 class Source(models.Model):
     title = models.CharField(max_length=50, verbose_name='عنوان')
 
@@ -40,7 +42,6 @@ class Topic(models.Model):
     def __str__(self):
         return f'{self.title}| {self.id}'
     
-
 
 class Subtopic(models.Model):
     title = models.CharField(max_length=30, verbose_name='عنوان')
@@ -197,6 +198,7 @@ class AutoCheckSubmit(BaseSubmit):
     answer = models.OneToOneField('ShortAnswer', null=True, on_delete=models.SET_NULL, unique=True,
                                   related_name='submit_answer', verbose_name='پاسخ')
 
+
 class JudgeableSubmit(BaseSubmit):
     text_answer = models.OneToOneField('DescriptiveAnswer', blank=True, null=True, on_delete=models.SET_NULL,
                                        unique=True,
@@ -210,6 +212,7 @@ class JudgeableSubmit(BaseSubmit):
                                   on_delete=models.SET_NULL,
                                   null=True,
                                   blank=True, related_name='judged_problems', verbose_name='مصحح')
+
 
 class Comment(models.Model):
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='comments', verbose_name='مسئله')
