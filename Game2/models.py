@@ -8,8 +8,10 @@ from constants import MAX_CARROUSEL_TURNS
 
 class Room(models.Model):
     number = models.IntegerField(default=0, blank=True, null=True)
-    entrance_cost = models.IntegerField(default=0, verbose_name='هزینه ورود به اتاق')
-    problem_groups = models.ManyToManyField(ProblemGroup, verbose_name='مسئله‌ها')
+    entrance_cost = models.IntegerField(
+        default=0, verbose_name='هزینه ورود به اتاق')
+    problem_groups = models.ManyToManyField(
+        ProblemGroup, verbose_name='مسئله‌ها')
 
     def __str__(self):
         return f'{self.number}'
@@ -19,12 +21,16 @@ class Team(models.Model):
     name = models.CharField(max_length=100, verbose_name='نام')
     coin = models.IntegerField(default=0, verbose_name='پول')
 
-    current_room = models.ForeignKey(Room, on_delete=models.PROTECT, related_name='current_room')
-    leader = models.ForeignKey(User, on_delete=models.PROTECT, related_name='leader')
-    users = models.ManyToManyField(User, related_name='users', verbose_name='اعضا')
+    current_room = models.ForeignKey(
+        Room, on_delete=models.PROTECT, related_name='current_room')
+    leader = models.ForeignKey(
+        User, on_delete=models.PROTECT, related_name='leader')
+    users = models.ManyToManyField(
+        User, related_name='users', verbose_name='اعضا')
 
     chat_room = models.URLField(max_length=100, verbose_name='اتاق قرار')
-    carrousel_turn = models.IntegerField(default=MAX_CARROUSEL_TURNS, verbose_name='تعداد دفعات باقی مانده چرخاندن گردونه')
+    carrousel_turn = models.IntegerField(
+        default=MAX_CARROUSEL_TURNS, verbose_name='تعداد دفعات باقی مانده چرخاندن گردونه')
 
     def __str__(self):
         return f'{self.name}'
@@ -32,7 +38,8 @@ class Team(models.Model):
 
 class Box(models.Model):
     number = models.IntegerField(default=0, verbose_name='شماره')
-    open_cost = models.IntegerField(default=0, verbose_name='هزینه باز کردن جعبه')
+    open_cost = models.IntegerField(
+        default=0, verbose_name='هزینه باز کردن جعبه')
     reward = models.IntegerField(default=0, verbose_name='جایزه باز کردن جعبه')
 
     def __str__(self):
@@ -45,9 +52,12 @@ class Answer(models.Model):
         ANSWERED = 'ANSWERED'
         SCORED = 'SCORED'
 
-    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='team')
-    problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='problem')
-    answer_status = models.CharField(max_length=20, default=AnswerStatus.NOT_ANSWERED, choices=AnswerStatus.choices)
+    team = models.ForeignKey(
+        Team, on_delete=models.CASCADE, related_name='team')
+    problem = models.ForeignKey(
+        Problem, on_delete=models.CASCADE, related_name='problem')
+    answer_status = models.CharField(
+        max_length=20, default=AnswerStatus.NOT_ANSWERED, choices=AnswerStatus.choices)
 
     def __str__(self):
         return f'team={self.team} problem={self.problem} status={self.answer_status}'
@@ -64,7 +74,8 @@ class Carrousel(models.Model):
 class Notification(models.Model):
     title = models.CharField(max_length=100, blank=True, null=True)
     body = models.CharField(max_length=200, blank=True, null=True)
-    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='team')
+    team = models.ForeignKey(
+        Team, on_delete=models.CASCADE, related_name='notification')
     has_seen = models.BooleanField(default=False)
     time = models.TimeField()
 
@@ -81,10 +92,14 @@ class GameInfo(models.Model):
 
 
 class TeamBox(models.Model):
-    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='team')
-    box = models.ForeignKey(Box, on_delete=models.CASCADE, related_name='box')
+    team = models.ForeignKey(
+        Team, on_delete=models.CASCADE, related_name='team_box')
+    box = models.ForeignKey(
+        Box, on_delete=models.CASCADE, related_name='team_box')
 
 
 class TeamRoom(models.Model):
-    team = models.OneToOneField(Team, on_delete=models.CASCADE, related_name='team')
-    room = models.OneToOneField(Room, on_delete=models.CASCADE, related_name='room')
+    team = models.ForeignKey(
+        Team, on_delete=models.CASCADE, related_name='team_room')
+    room = models.ForeignKey(
+        Room, on_delete=models.CASCADE, related_name='team_room')
