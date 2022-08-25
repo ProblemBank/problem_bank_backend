@@ -18,6 +18,8 @@ import sys
 from itertools import chain
 # data['juged_by'] = request.user.account #just for mentor not all the times!
 from problembank.permissions import DefualtPermission
+
+
 class JudgeableSubmitView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = JudgeableSubmitSerializer
@@ -32,26 +34,29 @@ class AutoCheckSubmitView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mi
 
 def get_submit_from_group(gid, account):
     submit = None
-    try: 
-        submit = AutoCheckSubmit.objects.all().select_subclasses().filter(problem_group=gid, respondents__in=[account])[0]
+    try:
+        submit = AutoCheckSubmit.objects.all().select_subclasses().filter(problem_group=gid, respondents__in=[account])[
+            0]
         submit = AutoCheckSubmitSerializer(submit).data
     except:
         pass
-    try: 
-        submit = JudgeableSubmit.objects.all().select_subclasses().filter(problem_group=gid, respondents__in=[account])[0]
+    try:
+        submit = JudgeableSubmit.objects.all().select_subclasses().filter(problem_group=gid, respondents__in=[account])[
+            0]
         submit = JudgeableSubmitSerializer(submit).data
     except:
         pass
     return submit
 
+
 def get_submit_from_problem(pid, account):
     submit = None
-    try: 
+    try:
         submit = AutoCheckSubmit.objects.all().select_subclasses().filter(problem=pid, respondents__in=[account])[0]
         submit = AutoCheckSubmitSerializer(submit).data
     except:
         pass
-    try: 
+    try:
         submit = JudgeableSubmit.objects.all().select_subclasses().filter(problem=pid, respondents__in=[account])[0]
         submit = JudgeableSubmitSerializer(submit).data
     except:
@@ -61,14 +66,15 @@ def get_submit_from_problem(pid, account):
 
 def get_random_problem_from_group(gid, account):
     if not ProblemGroup.objects.filter(id=gid).exists():
-        return {"status":False, "data":{"message":"چنین مسئله ای وجود ندارد."}}
+        return {"status": False, "data": {"message": "چنین مسئله ای وجود ندارد."}}
     problem_group = ProblemGroup.objects.filter(id=gid)[0]
     problems = problem_group.problems.all().select_subclasses()
     if len(problems) == 0:
-        return {"status": False, "data":{"message":"گروه مسئله خالی است."}}
+        return {"status": False, "data": {"message": "گروه مسئله خالی است."}}
     submit = get_submit_from_group(gid, account)
     if submit is not None and submit['status'] != 'Received':
-        return {"status": False, "data":{"message":"شما قبلا از این گروه مسئله دریافت کرده اید و پاسخ آن را فرستاده اید."}}
+        return {"status": False,
+                "data": {"message": "شما قبلا از این گروه مسئله دریافت کرده اید و پاسخ آن را فرستاده اید."}}
     if submit is not None:
         problem = Problem.objects.all().select_subclasses().filter(id=submit['problem'])[0]
         problem_data = ProblemSerializer(problem).data
@@ -77,21 +83,23 @@ def get_random_problem_from_group(gid, account):
         data['problem'] = problem_data
         data['submit'] = submit
         return {"status": False, "data": data}
-    return {"status":True, "problem": problems.order_by('?')[0]}
+    return {"status": True, "problem": problems.order_by('?')[0]}
+
 
 ##  return status = True or False means get nre problem is ok
 def get_problem_for_submit(pid, gid, account):
     if not ProblemGroup.objects.filter(id=gid).exists():
-        return {"status":False, "data":{"message":"چنین مسئله ای وجود ندارد."}}
+        return {"status": False, "data": {"message": "چنین مسئله ای وجود ندارد."}}
     problem_group = ProblemGroup.objects.filter(id=gid)[0]
     problems = problem_group.problems.all().select_subclasses()
     if len(problems) == 0:
-        return {"status": False, "data":{"message":"گروه مسئله خالی است."}}
+        return {"status": False, "data": {"message": "گروه مسئله خالی است."}}
     if len(problems.filter(id=pid)) == 0:
-        return {"status": False, "data":{"message":"چنین مسئله ای در این گروه وجود ندارد."}}
+        return {"status": False, "data": {"message": "چنین مسئله ای در این گروه وجود ندارد."}}
     submit = get_submit_from_problem(pid, account)
     if submit is not None and submit['status'] != 'Received':
-        return {"status": False, "data":{"message":"شما قبلا از این گروه این مسئله را دریافت کرده اید و پاسخ آن را فرستاده اید."}}
+        return {"status": False,
+                "data": {"message": "شما قبلا از این گروه این مسئله را دریافت کرده اید و پاسخ آن را فرستاده اید."}}
     if submit is not None:
         problem = Problem.objects.all().select_subclasses().filter(id=submit['problem'])[0]
         problem_data = ProblemSerializer(problem).data
@@ -100,7 +108,7 @@ def get_problem_for_submit(pid, gid, account):
         data['problem'] = problem_data
         data['submit'] = submit
         return {"status": False, "data": data}
-    return {"status":True, "problem": problems.get(id=pid)}
+    return {"status": True, "problem": problems.get(id=pid)}
 
 
 def is_problem_goten_from_group_view(account, gid):
@@ -108,8 +116,10 @@ def is_problem_goten_from_group_view(account, gid):
         return Response(status=status.HTTP_200_OK)
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
+
 ##  return responce with data
-def request_problem_from_group_view(account, gid, game_problem_request_handler=None, game_problem_request_permission_chcker=None, pid=None):
+def request_problem_from_group_view(account, gid, game_problem_request_handler=None,
+                                    game_problem_request_permission_checker=None, pid=None):
     if pid is None:
         data = get_random_problem_from_group(gid, account)
     else:
@@ -119,10 +129,10 @@ def request_problem_from_group_view(account, gid, game_problem_request_handler=N
         return Response(data["data"], status=status.HTTP_400_BAD_REQUEST)
 
     problem = data["problem"]
-    if game_problem_request_permission_chcker is not None and\
-        game_problem_request_permission_chcker(gid, account):
-        return Response({"message":"بازی اجازه گرفتن مسئله را نمیدهد."}, status=status.HTTP_400_BAD_REQUEST)
-    
+    if game_problem_request_permission_checker is not None and \
+            game_problem_request_permission_checker(gid, account):
+        return Response({"message": "بازی اجازه گرفتن مسئله را نمیدهد."}, status=status.HTTP_400_BAD_REQUEST)
+
     serializerClass = BaseSubmitSerializer.get_serializer(problem.problem_type)
     data = {}
     data['problem'] = problem.pk
@@ -137,27 +147,28 @@ def request_problem_from_group_view(account, gid, game_problem_request_handler=N
     if game_problem_request_handler is not None:
         game_problem_request_handler(account.user, instance)
     data = {}
-    data['problem'] =  ProblemSerializer(problem).data
+    data['problem'] = ProblemSerializer(problem).data
     data['submit'] = serializerClass(instance).data
     data['problem'].pop('answer')
     return Response(data, status=status.HTTP_200_OK)
-    
+
+
 def submit_answer_view(account, input_data, sid, pid, game_submit_handler=None):
     data = {}
     data['id'] = sid
     data['problem'] = pid
     if not Problem.objects.filter(id=pid).exists():
-        return Response({"message":"مسئله موجود نیست!"},status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message": "مسئله موجود نیست!"}, status=status.HTTP_400_BAD_REQUEST)
     problem = Problem.objects.filter(id=pid)[0]
     serializerClass = BaseSubmitSerializer.get_serializer(problem.problem_type)
     if not serializerClass.Meta.model.objects.filter(id=sid).exists():
-        return Response({"message":"ابتدا باید صورت مسئله را دریافت کنید."},status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message": "ابتدا باید صورت مسئله را دریافت کنید."}, status=status.HTTP_400_BAD_REQUEST)
     instance = serializerClass.Meta.model.objects.filter(id=sid)[0]
     if len(instance.respondents.all().filter(id=account.id)) == 0:
-        return Response({"message":"این پاسخ مربوط به شما نیست!"},status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message": "این پاسخ مربوط به شما نیست!"}, status=status.HTTP_400_BAD_REQUEST)
     if instance.status != BaseSubmit.Status.Received:
-        return Response({"message":"قبلا پاسخ این مسئله را ارسال کرده اید!"},status=status.HTTP_400_BAD_REQUEST)
-    
+        return Response({"message": "قبلا پاسخ این مسئله را ارسال کرده اید!"}, status=status.HTTP_400_BAD_REQUEST)
+
     if serializerClass == AutoCheckSubmitSerializer:
         data['answer'] = {}
         try:
@@ -176,7 +187,7 @@ def submit_answer_view(account, input_data, sid, pid, game_submit_handler=None):
             data['upload_file_answer']['file_name'] = f'problem {pid} account {account.id}'
         except:
             data.pop('upload_file_answer')
-    
+
     serializer = serializerClass(data=data)
     if not serializer.is_valid(raise_exception=True):
         return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -185,15 +196,16 @@ def submit_answer_view(account, input_data, sid, pid, game_submit_handler=None):
     if game_submit_handler is not None:
         game_submit_handler(instance, account.user, problem)
     response = serializer.to_representation(instance)
-    return Response(response ,status=status.HTTP_200_OK)
+    return Response(response, status=status.HTTP_200_OK)
 
-def judge_view(account, sid , mark, game_judge_handler=None):
+
+def judge_view(account, sid, mark, game_judge_handler=None):
     submit = JudgeableSubmit.objects.filter(id=sid)[0]
     if submit.status == BaseSubmit.Status.Received:
-        return Response({"message":"هنوز پاسخی برای این مسئله ارسال نشده است."},status=status.HTTP_400_BAD_REQUEST)
-    
+        return Response({"message": "هنوز پاسخی برای این مسئله ارسال نشده است."}, status=status.HTTP_400_BAD_REQUEST)
+
     if submit.status == BaseSubmit.Status.Judged:
-        return Response({"message":"این مسئله قبلا تصحیح شده است."},status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message": "این مسئله قبلا تصحیح شده است."}, status=status.HTTP_400_BAD_REQUEST)
     submit.judged_at = timezone.now()
     submit.status = BaseSubmit.Status.Judged
     submit.judged_by = account
@@ -201,8 +213,7 @@ def judge_view(account, sid , mark, game_judge_handler=None):
     submit.save()
     if game_judge_handler is not None:
         game_judge_handler(submit)
-    return Response(JudgeableSubmitSerializer(submit).data ,status=status.HTTP_200_OK)
-
+    return Response(JudgeableSubmitSerializer(submit).data, status=status.HTTP_200_OK)
 
 
 @transaction.atomic
@@ -224,12 +235,14 @@ def submit_answer_to_problem(request, gid, pid):
     except:
         pass
     return submit_answer_view(request.user.account, data, sid, pid)
-    
+
+
 @transaction.atomic
 @api_view(['POST'])
 @permission_classes([JudgePermission])
-def judge_answer_view(request, pk , mark):
-   return judge_view(request.user.account, pk, mark)
+def judge_answer_view(request, pk, mark):
+    return judge_view(request.user.account, pk, mark)
+
 
 def get_judgeable_submits_by_remove_permissions(request, submits):
     out_list = []

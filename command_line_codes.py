@@ -9,6 +9,7 @@ from problembank.serializers import *
 
 import csv
 
+
 def add_accounts():
     with open('g4g.csv') as f:
         reader = csv.reader(f)
@@ -29,6 +30,7 @@ def add_accounts():
             except:
                 pass
 
+
 def get_team_data():
     team_data = []
     with open('g4g.csv') as f:
@@ -40,6 +42,7 @@ def get_team_data():
     team_data.sort()
     return team_data
 
+
 def get_name_data():
     name_data = []
     with open('team.csv') as f:
@@ -49,13 +52,15 @@ def get_name_data():
     name_data = dict(name_data)
     return name_data
 
+
 def create_or_get_player(team, name_data, count):
     if len(Player.objects.filter(id=hash(team))) > 0:
         return Player.objects.filter(id=hash(team))[0]
     else:
-        return Player.objects.create(name=name_data[team] if team in name_data else f'تیم شماره {count}', 
+        return Player.objects.create(name=name_data[team] if team in name_data else f'تیم شماره {count}',
                                      coin=5000, id=hash(team))
-    
+
+
 def add_players():
     count = 100
     team_data = get_team_data()[2:]
@@ -68,8 +73,6 @@ def add_players():
         player.users.add(user)
         player.save()
         count += 1
-    
-
 
 
 class UserRewardSerializer(serializers.ModelSerializer):
@@ -77,14 +80,19 @@ class UserRewardSerializer(serializers.ModelSerializer):
         model = User
         fields = ['user_name']
 
+
 class PlayerRewardSerializer(serializers.ModelSerializer):
     users = UserRewardSerializer(many=True)
+
     class Meta:
         model = Player
         fields = ['users', 'name', 'coin', 'blue_toot', 'red_toot', 'black_toot',
                   'fake_checkable_objects', 'not_fake_checkable_objects']
 
+
 import csv
+
+
 def convert_all():
     players = Player.objects.all()
     datas = []
@@ -108,21 +116,20 @@ def convert_all():
     with file:
         header = ['user1', 'user2', 'user3', 'name', 'coin', 'blue_toot', 'red_toot', 'black_toot',
                   'fake_checkable_objects', 'not_fake_checkable_objects']
-        writer = csv.DictWriter(file, fieldnames = header)
+        writer = csv.DictWriter(file, fieldnames=header)
         writer.writeheader()
         for i in range(0, len(datas)):
             writer.writerow(datas[i])
 
 
-
-
-global_problem_json_example ='''[{"title": "جایگشت آینه ای", "topics": ["ترکیبیات"],
+global_problem_json_example = '''[{"title": "جایگشت آینه ای", "topics": ["ترکیبیات"],
  "subtopics": [{"topic": "ترکیبیات", "title": "ناوردایی"}], "source": "غیره",
   "difficulty": "Hard", "grade": "HighSchoolFirstHalf", "is_checked": false,
    "problem_type": "DescriptiveProblem", "author": {"first_name": "اضافه کننده",
     "last_name": "اضافه کننده زاده", "email": "moeini.erfan@yahoo.com", "phone_number": "09"},
     "text": "<p><span class=\\" author-d-1gg9uz65z1iz85zgdz68zmqkz84zo2qoxwz73zz70zz73zz78zydafz65zz84z5vm3wz72zz89zz80z0ogz88zdv3er1fz71z\\">از جایگشت </span><span class=\\" author-d-1gg9uz65z1iz85zgdz68zmqkz84zo2qoxwz73zz70zz73zz78zydafz65zz84z5vm3wz72zz89zz80z0ogz88zdv3er1fz71z\\"><span class=\\"inline-latex\\" data-inline-magic=\\"latex\\" data-current-latex-value=\\"a_1,a_2,\\\\cdots , a_n\\"><span class=\\"tiny-math\\" data-latex=\\"a_1,a_2,\\\\cdots , a_n\\"></span></span></span><span class=\\" author-d-1gg9uz65z1iz85zgdz68zmqkz84zo2qoxwz73zz70zz73zz78zydafz65zz84z5vm3wz72zz89zz80z0ogz88zdv3er1fz71z\\">باشد؟</span></p>", "publish_date": "2021-01-31T14:52:35.897617+03:30",
     "last_change_date": null, "is_private": false, "upvote_count": 0}]'''
+
 
 def create_or_get_account(account):
     try:
@@ -142,11 +149,13 @@ def create_or_get_account(account):
     accountSerializer.is_valid()
     return accountSerializer.create(accountSerializer.validated_data).pk
 
+
 def create_or_get_topic(title):
     try:
         return Topic.objects.filter(title=title)[0]
     except:
         return Topic.objects.create(title=title)
+
 
 def create_or_get_subtopic(topic_title, title):
     topic = create_or_get_topic(topic_title)
@@ -154,6 +163,7 @@ def create_or_get_subtopic(topic_title, title):
         return Subtopic.objects.filter(title=title, topic=topic)[0]
     except:
         return Subtopic.objects.create(title=title, topic=topic)
+
 
 def create_or_get_source_pk(title):
     if title is None:
@@ -163,16 +173,18 @@ def create_or_get_source_pk(title):
     except:
         return Source.objects.create(title=title).pk
 
+
 class DescriptiveProblemSerializerForConvert(serializers.ModelSerializer):
     answer = DescriptiveAnswerSerializer(required=False)
+
     class Meta:
         model = DescriptiveProblem
         fields = '__all__'
-       
+
     @transaction.atomic
     def create(self, validated_data):
         topics_data = validated_data.pop('topics')
-        subtopics_data = validated_data.pop('subtopics') 
+        subtopics_data = validated_data.pop('subtopics')
         answer_data = validated_data.pop('answer')
         answer_data['answer_type'] = 'DescriptiveAnswer'
         answer = DescriptiveAnswer.objects.create(**answer_data)
@@ -183,19 +195,21 @@ class DescriptiveProblemSerializerForConvert(serializers.ModelSerializer):
         instance.answer = answer
         instance.is_checked = False
         instance.save()
-    
+
         return instance
+
 
 class ShortAnswerProblemSerializerForConvert(serializers.ModelSerializer):
     answer = ShortAnswerSerializer(required=False)
+
     class Meta:
         model = ShortAnswerProblem
         fields = '__all__'
-       
+
     @transaction.atomic
     def create(self, validated_data):
         topics_data = validated_data.pop('topics')
-        subtopics_data = validated_data.pop('subtopics') 
+        subtopics_data = validated_data.pop('subtopics')
         answer_data = validated_data.pop('answer')
         answer_data['answer_type'] = 'ShortAnswer'
         answer = ShortAnswer.objects.create(**answer_data)
@@ -206,8 +220,9 @@ class ShortAnswerProblemSerializerForConvert(serializers.ModelSerializer):
         instance.answer = answer
         instance.is_checked = False
         instance.save()
-    
+
         return instance
+
 
 def craete_or_get_problem_group(event, problem_group):
     try:
@@ -216,17 +231,19 @@ def craete_or_get_problem_group(event, problem_group):
         pass
     return ProblemGroup.objects.create(title=problem_group, event=event)
 
+
 def create_problem_with_global_problem_json(problem_json_object):
     problem_data = problem_json_object.copy()
     problem_data['topics'] = [create_or_get_topic(topic).pk for topic in problem_data['topics']]
-    problem_data['subtopics'] = [create_or_get_subtopic(subtopic['topic'], subtopic['title']).pk for subtopic in problem_data['subtopics']]
+    problem_data['subtopics'] = [create_or_get_subtopic(subtopic['topic'], subtopic['title']).pk for subtopic in
+                                 problem_data['subtopics']]
     problem_data['source'] = create_or_get_source_pk(problem_data['source'])
 
     problem_data['author'] = create_or_get_account(problem_data['author'])
     problem_data['answer'] = json.loads('{"text":"بدون پاسخ"}')
 
     problem_data['is_private'] = True
-            
+
     event = None
     problem_group = None
     try:
@@ -239,7 +256,7 @@ def create_problem_with_global_problem_json(problem_json_object):
     if event is None:
         event = 'مسابقه‌ی توتنخ‌عامو'
         problem_group = 'همه'
-    
+
     if problem_data['problem_type'] == Problem.Type.ShortAnswerProblem:
         problemSerializer = ShortAnswerProblemSerializerForConvert(data=problem_data)
     else:
@@ -258,11 +275,13 @@ def create_problem_with_global_problem_json(problem_json_object):
             print("error!!", event.title)
     return instance
 
+
 def create_many_problem_with_global_problem_json(problems_json):
     problems_json_object = json.loads(problems_json)
     for problem_json_object in problems_json_object:
         create_problem_with_global_problem_json(problem_json_object)
-    
+
+
 f = open("out.json", "r")
 create_many_problem_with_global_problem_json(f.read())
 f.close()
@@ -279,6 +298,7 @@ f.close()
 #         data['last_name'] = registerrec.user.last_name
 #         data['ph
 import csv
+
 
 def add_accounts():
     with open('g4g.csv') as f:
@@ -299,6 +319,8 @@ def add_accounts():
                 user.save()
             except:
                 pass
+
+
 def get_team_data():
     team_data = []
     with open('g4g.csv') as f:
@@ -310,6 +332,7 @@ def get_team_data():
     team_data.sort()
     return team_data
 
+
 def get_name_data():
     name_data = []
     with open('team.csv') as f:
@@ -319,13 +342,15 @@ def get_name_data():
     name_data = dict(name_data)
     return name_data
 
+
 def create_or_get_player(team, name_data, count):
     if len(Player.objects.filter(id=hash(team))) > 0:
         return Player.objects.filter(id=hash(team))[0]
     else:
-        return Player.objects.create(name=name_data[team] if team in name_data else f'تیم شماره {count}', 
+        return Player.objects.create(name=name_data[team] if team in name_data else f'تیم شماره {count}',
                                      coin=5000, id=hash(team))
-    
+
+
 def add_players():
     count = 100
     team_data = get_team_data()[2:]

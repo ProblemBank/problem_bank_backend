@@ -26,14 +26,22 @@ class Box(models.Model):
 
 class Team(models.Model):
     name = models.CharField(max_length=100, verbose_name='نام')
+    coin = models.IntegerField(default=0, verbose_name='پول')
+
     current_room = models.ForeignKey(Room, on_delete=models.PROTECT, related_name='current_room')
     leader = models.ForeignKey(User, on_delete=models.PROTECT, related_name='leader')
     users = models.ManyToManyField(User, related_name='users', verbose_name='اعضا')
+
     chat_room = models.URLField(max_length=100, verbose_name='اتاق قرار')
     carrousel_turn = models.IntegerField(default=MAX_CARROUSEL_TURNS, verbose_name='تعداد دفعات باقی مانده چرخاندن گردونه')
 
     def __str__(self):
         return f'{self.name}'
+
+
+class TeamRoom(models.Model):
+    room = models.OneToOneField(Room, on_delete=models.CASCADE)
+    team = models.OneToOneField(Team, on_delete=models.CASCADE)
 
 
 class GameInfo(models.Model):
@@ -76,9 +84,10 @@ class Carrousel(models.Model):
 
 class Notification(models.Model):
     title = models.CharField(max_length=100, blank=True, null=True)
-    text = models.CharField(max_length=200, blank=True, null=True)
+    body = models.CharField(max_length=200, blank=True, null=True)
     team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='team')
-    seen = models.BooleanField(default=False)
+    has_seen = models.BooleanField(default=False)
+    time = models.TimeField()
 
     def __str__(self):
         return f'title={self.title}\ntext = {self.text}\nteam={self.team}'

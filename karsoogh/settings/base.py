@@ -39,10 +39,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'Account',
-    'Game',
     'problembank',
     'corsheaders',
     'rest_framework',
+    'Game2',
 ]
 
 REST_FRAMEWORK = {

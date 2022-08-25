@@ -16,6 +16,7 @@ admin.site.register(FamousPerson)
 admin.site.register(Exchange)
 admin.site.register(Player)
 
+
 def import_from_csv(a, b, c):
     with open('secret.csv') as f:
         reader = csv.reader(f)
