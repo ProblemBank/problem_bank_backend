@@ -1,6 +1,7 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from django.db import transaction
+from django.utils import timezone
 
 from Game2.serializers import NotificationSerializer, TeamSerializer, RoomSerializer
 from Game2.models import Notification, Team, Room, TeamRoom, GameInfo
@@ -11,6 +12,17 @@ class RoomView(generics.GenericAPIView):
     permission_classes = (permissions.IsAuthenticated, )
     serializer_class = RoomSerializer
     queryset = TeamRoom.objects.all()
+
+    @transaction.atomic()
+    def send_changed_room_notification(self, room_number, message, team):
+        data = {
+            'title': f'شما به اتاق {room_number} منتقل شدید!',
+            'body': message,
+            'user': team,
+            'time': timezone.now()
+        }
+        Notification.objects.create(**data)
+
 
     @transaction.atomic
     def get(self, request, room_number):
@@ -23,6 +35,7 @@ class RoomView(generics.GenericAPIView):
         team.save()
         room_serializer = self.get_serializer(dest_room)
         room_serializer.is_valid()
+        self.send_changed_room_notification(room_number, request.message, team)
         return Response(data=room_serializer.data, status=status.HTTP_200_OK)
 
 
