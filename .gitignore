@@ -1,4 +1,11 @@
-/media
-.idea
+.idea/*
+*.pyc
+*__pychache__*
+*.sqlite3
+.DS_Store
+.env/*
+static/*
+staticfiles/*
+media/*
+venv/*
 db.sqlite3
-venv
