@@ -10,7 +10,6 @@ from rest_framework import viewsets
 from rest_framework import mixins
 from rest_framework.decorators import api_view, permission_classes
 from problembank.permissions import DefaultPermission
-# from problembank.models import
 from rest_framework import permissions
 # from problembank.views import permissions as customPermissions
 from problembank.serializers import *
@@ -116,6 +115,7 @@ def game_judge_handler(submit):
         add_reward_to_player(player, submit, problem)
     for account in submit.respondents.all():
         send_notification(account.user, submit.problem_group, submit.mark)
+    
 
 
 @transaction.atomic

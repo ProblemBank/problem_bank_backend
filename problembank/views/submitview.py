@@ -18,8 +18,6 @@ import sys
 from itertools import chain
 # data['juged_by'] = request.user.account #just for mentor not all the times!
 from problembank.permissions import DefaultPermission
-
-
 class JudgeableSubmitView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = JudgeableSubmitSerializer
