@@ -8,7 +8,7 @@ from Game2.view.account import NotificationView, TeamView, NextRoomView, Previou
 urlpatterns = [
     path('get_problem_from_group/<int:gid>/', get_problem_from_group),
     path('is_problem_gotten_from_group/<int:gid>/', is_problem_gotten_from_group),
-    path('submit_asnwer/<sid:int>/<int:pid>', submit_answer),
+    path('submit_answer/<int:sid>/<int:pid>/', submit_answer),
 
     path('notification/', NotificationView.as_view(), name='team notification'),
     path('team/', TeamView.as_view(), name='team info'),

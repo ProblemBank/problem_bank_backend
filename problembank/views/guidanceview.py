@@ -11,13 +11,13 @@ from problembank.models import *
 from rest_framework import permissions
 # from problembank.views import permissions as customPermissions
 from problembank.serializers import GuidanceSerializer
-from problembank.permissions import DefualtPermission
+from problembank.permissions import DefaultPermission
 import sys
 
 class GuidanceView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixins.ListModelMixin,
                    mixins.UpdateModelMixin, mixins.DestroyModelMixin):
     #permission_classes = [permissions.IsAuthenticated, customPermissions.MentorPermission, ]
-    permission_classes = [permissions.IsAuthenticated, DefualtPermission]
+    permission_classes = [permissions.IsAuthenticated, DefaultPermission]
     queryset = Guidance.objects.all()
     serializer_class = GuidanceSerializer
 

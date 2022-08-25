@@ -15,7 +15,7 @@ PUT, PATCH = CHANGE
 GET = READ
 DELETE = DELETE
 """
-class DefualtPermission(BasePermission):
+class DefaultPermission(BasePermission):
     def is_get_list_request(self, request):
         return 'pk' not in request.parser_context['kwargs'].keys() and request.method in ['GET']
 
@@ -38,7 +38,7 @@ class DefualtPermission(BasePermission):
         else :
             return False
 
-class ModelPermission(DefualtPermission):
+class ModelPermission(DefaultPermission):
     model = None
     def get_owner_id(self, request):
         obj = self.get_object(request)

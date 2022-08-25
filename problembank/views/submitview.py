@@ -17,7 +17,7 @@ from django.utils import timezone
 import sys
 from itertools import chain
 # data['juged_by'] = request.user.account #just for mentor not all the times!
-from problembank.permissions import DefualtPermission
+from problembank.permissions import DefaultPermission
 
 
 class JudgeableSubmitView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
@@ -27,7 +27,7 @@ class JudgeableSubmitView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mi
 
 
 class AutoCheckSubmitView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
-    permission_classes = [permissions.IsAuthenticated, DefualtPermission]
+    permission_classes = [permissions.IsAuthenticated, DefaultPermission]
     queryset = AutoCheckSubmit.objects.all()
     serializer_class = AutoCheckSubmitSerializer
 

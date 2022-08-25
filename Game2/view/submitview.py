@@ -8,7 +8,7 @@ from django.utils import timezone
 from problembank.views import submitview as bank_submit_view
 from Game2.models import Team, Notification, TeamRoom, Room
 from problembank.models import Problem, BankAccount
-from problembank.permissions import DefualtPermission
+from problembank.permissions import DefaultPermission
 from constants import PROBLEM_COST, EASY_PROBLEM_REWARD, MEDIUM_PROBLEM_REWARD, HARD_PROBLEM_REWARD
 
 
@@ -110,7 +110,7 @@ def send_note(user, message):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, DefualtPermission])
+@permission_classes([IsAuthenticated, DefaultPermission])
 def notification_to_all(request):
     for account in BankAccount.objects.all():
         try:

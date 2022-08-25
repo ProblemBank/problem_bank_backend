@@ -11,11 +11,11 @@ from problembank.models import *
 from rest_framework import permissions
 # from problembank.views import permissions as customPermissions
 from problembank.serializers import BankAccountSerializer, PublicBankAccountSerializer
-from problembank.permissions import DefualtPermission
+from problembank.permissions import DefaultPermission
 import sys
 
 class AccountView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
-    permission_classes = [permissions.IsAuthenticated, DefualtPermission]
+    permission_classes = [permissions.IsAuthenticated, DefaultPermission]
     queryset = BankAccount.objects.all()
 
     def get_serializer_class(self):

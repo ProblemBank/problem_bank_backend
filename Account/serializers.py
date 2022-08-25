@@ -1,4 +1,3 @@
-from Game.models import Player
 from problembank.models import BankAccount
 from problembank.serializers import BankAccountSerializer
 from rest_framework import serializers

@@ -3,7 +3,6 @@ from problembank.serializers import DescriptiveProblem
 from django.contrib import admin
 
 from problembank.models import *
-from Game.view.submitview import *
 from problembank.forms import ProblemForm
 from problembank.utils import generate_password
 
