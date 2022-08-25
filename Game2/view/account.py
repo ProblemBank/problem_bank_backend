@@ -3,76 +3,27 @@ from rest_framework.response import Response
 from django.db import transaction
 
 from Game2.serializers import NotificationSerializer, TeamSerializer, RoomSerializer
-from Game2.models import Notification, Team, Room, TeamRoom
+from Game2.models import Notification, Team, Room, TeamRoom, GameInfo
 from constants import MAX_ROOM_NUMBER, LAST_ROOM_COST
 
 
-class StartGameView(generics.GenericAPIView):
+class RoomView(generics.GenericAPIView):
     permission_classes = (permissions.IsAuthenticated, )
     serializer_class = RoomSerializer
-    queryset = Room.objects.all()
+    queryset = TeamRoom.objects.all()
 
     @transaction.atomic
-    def get(self, request):
+    def get(self, request, room_number):
         user = request.user
         team = Team.objects.filter(users__in=[user])[0]
-        # TODO Check problem_groups
-        if len(TeamRoom.objects.filter(room__number=1, team=team)) == 0:
-            first_room = Room.objects.create(number=1, )
-            TeamRoom.objects.create(room=first_room, team=team)
-        else:
-            first_room = TeamRoom.objects.filter(room__number=1, team=team)[0].room
-        team.current_room = first_room
+        dest_room = self.queryset.filter(team=team, room__number=room_number)[0].room
+        entrance_cost = dest_room.entrance_cost
+        team.coin -= entrance_cost
+        team.current_room = dest_room
         team.save()
-        room_serializer = self.get_serializer(first_room)
+        room_serializer = self.get_serializer(dest_room)
+        room_serializer.is_valid()
         return Response(data=room_serializer.data, status=status.HTTP_200_OK)
-
-
-class PreviousRoomView(generics.GenericAPIView):
-    # TODO add previous page permissions
-    permission_classes = (permissions.IsAuthenticated, )
-    serializer_class = RoomSerializer
-    queryset = Room.objects.all()
-
-    @transaction.atomic
-    def get(self, request):
-        user = request.user
-        team = Team.objects.filter(users__in=[user])[0]
-        current_room = team.current_room
-        team_room = TeamRoom.objects.filter(room__number=current_room.number + 1, team=team)[0]
-        prev_room = team_room.room
-        team.current_room = prev_room
-        team.save()
-        room_serializer = self.get_serializer(prev_room)
-        return Response(room_serializer.data, status.HTTP_200_OK)
-
-
-class NextRoomView(generics.GenericAPIView):
-    # TODO add permission to move to next page
-    permission_classes = (permissions.IsAuthenticated, )
-    serializer_class = RoomSerializer
-    queryset = Room.objects.all()
-
-    @transaction.atomic
-    def get(self, request):
-        user = request.user
-        team = Team.objects.filter(users__in=[user])[0]
-        current_room = team.current_room
-        entrance_cost = LAST_ROOM_COST if current_room.number + 1 == MAX_ROOM_NUMBER else 0
-
-        if len(TeamRoom.objects.filter(room__number=(current_room.number + 1), team=team)) == 0:
-            # TODO check problemGroups to add here
-            next_room = Room.objects.create(number=current_room.number + 1, entrance_cost=entrance_cost)
-            TeamRoom.objects.create(room=next_room, team=team)
-        else:
-            team_room = TeamRoom.objects.filter(room__number=current_room.number + 1, team=team)[0]
-            next_room = team_room.room
-
-        team.current_room = next_room
-        next_room.save()
-        team.save()
-        room_serializer = self.get_serializer(next_room)
-        return Response(room_serializer.data, status.HTTP_200_OK)
 
 
 class TeamView(generics.GenericAPIView):
@@ -84,6 +35,8 @@ class TeamView(generics.GenericAPIView):
         user = request.user
         team = self.queryset.filter(users__in=[user])[0]
         team_serializer = self.get_serializer(team)
+        # TODO Check this part!!
+        team_serializer.data['finish_time'] = GameInfo.objects.get(pk=1).finish_time
         return Response(team_serializer.data, status.HTTP_200_OK)
 
 
