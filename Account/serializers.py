@@ -38,10 +38,6 @@ class ChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(max_length=250, required=True)
     new_password = serializers.CharField(max_length=250, required=True)
 
-    def validated_password(self, value):
-        validated_password(value)
-        return value
-
 
 class ResetPasswordSerializer(serializers.ModelSerializer):
     national_code = serializers.CharField(max_length=10)

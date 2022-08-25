@@ -118,18 +118,3 @@ def notification_to_all(request):
         except:
             pass
     return Response(status=status.HTTP_200_OK)
-
-
-@transaction.atomic
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def enter_room(request, room_number):
-    user = request.user
-    team = Team.objects.filter(users__in=[user])[0]
-    if room_number == 1 and len(TeamRoom.objects.filter(team=team, room__number=room_number)) == 0:
-        room = Room.objects.create(number=room_number, team=team)
-        team_room = TeamRoom.objects.create(room=room, team=team)
-
-    if len(TeamRoom.objects.filter(team=team, room__number=room_number)) != 1:
-        return Response(data={'message':'مجاز به حرکت به اتاق‌بعدی '})
-    pass

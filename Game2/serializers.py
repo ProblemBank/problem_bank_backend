@@ -1,6 +1,13 @@
 from rest_framework import serializers
 
 from .models import Team, Notification, Room
+from Account.models import User
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['firstname', 'lastname']
 
 
 class RoomSerializer(serializers.ModelSerializer):
@@ -18,4 +25,4 @@ class NotificationSerializer(serializers.ModelSerializer):
 class TeamSerializer(serializers.ModelSerializer):
     class Meta:
         model = Team
-        fields = '__all__'
+        fields = ['name', 'coin', 'carrousel_turn', 'leader']

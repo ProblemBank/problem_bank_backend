@@ -15,15 +15,6 @@ class Room(models.Model):
         return f'{self.number}'
 
 
-class Box(models.Model):
-    number = models.IntegerField(default=0, verbose_name='شماره')
-    open_cost = models.IntegerField(default=0, verbose_name='هزینه باز کردن جعبه')
-    reward = models.IntegerField(default=0, verbose_name='جایزه باز کردن جعبه')
-
-    def __str__(self):
-        return f'Box: cost={self.open_cost} reward={self.reward}'
-
-
 class Team(models.Model):
     name = models.CharField(max_length=100, verbose_name='نام')
     coin = models.IntegerField(default=0, verbose_name='پول')
@@ -39,25 +30,13 @@ class Team(models.Model):
         return f'{self.name}'
 
 
-class TeamRoom(models.Model):
-    room = models.OneToOneField(Room, on_delete=models.CASCADE)
-    team = models.OneToOneField(Team, on_delete=models.CASCADE)
-
-
-class GameInfo(models.Model):
-    start_time = models.DateTimeField(null=True, blank=True)
-    finish_time = models.DateTimeField(null=True, blank=True)
+class Box(models.Model):
+    number = models.IntegerField(default=0, verbose_name='شماره')
+    open_cost = models.IntegerField(default=0, verbose_name='هزینه باز کردن جعبه')
+    reward = models.IntegerField(default=0, verbose_name='جایزه باز کردن جعبه')
 
     def __str__(self):
-        return f'start={self.start_time} finish={self.finish_time}'
-
-
-class TeamBox(models.Model):
-    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='team')
-    box = models.ForeignKey(Box, on_delete=models.CASCADE, related_name='box')
-
-    def __str__(self):
-        return f'team={self.team} box='
+        return f'Box: cost={self.open_cost} reward={self.reward}'
 
 
 class Answer(models.Model):
@@ -92,3 +71,20 @@ class Notification(models.Model):
     def __str__(self):
         return f'title={self.title}\ntext = {self.text}\nteam={self.team}'
 
+
+class GameInfo(models.Model):
+    start_time = models.DateTimeField(null=True, blank=True)
+    finish_time = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f'start={self.start_time} finish={self.finish_time}'
+
+
+class TeamBox(models.Model):
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='team')
+    box = models.ForeignKey(Box, on_delete=models.CASCADE, related_name='box')
+
+
+class TeamRoom(models.Model):
+    team = models.OneToOneField(Team, on_delete=models.CASCADE, related_name='team')
+    room = models.OneToOneField(Room, on_delete=models.CASCADE, related_name='room')
