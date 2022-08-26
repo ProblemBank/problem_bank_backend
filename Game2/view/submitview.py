@@ -7,7 +7,7 @@ from django.utils import timezone
 
 from problembank.views import submitview as bank_submit_view
 from Game2.models import Notification, Team
-from problembank.models import Problem, BankAccount, BaseSubmit
+from problembank.models import Problem, BankAccount, JudgeableSubmit
 from problembank.permissions import DefaultPermission
 from constants import PROBLEM_COST, EASY_PROBLEM_REWARD, MEDIUM_PROBLEM_REWARD, HARD_PROBLEM_REWARD,\
     MAX_NOT_SUBMITTED_PROBLEMS
@@ -49,11 +49,11 @@ def game_problem_request_first_handler(gid, user):
     team = Team.objects.filter(users__in=[user])[0]
     current_room = team.current_room
     groups = current_room.problem_groups.all()
-    submits = BaseSubmit.objects.filter(problem_group__in=groups, respondents__in=[user.account])
+    submits = JudgeableSubmit.objects.filter(problem_group__in=groups, respondents__in=[user.account])
 
     counter = 0
     for submit in submits:
-        if submit.status == BaseSubmit.Status.Received:
+        if submit.status == JudgeableSubmit.Status.Received:
             counter += 1
             if counter == MAX_NOT_SUBMITTED_PROBLEMS:
                 return False
@@ -76,7 +76,7 @@ def add_reward_to_team(user, submit, problem):
 
 
 def game_submit_handler(submit, user, problem):
-    submit.status = BaseSubmit.Status.Delivered
+    submit.status = JudgeableSubmit.Status.Delivered
     submit.save()
     team = Team.objects.filter(users__in=[user]).first()
     send_notification(team)
