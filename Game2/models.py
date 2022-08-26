@@ -54,6 +54,8 @@ class Answer(models.Model):
 
     team = models.ForeignKey(
         Team, on_delete=models.CASCADE, related_name='team')
+    group_problem = models.ForeignKey(
+        ProblemGroup, on_delete=models.CASCADE, related_name='group_problem')
     problem = models.ForeignKey(
         Problem, on_delete=models.CASCADE, related_name='problem')
     answer_status = models.CharField(
