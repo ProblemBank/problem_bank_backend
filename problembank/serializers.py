@@ -13,15 +13,18 @@ class SourceSerializer(serializers.ModelSerializer):
         model = Source
         fields = '__all__'
 
+
 class TopicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Topic
         fields = '__all__'
 
+
 class SubtopicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subtopic
         fields = '__all__'
+
 
 class ShortAnswerSerializer(serializers.ModelSerializer):
     class Meta:
@@ -45,7 +48,7 @@ class AnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Answer
         fields = '__all__'
-    
+
     @classmethod
     def get_serializer(cls, model):
         if model == ShortAnswer:
@@ -61,22 +64,22 @@ class AnswerSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
-        serializerClass = AnswerSerializer.get_serializer(getattr(sys.modules[__name__],\
-            validated_data['answer_type']))
+        serializerClass = AnswerSerializer.get_serializer(getattr(sys.modules[__name__],
+                                                                  validated_data['answer_type']))
         serializer = serializerClass(validated_data)
         return serializer.create(validated_data)
 
     @transaction.atomic
     def update(self, instance, validated_data):
-        serializerClass = AnswerSerializer.get_serializer(getattr(sys.modules[__name__],\
-            validated_data['answer_type']))
+        serializerClass = AnswerSerializer.get_serializer(getattr(sys.modules[__name__],
+                                                                  validated_data['answer_type']))
         serializer = serializerClass(validated_data)
         return serializer.update(instance, validated_data)
 
 
-
 class ShortAnswerProblemSerializer(serializers.ModelSerializer):
     answer = ShortAnswerSerializer()
+    file = serializers.FileField(required=False, allow_null=True)
 
     class Meta:
         model = ShortAnswerProblem
@@ -90,7 +93,7 @@ class ShortAnswerProblemSerializer(serializers.ModelSerializer):
     @transaction.atomic
     def create(self, validated_data):
         topics_data = validated_data.pop('topics')
-        subtopics_data = validated_data.pop('subtopics') 
+        subtopics_data = validated_data.pop('subtopics')
         answer_data = validated_data.pop('answer')
         answer_data['answer_type'] = 'ShortAnswer'
         answer = ShortAnswer.objects.create(**answer_data)
@@ -103,21 +106,22 @@ class ShortAnswerProblemSerializer(serializers.ModelSerializer):
         instance.last_change_date = timezone.now()
         instance.upvote_count = 0
         instance.save()
-        
-        
+
         return instance
 
     @transaction.atomic
     def update(self, instance, validated_data):
-        ShortAnswer.objects.filter(id=instance.answer.id).update(**validated_data.pop('answer'))
+        ShortAnswer.objects.filter(id=instance.answer.id).update(
+            **validated_data.pop('answer'))
         answer = ShortAnswer.objects.filter(id=instance.answer.id)[0]
         answer.answer_type = 'ShortAnswer'
         answer.save()
-        instance.answer = answer    
+        instance.answer = answer
         instance.topics.set(validated_data.pop('topics'))
         instance.subtopics.set(validated_data.pop('subtopics'))
         instance.save()
-        ShortAnswerProblem.objects.filter(id=instance.id).update(**validated_data)
+        ShortAnswerProblem.objects.filter(
+            id=instance.id).update(**validated_data)
         instance = ShortAnswerProblem.objects.filter(id=instance.id)[0]
         instance.last_change_date = timezone.now()
         instance.save()
@@ -126,7 +130,9 @@ class ShortAnswerProblemSerializer(serializers.ModelSerializer):
 
 class DescriptiveProblemSerializer(serializers.ModelSerializer):
     answer = DescriptiveAnswerSerializer(required=False)
-    class Meta:
+    file = serializers.FileField(required=False, allow_null=True)
+
+    class Meta: 
         model = DescriptiveProblem
         fields = '__all__'
         extra_kwargs = {'author': {'read_only': True},
@@ -135,11 +141,10 @@ class DescriptiveProblemSerializer(serializers.ModelSerializer):
                         'upvote_count': {'read_only': True},
                         }
 
-
     @transaction.atomic
     def create(self, validated_data):
         topics_data = validated_data.pop('topics')
-        subtopics_data = validated_data.pop('subtopics') 
+        subtopics_data = validated_data.pop('subtopics')
         answer_data = validated_data.pop('answer')
         answer_data['answer_type'] = 'DescriptiveAnswer'
         answer = DescriptiveAnswer.objects.create(**answer_data)
@@ -153,25 +158,27 @@ class DescriptiveProblemSerializer(serializers.ModelSerializer):
         instance.upvote_count = 0
         instance.is_checked = False
         instance.save()
-    
+
         return instance
 
     @transaction.atomic
     def update(self, instance, validated_data):
-        DescriptiveAnswer.objects.filter(id=instance.answer.id).update(**validated_data.pop('answer'))
+        DescriptiveAnswer.objects.filter(id=instance.answer.id).update(
+            **validated_data.pop('answer'))
         answer = DescriptiveAnswer.objects.filter(id=instance.answer.id)[0]
         answer.answer_type = 'DescriptiveAnswer'
         answer.save()
-        instance.answer = answer    
+        instance.answer = answer
         instance.topics.set(validated_data.pop('topics'))
         instance.subtopics.set(validated_data.pop('subtopics'))
         instance.save()
-        DescriptiveProblem.objects.filter(id=instance.id).update(**validated_data)
+        DescriptiveProblem.objects.filter(
+            id=instance.id).update(**validated_data)
         instance = DescriptiveProblem.objects.filter(id=instance.id)[0]
         instance.last_change_date = timezone.now()
         instance.save()
         return instance
-    
+
 
 class ProblemSerializer(serializers.ModelSerializer):
     @classmethod
@@ -183,16 +190,16 @@ class ProblemSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
-        serializerClass = ProblemSerializer.get_serializer(getattr(sys.modules[__name__],\
-            validated_data['problem_type']))
+        serializerClass = ProblemSerializer.get_serializer(getattr(sys.modules[__name__],
+                                                                   validated_data['problem_type']))
         serializer = serializerClass(validated_data)
- 
+
         return serializer.create(validated_data)
 
     @transaction.atomic
-    def update(self, instance, validated_data):    
-        serializerClass = ProblemSerializer.get_serializer(getattr(sys.modules[__name__],\
-            validated_data['problem_type']))
+    def update(self, instance, validated_data):
+        serializerClass = ProblemSerializer.get_serializer(getattr(sys.modules[__name__],
+                                                                   validated_data['problem_type']))
         serializer = serializerClass(validated_data)
 
         return serializer.update(instance, validated_data)
@@ -213,25 +220,28 @@ class BankAccountSerializer(serializers.ModelSerializer):
         model = BankAccount
         fields = '__all__'
 
+
 class PublicBankAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = BankAccount
         exclude = ['phone_number', 'email', 'user']
 
+
 class ProblemGroupSerializer(serializers.ModelSerializer):
     problems = ProblemSerializer(many=True, required=False)
-    
+
     class Meta:
         model = ProblemGroup
         fields = '__all__'
 
     def create(self, validated_data):
         problems_data = validated_data.pop('problems')
-        
+
         instance = ProblemGroup.objects.create(**validated_data)
         instance.problems.set(problems_data)
         instance.save()
         return instance
+
     def update(self, instance, validated_data):
         instance.problems.set(validated_data.pop('problems'))
         instance.save()
@@ -240,31 +250,34 @@ class ProblemGroupSerializer(serializers.ModelSerializer):
         return instance
 
     def to_representation(self, instance):
-        problems_data = ProblemSerializer(instance.problems.select_subclasses(), context=self.context, many=True).data
-        data = ProblemGroupSerializerWithoutProblems(instance, context=self.context).data
+        problems_data = ProblemSerializer(
+            instance.problems.select_subclasses(), context=self.context, many=True).data
+        data = ProblemGroupSerializerWithoutProblems(
+            instance, context=self.context).data
         data['problems'] = problems_data
         return data
 
+
 class ProblemGroupSerializerWithoutProblems(serializers.ModelSerializer):
-    
+
     class Meta:
         model = ProblemGroup
         exclude = ('problems',)
 
 
 class EventSerializer(serializers.ModelSerializer):
-    problem_groups = ProblemGroupSerializerWithoutProblems(many=True, required=False)
+    problem_groups = ProblemGroupSerializerWithoutProblems(
+        many=True, required=False)
 
     class Meta:
         model = Event
         exclude = ['mentor_password', 'participant_password']
         extra_kwargs = {'owner': {'read_only': True}}
-                        
 
     def create(self, validated_data):
         mentors_data = validated_data.pop('mentors')
         participants_data = validated_data.pop('participants')
-        
+
         instance = Event.objects.create(**validated_data)
         instance.mentors.set(mentors_data)
         instance.participants.set(participants_data)
@@ -279,8 +292,10 @@ class EventSerializer(serializers.ModelSerializer):
         instance = Event.objects.filter(id=instance.id)[0]
         return instance
 
+
 class AutoCheckSubmitSerializer(serializers.ModelSerializer):
     answer = ShortAnswerSerializer(required=False)
+
     class Meta:
         model = AutoCheckSubmit
         fields = '__all__'
@@ -290,6 +305,7 @@ class AutoCheckSubmitSerializer(serializers.ModelSerializer):
                         'judged_at': {'read_only': True},
                         'respondents': {'read_only': True},
                         }
+
     @transaction.atomic
     def create(self, validated_data):
         try:
@@ -311,21 +327,23 @@ class AutoCheckSubmitSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def update(self, instance, validated_data):
-        ShortAnswer.objects.filter(id=instance.answer.id).update(**validated_data.pop('answer'))
+        ShortAnswer.objects.filter(id=instance.answer.id).update(
+            **validated_data.pop('answer'))
         answer = ShortAnswer.objects.filter(id=instance.answer.id)[0]
         answer.answer_type = 'ShortAnswer'
         answer.save()
-        instance.answer = answer    
+        instance.answer = answer
         instance.save()
         AutoCheckSubmit.objects.filter(id=instance.id).update(**validated_data)
         instance = AutoCheckSubmit.objects.filter(id=instance.id)[0]
-        
+
         instance.delivered_at = timezone.now()
         instance.mark = 0
         instance.status = BaseSubmit.Status.Delivered
-        
+
         instance.judged_at = timezone.now()
-        problem = Problem.objects.all().select_subclasses().filter(id=instance.problem.id)[0]
+        problem = Problem.objects.all().select_subclasses().filter(
+            id=instance.problem.id)[0]
         if problem.answer.text == instance.answer.text:
             instance.mark = 1
         else:
@@ -335,9 +353,11 @@ class AutoCheckSubmitSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+
 class JudgeableSubmitSerializer(serializers.ModelSerializer):
     text_answer = DescriptiveAnswerSerializer(required=False)
     upload_file_answer = UploadFileAnswerSerializer(required=False)
+
     class Meta:
         model = JudgeableSubmit
         fields = '__all__'
@@ -348,6 +368,7 @@ class JudgeableSubmitSerializer(serializers.ModelSerializer):
                         'judged_by': {'read_only': True},
                         'respondents': {'read_only': True},
                         }
+
     @transaction.atomic
     def create(self, validated_data):
         try:
@@ -363,7 +384,7 @@ class JudgeableSubmitSerializer(serializers.ModelSerializer):
             validated_data.pop('upload_file_answer')
         except:
             pass
-        
+
         instance = JudgeableSubmit.objects.create(**validated_data)
         instance.text_answer = text_answer
         instance.received_at = timezone.now()
@@ -372,38 +393,41 @@ class JudgeableSubmitSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-
     @transaction.atomic
     def update(self, instance, validated_data):
-        DescriptiveAnswer.objects.filter(id=instance.text_answer.id).update(**validated_data.pop('text_answer'))
-        text_answer = DescriptiveAnswer.objects.filter(id=instance.text_answer.id)[0]
+        DescriptiveAnswer.objects.filter(id=instance.text_answer.id).update(
+            **validated_data.pop('text_answer'))
+        text_answer = DescriptiveAnswer.objects.filter(
+            id=instance.text_answer.id)[0]
         text_answer.answer_type = 'DescriptiveAnswer'
         text_answer.save()
-        instance.text_answer = text_answer    
+        instance.text_answer = text_answer
         try:
             upload_file_answer_data = validated_data.pop('upload_file_answer')
             upload_file_answer_data['answer_type'] = 'UploadFileAnswer'
-            upload_file_answer = UploadFileAnswer.objects.create(**upload_file_answer_data)
+            upload_file_answer = UploadFileAnswer.objects.create(
+                **upload_file_answer_data)
             instance.upload_file_answer = upload_file_answer
         except:
             pass
-        
+
         instance.save()
         JudgeableSubmit.objects.filter(id=instance.id).update(**validated_data)
         instance = JudgeableSubmit.objects.filter(id=instance.id)[0]
-        
+
         instance.delivered_at = timezone.now()
         instance.mark = 0
         instance.status = BaseSubmit.Status.Delivered
-        
+
         instance.save()
         return instance
+
 
 class BaseSubmitSerializer(serializers.ModelSerializer):
     class Meta:
         model = BaseSubmit
         fields = '__all__'
-    
+
     @classmethod
     def get_serializer(cls, problem_type):
         if problem_type == 'ShortAnswerProblem':
@@ -412,18 +436,21 @@ class BaseSubmitSerializer(serializers.ModelSerializer):
             return JudgeableSubmitSerializer
 
     def to_representation(self, instance):
-        serializer = BaseSubmitSerializer.get_serializer(instance.problem.problem_type)
+        serializer = BaseSubmitSerializer.get_serializer(
+            instance.problem.problem_type)
         return serializer(instance, context=self.context).data
 
     @transaction.atomic
     def create(self, validated_data):
-        serializerClass = BaseSubmitSerializer.get_serializer(validated_data['problem'].problem_type)
+        serializerClass = BaseSubmitSerializer.get_serializer(
+            validated_data['problem'].problem_type)
         serializer = serializerClass(validated_data)
         return serializer.create(validated_data)
 
     @transaction.atomic
     def update(self, instance, validated_data):
-        serializerClass = BaseSubmitSerializer.get_serializer(instance.problem.problem_type)
+        serializerClass = BaseSubmitSerializer.get_serializer(
+            instance.problem.problem_type)
         serializer = serializerClass(validated_data)
         return serializer.update(instance, validated_data)
 
