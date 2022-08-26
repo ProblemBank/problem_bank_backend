@@ -129,12 +129,19 @@ def submit_answer(request, sid, pid):
         'file': request.FILES['file']
     }
     response = bank_submit_view.submit_answer_view(request.user.account, data, sid, pid, game_submit_handler)
-    team = Team.objects.filter(users__in=[request.user]).first()
-    answer = Answer.objects.filter(problem_id=pid, team_id=team.id).first()
-    if answer.answer_status == Answer.AnswerStatus.NOT_ANSWERED or (answer.answer_status == Answer.AnswerStatus.ANSWERED and answer.mark == 0):
-        answer.upload_file = data['file']
-        answer.answer_status = Answer.AnswerStatus.ANSWERED
-        answer.save()
+    if response.status_code == 200:
+        team = Team.objects.filter(users__in=[request.user]).first()
+        answer = Answer.objects.filter(problem_id=pid, team_id=team.id).first()
+        if answer.answer_status == Answer.AnswerStatus.NOT_ANSWERED or (answer.answer_status == Answer.AnswerStatus.ANSWERED and answer.mark == 0):
+            answer.upload_file = data['file']
+            answer.answer_status = Answer.AnswerStatus.ANSWERED
+            answer.save()
+        answer_serializer = AnswerSerializer(answer)
+        answer_serializer.is_valid()
+        response.data['answer'] = answer_serializer.validated_data
+        return response
+    else:
+        return response
 
 
 def send_note(user, message):
