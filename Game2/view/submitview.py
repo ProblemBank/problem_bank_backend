@@ -14,10 +14,10 @@ from problembank.permissions import DefaultPermission
 from Game2.utils import get_user_team
 
 
-def send_notification(user, problem_group, mark, reward):
+def send_notification(user, problem, mark, reward):
     data = {'title': "مسئله شما تصحیح شد."}
     mark = 'کامل' if mark == 1 else 'صفر'
-    data['body'] = f"شما نمره {mark} را از  {problem_group.title} کسب کردید. {reward}  سکه به شما تعلق گرفت!"
+    data['body'] = f"شما نمره {mark} را از  {problem.title} کسب کردید. {reward}  سکه به شما تعلق گرفت!"
     team = get_user_team(user)
     data['team'] = team
     data['time'] = timezone.now()
@@ -112,7 +112,7 @@ def game_judge_handler(submit):
         submit.status = JudgeableSubmit.Status.Judged
         submit.save()
     for account in submit.respondents.all():
-        send_notification(account.user, submit.problem_group, submit.mark, reward)
+        send_notification(account.user, submit.problem, submit.mark, reward)
 
 
 @transaction.atomic
