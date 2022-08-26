@@ -70,6 +70,20 @@ class GameInfo(models.Model):
     start_time = models.DateTimeField(null=True, blank=True)
     finish_time = models.DateTimeField(null=True, blank=True)
     floating_mode = models.BooleanField(default=True)
+    problem_cost = models.IntegerField(default=100)
+    easy_problem_reward = models.IntegerField(default=300)
+    medium_problem_reward = models.IntegerField(default=400)
+    hard_problem_reward = models.IntegerField(default=500)
+    so_hard_problem_reward = models.IntegerField(default=600)
+    max_room_number = models.IntegerField(default=5)
+    last_room_cost = models.IntegerField(default=900)
+    max_not_submitted_problems = models.IntegerField(default=2)
+    last_room_name = models.CharField(max_length=128,default='')
+    carrousel_win_ratio_reward = models.IntegerField(default=1.5)
+    carrousel_lose_ratio_reward = models.IntegerField(default=0.5)
+    max_time_to_play = models.IntegerField(default=4*60*60)
+
+
 
     def __str__(self):
         return f'start={self.start_time} finish={self.finish_time}'

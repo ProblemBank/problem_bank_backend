@@ -1,10 +1,9 @@
 from rest_framework import serializers
 from django.db import transaction
 
-from .models import Team, Notification, Room, TeamRoom, Box, TeamBox
+from .models import Team, Notification, Room, TeamRoom, Box, TeamBox, GameInfo
 from Account.models import User
 from problembank.models import BankAccount
-from constants import MAX_ROOM_NUMBER, LAST_ROOM_COST
 
 
 class CreateUserSerializer(serializers.ModelSerializer):
@@ -53,8 +52,8 @@ class TeamSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         team = Team.objects.create(**validated_data)
         team.save()
-        for i in range(1, MAX_ROOM_NUMBER + 1):
-            entrance_cost = LAST_ROOM_COST if i == MAX_ROOM_NUMBER else 0
+        for i in range(1, GameInfo.max_room_number + 1):
+            entrance_cost = GameInfo.last_room_cost if i == GameInfo.max_room_number else 0
             # todo add problemGroups here!
             room = Room.objects.create(
                 name=str(i), entrance_cost=entrance_cost)

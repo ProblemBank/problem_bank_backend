@@ -6,7 +6,6 @@ from django.utils import timezone
 from Game2.serializers import NotificationSerializer, TeamSerializer, RoomSerializer, TeamBoxSerializer
 from Game2.models import Notification, Team, Room, TeamRoom, GameInfo, Box, TeamBox
 from Game2.permissions import IsAllowedToOpenBox, IsAllowedTOPlay
-from constants import MAX_ROOM_NUMBER, LAST_ROOM_COST
 import time
 from Game2.utils import get_user_team
 
