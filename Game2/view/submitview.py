@@ -124,7 +124,7 @@ def get_problem_from_group(request, gid):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def is_problem_gotten_from_group(request, gid):
-    return bank_submit_view.is_problem_goten_from_group_view(request.user.account, gid)
+    return bank_submit_view.is_problem_gotten_from_group_view(request.user.account, gid)
 
 
 @transaction.atomic
@@ -142,7 +142,7 @@ def submit_answer(request, sid, pid):
             answer.upload_file = data['file']
             answer.answer_status = Answer.AnswerStatus.ANSWERED
             answer.save()
-        answer_serializer = AnswerSerializer(answer)
+        answer_serializer = AnswerSerializer(data=answer)
         answer_serializer.is_valid()
         response.data['answer'] = answer_serializer.validated_data
         return response

@@ -122,7 +122,7 @@ def game_judge_handler(submit):
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def is_problem_gotten_from_group(request, gid):
-    return banksubmitview.is_problem_goten_from_group_view(request.user.account, gid)
+    return banksubmitview.is_problem_gotten_from_group_view(request.user.account, gid)
 
 
 @transaction.atomic
