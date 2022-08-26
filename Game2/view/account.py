@@ -9,6 +9,7 @@ from constants import MAX_ROOM_NUMBER, LAST_ROOM_COST
 import time
 from Game2.utils import get_user_team
 
+
 class RoomView(generics.GenericAPIView):
     permission_classes = (permissions.IsAuthenticated, )
     serializer_class = RoomSerializer
