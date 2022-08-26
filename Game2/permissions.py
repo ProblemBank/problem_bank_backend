@@ -1,11 +1,10 @@
 from rest_framework import permissions
 from django.utils.translation import gettext as _
+from constants import MAXIMUM_TIME_TO_PLAY
 import time
 
 from .utils import get_user_team
 from constants import MAX_ROOM_NUMBER, LAST_ROOM_NAME
-
-MAXIMUM_TIME_TO_PLAY = 4 * 60 * 60
 
 
 class IsAllowedTOPlay(permissions.BasePermission):

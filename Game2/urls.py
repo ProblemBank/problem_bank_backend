@@ -5,6 +5,9 @@ from .view.submitview import get_problem_from_group, is_problem_gotten_from_grou
     submit_answer, notification_to_all
 from Game2.view.account import NotificationView, TeamView, RoomView, BoxView
 
+from Game2.view.account import NotificationView, TeamView, RoomView
+from Game2.view.carrousel_view import turnning_carrousel
+
 urlpatterns = [
     path('get_problem_from_group/<int:gid>/', get_problem_from_group),
     path('is_problem_gotten_from_group/<int:gid>/', is_problem_gotten_from_group),
@@ -16,4 +19,5 @@ urlpatterns = [
     path('box/<int:bid>/', BoxView.as_view(), name='open box'),
 
     path('notification_to_all/', notification_to_all),
+    path('turnning_carrousel/', turnning_carrousel),
 ]
