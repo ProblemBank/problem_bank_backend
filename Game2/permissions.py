@@ -10,7 +10,7 @@ class IsAllowedTOPlay(permissions.BasePermission):
 
     def has_permission(self, request, view):
         team = get_user_team(user=request.user)
-        if time.time() - team.first_entrance < GameInfo.max_time_to_play:
+        if time.time() - team.first_entrance < GameInfo.objects.get(id=1).max_time_to_play:
             return True
         else:
             return False
@@ -23,7 +23,7 @@ class IsAllowedToOpenBox(permissions.BasePermission):
         user = request.user
         team = get_user_team(user)
         current_room = team.current_room
-        if current_room.name == GameInfo.last_room_name:
+        if current_room.name == GameInfo.objects.get(id=1).last_room_name:
             return True
         else:
             return False

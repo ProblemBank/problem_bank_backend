@@ -52,8 +52,8 @@ class TeamSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         team = Team.objects.create(**validated_data)
         team.save()
-        for i in range(1, GameInfo.max_room_number + 1):
-            entrance_cost = GameInfo.last_room_cost if i == GameInfo.max_room_number else 0
+        for i in range(1, GameInfo.objects.get(id=1).max_room_number + 1):
+            entrance_cost = GameInfo.objects.get(id=1).last_room_cost if i == GameInfo.objects.get(id=1).max_room_number else 0
             # todo add problemGroups here!
             room = Room.objects.create(
                 name=str(i), entrance_cost=entrance_cost)
