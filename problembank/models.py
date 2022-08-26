@@ -10,7 +10,7 @@ class BankAccount(models.Model):
         User, null=True, on_delete=models.SET_NULL, unique=True, related_name='account')
     first_name = models.CharField(max_length=30, default='None')
     last_name = models.CharField(max_length=30, default='None')
-    phone_number = models.CharField(max_length=15, blank=False, null=False)
+    phone_number = models.CharField(max_length=15, blank=True, null=True)
     email = models.CharField(max_length=200, blank=True, null=True)
 
     class Position(models.TextChoices):

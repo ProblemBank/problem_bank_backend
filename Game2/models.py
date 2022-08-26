@@ -7,14 +7,14 @@ from constants import MAX_CARROUSEL_TURNS
 
 
 class Room(models.Model):
-    number = models.IntegerField(default=0, blank=True, null=True)
+    name = models.CharField(blank=False, null=False)
     entrance_cost = models.IntegerField(
         default=0, verbose_name='هزینه ورود به اتاق')
     problem_groups = models.ManyToManyField(
         ProblemGroup, verbose_name='گروه‌مسئله‌ها')
 
     def __str__(self):
-        return f'{self.number}'
+        return f'{self.name}'
 
 
 class Team(models.Model):
