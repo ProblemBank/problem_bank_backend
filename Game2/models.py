@@ -47,27 +47,6 @@ class Box(models.Model):
         return f'Box: cost={self.open_cost} reward={self.reward}'
 
 
-class Answer(models.Model):
-    class AnswerStatus(models.TextChoices):
-        NOT_ANSWERED = 'NOT_ANSWERED'
-        ANSWERED = 'ANSWERED'
-        SCORED = 'SCORED'
-
-    team = models.ForeignKey(
-        Team, on_delete=models.CASCADE, related_name='team')
-    group_problem = models.ForeignKey(
-        ProblemGroup, on_delete=models.CASCADE, related_name='group_problem', null=True, blank=True)
-    problem = models.ForeignKey(
-        Problem, on_delete=models.CASCADE, related_name='problem')
-    answer_status = models.CharField(
-        max_length=20, default=AnswerStatus.NOT_ANSWERED, choices=AnswerStatus.choices)
-    upload_file = models.FileField(null=True, blank=True)
-    mark = models.IntegerField(default=0)
-
-    def __str__(self):
-        return f'team={self.team} problem={self.problem} status={self.answer_status}'
-
-
 class Carrousel(models.Model):
     invest_amount = models.IntegerField(default=0, blank=True, null=True)
     outcome_amount = models.IntegerField(default=0, blank=True, null=True)

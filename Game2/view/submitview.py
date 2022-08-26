@@ -1,19 +1,16 @@
 from django.db import transaction
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from Account.permissions import IsAllowedTOPlay
 from rest_framework.response import Response
 from rest_framework import status
 from django.utils import timezone
 
 from problembank.views import submitview as bank_submit_view
-from Game2.models import Team, Notification, TeamRoom, Room, Answer
-from problembank.models import Problem, BankAccount, ProblemGroup
+from Game2.models import Team, Notification, TeamRoom, Room
+from problembank.models import Problem, BankAccount, ProblemGroup, BaseSubmit
 from problembank.permissions import DefaultPermission
 from constants import PROBLEM_COST, EASY_PROBLEM_REWARD, MEDIUM_PROBLEM_REWARD, HARD_PROBLEM_REWARD,\
     MAX_NOT_SUBMITTED_PROBLEMS
-from Game2.serializers import AnswerSerializer
-from Game2.utils import get_user_team
 
 
 def send_notification(team, problem_group, mark):
@@ -27,7 +24,7 @@ def get_problem_cost():
 
 
 def get_users(user):
-    team = get_user_team(user=user)
+    team = Team.objects.filter(users__in=[user]).first()
     return team.users.all()
 
 
@@ -36,35 +33,30 @@ def game_problem_request_handler(user, submit):
         submit.respondents.add(user.account)
     submit.save()
 
-    team = get_user_team(user=user)
+    team = Team.objects.filter(users__in=[user]).first()
     team.coin = team.coin - get_problem_cost()
     team.save()
 
 
 def game_problem_request_permission_checker(gid, user):
-    team = get_user_team(user=user)
-    print(team.coin)
+    team = Team.objects.filter(users__in=[user]).first()
     if team.coin < PROBLEM_COST:
         return False
     return game_problem_request_first_handler(gid, user)
 
 
 def game_problem_request_first_handler(gid, user):
-    team = get_user_team(user=user)
+    team = Team.objects.filter(users__in=[user])[0]
     current_room = team.current_room
     groups = current_room.problem_groups.all()
-    answers = []
-
-    for answer in Answer.objects.all():
-        if answer.team == team and answer.group_problem in groups:
-            answers.append(answer)
+    submits = BaseSubmit.objects.filter(problem_group__in=groups, respondents__in=[user.account])
 
     counter = 0
-    for answer in answers:
-        if answer.answer_status == Answer.AnswerStatus.NOT_ANSWERED:
+    for submit in submits:
+        if submit.status == BaseSubmit.Status.Received:
             counter += 1
-        if counter == MAX_NOT_SUBMITTED_PROBLEMS:
-            return False
+            if counter == MAX_NOT_SUBMITTED_PROBLEMS:
+                return False
     return True
 
 
@@ -78,48 +70,26 @@ def get_problem_reward(problem):
 
 
 def add_reward_to_team(user, submit, problem):
-    team = get_user_team(user=user)
+    team = Team.objects.filter(users__in=[user]).first()
     team.coin += get_problem_reward(problem)
     team.save()
 
 
 def game_submit_handler(submit, user, problem):
+    submit.status = BaseSubmit.Status.Delivered
     submit.save()
-    answer = Answer.objects.filter(problem=problem).first()
-    answer.answer_status = Answer.AnswerStatus.ANSWERED
-    answer.save()
-    team = get_user_team(user=user)
+    team = Team.objects.filter(users__in=[user]).first()
     send_notification(team, submit.problem_group, problem)
     team.save()
 
 
 @transaction.atomic
 @api_view(['POST'])
-@permission_classes([AND(IsAuthenticated, IsAllowedTOPlay)])
+@permission_classes([IsAuthenticated])
 def get_problem_from_group(request, gid):
-    response = bank_submit_view.request_problem_from_group_view(request.user.account, gid,
+    return bank_submit_view.request_problem_from_group_view(request.user.account, gid,
                                                                 game_problem_request_handler,
                                                                 game_problem_request_permission_checker)
-    data = response.data
-    if response.status_code == status.HTTP_200_OK:
-        pid = data['problem']['id']
-        if not Answer.objects.filter(problem_id=pid, group_problem_id=gid).exists():
-            team = Team.objects.filter(users__in=[request.user]).first()
-            answer = Answer()
-            problem = Problem.objects.get(id=pid)
-            problem_group = ProblemGroup.objects.get(pk=gid)
-            answer.problem = problem
-            answer.group_problem = problem_group
-            answer.team = team
-        else:
-            answer = Answer.objects.filter(
-                problem_id=pid, group_problem_id=gid).first()
-        answer.save()
-        answer_serializer = AnswerSerializer(answer)
-        data['answer'] = answer_serializer.data
-        return Response(data, status=status.HTTP_200_OK)
-    else:
-        return Response(data, status=status.HTTP_200_OK)
 
 
 @transaction.atomic
@@ -131,25 +101,12 @@ def is_problem_gotten_from_group(request, gid):
 
 @transaction.atomic
 @api_view(['POST'])
-@permission_classes([AND(IsAuthenticated, IsAllowedTOPlay)])
+@permission_classes([IsAuthenticated])
 def submit_answer(request, sid, pid):
     data = {
         'file': request.FILES['answerFile']
     }
-    response = bank_submit_view.submit_answer_view(request.user.account, data, sid, pid, game_submit_handler)
-    if response.status_code == 200:
-        team = Team.objects.filter(users__in=[request.user]).first()
-        answer = Answer.objects.filter(problem_id=pid, team_id=team.id).first()
-        if answer.answer_status == Answer.AnswerStatus.NOT_ANSWERED or (answer.answer_status == Answer.AnswerStatus.ANSWERED and answer.mark == 0):
-            answer.upload_file = data['file']
-            answer.answer_status = Answer.AnswerStatus.ANSWERED
-            answer.save()
-        answer_serializer = AnswerSerializer(data=answer)
-        answer_serializer.is_valid()
-        response.data['answer'] = answer_serializer.validated_data
-        return response
-    else:
-        return response
+    return bank_submit_view.submit_answer_view(request.user.account, data, sid, pid, game_submit_handler)
 
 
 def send_note(user, message):
