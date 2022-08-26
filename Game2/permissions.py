@@ -9,9 +9,9 @@ MAXIMUM_TIME_TO_PLAY = 4 * 60 * 60
 class IsAllowedTOPlay(permissions.BasePermission):
     message = _("زمان مجاز شما برای بازی کردن به پایان رسیده است.")
 
-    def has_permission(self, request):
+    def has_permission(self, request, view):
         team = get_user_team(user=request.user)
-        if time.time() - team.first_entrance > MAXIMUM_TIME_TO_PLAY:
+        if time.time() - team.first_entrance < MAXIMUM_TIME_TO_PLAY:
             return True
         else:
             return False

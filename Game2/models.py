@@ -31,7 +31,7 @@ class Team(models.Model):
         max_length=100, verbose_name='اتاق قرار', null=True, blank=True)
     carrousel_turn = models.IntegerField(
         default=MAX_CARROUSEL_TURNS, verbose_name='تعداد دفعات باقی مانده چرخاندن گردونه')
-    first_entrance = models.DateTimeField(null=True, blank=True)
+    first_entrance = models.FloatField(null=True, blank=True)
 
     def __str__(self):
         return f'{self.name}'
