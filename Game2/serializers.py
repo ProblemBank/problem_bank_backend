@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.db import transaction
 
-from .models import Team, Notification, Room, TeamRoom
+from .models import Team, Notification, Room, TeamRoom, Box, TeamBox
 from Account.models import User
 from problembank.models import BankAccount
 from constants import MAX_ROOM_NUMBER, LAST_ROOM_COST
@@ -60,3 +60,14 @@ class TeamSerializer(serializers.ModelSerializer):
             TeamRoom.objects.create(room=room, team=team)
         return team
 
+
+class BoxSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Box
+        fields = '__all__'
+
+
+class TeamBoxSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TeamBox
+        fields = '__all__'

@@ -3,7 +3,7 @@ from django.utils import timezone
 
 from problembank.models import ProblemGroup, Problem
 from Account.models import User
-from constants import MAX_CARROUSEL_TURNS
+from constants import MAX_CARROUSEL_TURNS, OPEN_BOX_COST
 
 
 class Room(models.Model):
@@ -23,15 +23,14 @@ class Team(models.Model):
 
     current_room = models.ForeignKey(
         Room, on_delete=models.PROTECT, related_name='current_room', null=True, blank=True)
-    leader = models.ForeignKey(
-        User, on_delete=models.PROTECT, related_name='leader', null=True, blank=True)
     users = models.ManyToManyField(
-        User, related_name='users', verbose_name='اعضا', null=True, blank=True)
+        User, related_name='team', verbose_name='اعضا', null=True, blank=True)
     chat_room = models.URLField(
         max_length=100, verbose_name='اتاق قرار', null=True, blank=True)
     carrousel_turn = models.IntegerField(
         default=MAX_CARROUSEL_TURNS, verbose_name='تعداد دفعات باقی مانده چرخاندن گردونه')
     first_entrance = models.FloatField(null=True, blank=True)
+    group_problems = models.ManyToManyField(ProblemGroup, related_name='team', null=True, blank=True)
 
     def __str__(self):
         return f'{self.name}'
@@ -40,7 +39,7 @@ class Team(models.Model):
 class Box(models.Model):
     number = models.IntegerField(default=0, verbose_name='شماره')
     open_cost = models.IntegerField(
-        default=0, verbose_name='هزینه باز کردن جعبه')
+        default=OPEN_BOX_COST, verbose_name='هزینه باز کردن جعبه')
     reward = models.IntegerField(default=0, verbose_name='جایزه باز کردن جعبه')
 
     def __str__(self):

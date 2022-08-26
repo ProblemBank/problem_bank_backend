@@ -3,15 +3,16 @@ from rest_framework.response import Response
 from django.db import transaction
 from django.utils import timezone
 
-from Game2.serializers import NotificationSerializer, TeamSerializer, RoomSerializer
-from Game2.models import Notification, Team, Room, TeamRoom, GameInfo
+from Game2.serializers import NotificationSerializer, TeamSerializer, RoomSerializer, TeamBoxSerializer
+from Game2.models import Notification, Team, Room, TeamRoom, GameInfo, Box, TeamBox
+from Game2.permissions import IsAllowedToOpenBox, IsAllowedTOPlay
 from constants import MAX_ROOM_NUMBER, LAST_ROOM_COST
 import time
 from Game2.utils import get_user_team
 
 
 class RoomView(generics.GenericAPIView):
-    permission_classes = (permissions.IsAuthenticated, )
+    permission_classes = (permissions.IsAuthenticated, IsAllowedTOPlay)
     serializer_class = RoomSerializer
     queryset = TeamRoom.objects.all()
 
@@ -41,7 +42,7 @@ class RoomView(generics.GenericAPIView):
 
 
 class TeamView(generics.GenericAPIView):
-    permission_classes = (permissions.IsAuthenticated, )
+    permission_classes = (permissions.IsAuthenticated, IsAllowedTOPlay)
     serializer_class = TeamSerializer
     queryset = Team.objects.all()
 
@@ -59,7 +60,7 @@ class TeamView(generics.GenericAPIView):
 
 
 class NotificationView(generics.GenericAPIView):
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated, IsAllowedTOPlay)
     serializer_class = NotificationSerializer
     queryset = Notification.objects.all()
 
@@ -81,3 +82,36 @@ class NotificationView(generics.GenericAPIView):
         notification.has_seen = True
         notification.save()
         return Response({}, status.HTTP_200_OK)
+
+
+class BoxView(generics.GenericAPIView):
+    permission_classes = (permissions.IsAuthenticated, IsAllowedTOPlay)
+    serializer_class = TeamBoxSerializer
+    queryset = TeamBox.objects.all()
+
+    @transaction.atomic
+    def post(self, request):
+        user = request.user
+        b_id = request.data.get('b_id')
+        team = get_user_team(user)
+        team_box = TeamBox.objects.filter(team=team, box_id=b_id).first()
+        if team_box is not None:
+            data = {
+                'message': 'شما این جعبه را قبلا باز کرده اید!'
+            }
+            return Response(data=data, status=status.HTTP_200_OK)
+        else:
+            try:
+                box = Box.objects.get(pk=b_id)
+                team_box = TeamBox.objects.create(team=team, box=box)
+                team.coin -= box.open_cost
+                team.coin += box.reward
+                team.save()
+                team_box_serializer = self.get_serializer(team_box)
+                team_box_serializer.is_valid()
+                return Response(data=team_box_serializer.validated_data, status=status.HTTP_200_OK)
+            except:
+                data = {
+                    'message': 'چنین جعبه‌ای وجود ندارد!'
+                }
+                return Response(data=data, status=status.HTTP_200_OK)

@@ -1,8 +1,10 @@
 from rest_framework import permissions
-from .utils import get_user_team
 from django.utils.translation import gettext as _
-
 import time
+
+from .utils import get_user_team
+from constants import MAX_ROOM_NUMBER, LAST_ROOM_NAME
+
 MAXIMUM_TIME_TO_PLAY = 4 * 60 * 60
 
 
@@ -12,6 +14,19 @@ class IsAllowedTOPlay(permissions.BasePermission):
     def has_permission(self, request, view):
         team = get_user_team(user=request.user)
         if time.time() - team.first_entrance < MAXIMUM_TIME_TO_PLAY:
+            return True
+        else:
+            return False
+
+
+class IsAllowedToOpenBox(permissions.BasePermission):
+    message = _('طبق قوانین بازی نمی‌توانید این جعبه را باز کنید.')
+
+    def has_permission(self, request, view):
+        user = request.user
+        team = get_user_team(user)
+        current_room = team.current_room
+        if current_room.name == LAST_ROOM_NAME:
             return True
         else:
             return False

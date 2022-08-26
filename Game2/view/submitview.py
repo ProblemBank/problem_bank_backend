@@ -10,7 +10,7 @@ from Game2.permissions import IsAllowedTOPlay
 from rest_condition import And
 from Game2.models import Notification, Team
 from Game2.utils import get_user_team
-from problembank.models import Problem, BankAccount, JudgeableSubmit
+from problembank.models import Problem, BankAccount, JudgeableSubmit, ProblemGroup
 from problembank.permissions import DefaultPermission
 from constants import PROBLEM_COST, EASY_PROBLEM_REWARD, MEDIUM_PROBLEM_REWARD, HARD_PROBLEM_REWARD,\
     MAX_NOT_SUBMITTED_PROBLEMS
@@ -33,17 +33,28 @@ def get_users(user):
 
 
 def game_problem_request_handler(user, submit):
-    for user in get_users(user):
-        submit.respondents.add(user.account)
-    submit.save()
-
+    problem_group = submit.problem_group
     team = get_user_team(user)
-    team.coin = team.coin - get_problem_cost()
-    team.save()
+    if problem_group not in team.group_problems:
+        for user in get_users(user):
+            submit.respondents.add(user.account)
+        submit.save()
+        team = get_user_team(user)
+        team.group_problems.add(problem_group)
+        team.coin = team.coin - get_problem_cost()
+        team.save()
 
 
 def game_problem_request_permission_checker(gid, user):
     team = get_user_team(user)
+    try:
+        problem_group = ProblemGroup.objects.get(gid)
+    except:
+        problem_group = None
+    if problem_group is None:
+        return True
+    elif problem_group in team.group_problems:
+        return False
     if team.coin < PROBLEM_COST:
         return True
     return game_problem_request_first_handler(gid, user)
@@ -56,8 +67,6 @@ def game_problem_request_first_handler(gid, user):
     submits = JudgeableSubmit.objects.filter(
         problem_group__in=groups, respondents__in=[user.account])
 
-
-    
     counter = 0
     for submit in submits:
         if submit.status == JudgeableSubmit.Status.Delivered:
