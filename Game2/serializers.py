@@ -46,7 +46,7 @@ class NotificationSerializer(serializers.ModelSerializer):
 class TeamSerializer(serializers.ModelSerializer):
     class Meta:
         model = Team
-        fields = ['name', 'coin', 'carrousel_turn', 'leader', 'chat_room']
+        fields = '__all__'
 
     @transaction.atomic
     def create(self, validated_data):

@@ -22,11 +22,11 @@ class Team(models.Model):
     coin = models.IntegerField(default=700, verbose_name='پول')
 
     current_room = models.ForeignKey(
-        Room, on_delete=models.PROTECT, related_name='current_room')
+        Room, on_delete=models.PROTECT, related_name='current_room', null=True, blank=True)
     leader = models.ForeignKey(
-        User, on_delete=models.PROTECT, related_name='leader')
+        User, on_delete=models.PROTECT, related_name='leader', null=True, blank=True)
     users = models.ManyToManyField(
-        User, related_name='users', verbose_name='اعضا')
+        User, related_name='users', verbose_name='اعضا', null=True, blank=True)
     chat_room = models.URLField(
         max_length=100, verbose_name='اتاق قرار', null=True, blank=True)
     carrousel_turn = models.IntegerField(
