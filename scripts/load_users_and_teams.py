@@ -24,17 +24,17 @@ def run():
                 user_serializer.is_valid()
                 user = user_serializer.create(validated_data=data)
                 user.save()
-                team = Team.objects.filter(users__in=[user]).first()
+                team = Team.objects.filter(name=row[6]).first()
                 if team is None:
                     team_data = {
                         'name': row[6],
-                        'users': [user],
                         'chat_room': row[8]
                     }
                     team_serializer = TeamSerializer(data=team_data)
                     team_serializer.is_valid()
                     data = team_serializer.validated_data
                     team = team_serializer.create(validated_data=data)
+                    team.users.add(user)
                     team.save()
                 else:
                     team.users.add(user)
