@@ -77,7 +77,7 @@ def get_random_problem_from_group(gid, account):
     submit = get_submit_from_group(gid, account)
     if submit is not None and submit['status'] != 'Received':
         return {"status": False,
-                "data": {"message": "شما قبلا از این گروه مسئله دریافت کرده اید و پاسخ آن را فرستاده اید."}}
+                "data": {"message": "شما قبل‌تر از اینجا مسئله دریافت کرده‌اید و پاسخ آن را فرستاده‌اید."}}
     if submit is not None:
         problem = Problem.objects.all().select_subclasses().filter(
             id=submit['problem'])[0]
@@ -116,13 +116,13 @@ def get_problem_for_submit(pid, gid, account):
     return {"status": True, "problem": problems.get(id=pid)}
 
 
-def is_problem_goten_from_group_view(account, gid):
+def is_problem_gotten_from_group_view(account, gid):
     if get_submit_from_group(gid, account) is not None:
         return Response(status=status.HTTP_200_OK)
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-# return responce with data
+# return response with data
 def request_problem_from_group_view(account, gid, game_problem_request_handler=None,
                                     game_problem_request_permission_checker=None, pid=None):
     if pid is None:
