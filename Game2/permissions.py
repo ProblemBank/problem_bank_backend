@@ -1,10 +1,8 @@
 from rest_framework import permissions
 from django.utils.translation import gettext as _
-from constants import MAXIMUM_TIME_TO_PLAY
 import time
-
+from Game2.models import GameInfo
 from .utils import get_user_team
-from constants import MAX_ROOM_NUMBER, LAST_ROOM_NAME
 
 
 class IsAllowedTOPlay(permissions.BasePermission):
@@ -12,7 +10,7 @@ class IsAllowedTOPlay(permissions.BasePermission):
 
     def has_permission(self, request, view):
         team = get_user_team(user=request.user)
-        if time.time() - team.first_entrance < MAXIMUM_TIME_TO_PLAY:
+        if time.time() - team.first_entrance < GameInfo.max_time_to_play:
             return True
         else:
             return False
@@ -25,7 +23,7 @@ class IsAllowedToOpenBox(permissions.BasePermission):
         user = request.user
         team = get_user_team(user)
         current_room = team.current_room
-        if current_room.name == LAST_ROOM_NAME:
+        if current_room.name == GameInfo.last_room_name:
             return True
         else:
             return False

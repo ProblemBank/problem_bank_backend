@@ -8,12 +8,9 @@ from django.utils import timezone
 from problembank.views import submitview as bank_submit_view
 from Game2.permissions import IsAllowedTOPlay
 from rest_condition import And
-from Game2.models import Notification, Team
-from Game2.utils import get_user_team
+from Game2.models import Notification, Team, GameInfo
 from problembank.models import Problem, BankAccount, JudgeableSubmit, ProblemGroup
 from problembank.permissions import DefaultPermission
-from constants import PROBLEM_COST, EASY_PROBLEM_REWARD, MEDIUM_PROBLEM_REWARD, HARD_PROBLEM_REWARD,\
-    MAX_NOT_SUBMITTED_PROBLEMS
 from Game2.utils import get_user_team
 
 
@@ -24,7 +21,7 @@ def send_notification(team):
 
 
 def get_problem_cost():
-    return PROBLEM_COST
+    return GameInfo.problem_cost
 
 
 def get_users(user):
@@ -55,7 +52,7 @@ def game_problem_request_permission_checker(gid, user):
         return True
     elif problem_group in team.group_problems:
         return False
-    if team.coin < PROBLEM_COST:
+    if team.coin < GameInfo.problem_cost:
         return True
     return game_problem_request_first_handler(gid, user)
 
@@ -71,18 +68,18 @@ def game_problem_request_first_handler(gid, user):
     for submit in submits:
         if submit.status == JudgeableSubmit.Status.Delivered:
             counter += 1
-            if counter == MAX_NOT_SUBMITTED_PROBLEMS:
+            if counter == GameInfo.max_not_submitted_problems:
                 return True
     return False
 
 
 def get_problem_reward(problem):
     if problem.difficulty == Problem.Difficulty.Easy:
-        return EASY_PROBLEM_REWARD
+        return GameInfo.easy_problem_reward
     elif problem.difficulty == Problem.Difficulty.Medium:
-        return MEDIUM_PROBLEM_REWARD
+        return GameInfo.medium_problem_reward
     else:
-        return HARD_PROBLEM_REWARD
+        return GameInfo.hard_problem_reward
 
 
 def add_reward_to_team(user, submit, problem):
