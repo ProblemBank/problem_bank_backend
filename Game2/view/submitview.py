@@ -42,8 +42,7 @@ def game_problem_request_handler(user, submit):
     team.save()
 
 
-def game_problem_request_permission_checker(gid, account):
-    user = account.user
+def game_problem_request_permission_checker(gid, user):
     team = Team.objects.filter(users__in=[user])[0]
     current_room = team.current_room
     # TODO Check this part with hashem on how to get unsolved questions.

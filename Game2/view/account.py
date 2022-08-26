@@ -14,9 +14,9 @@ class RoomView(generics.GenericAPIView):
     queryset = TeamRoom.objects.all()
 
     @transaction.atomic()
-    def send_changed_room_notification(self, room_number, message, team):
+    def send_changed_room_notification(self, r_name, message, team):
         data = {
-            'title': f'شما به اتاق {room_number} منتقل شدید!',
+            'title': f'شما به اتاق {r_name} منتقل شدید!',
             'body': message,
             'user': team,
             'time': timezone.now()
@@ -25,17 +25,17 @@ class RoomView(generics.GenericAPIView):
 
 
     @transaction.atomic
-    def get(self, request, room_number):
+    def get(self, request, r_name):
         user = request.user
         team = Team.objects.filter(users__in=[user])[0]
-        dest_room = self.queryset.filter(team=team, room__number=room_number)[0].room
+        dest_room = self.queryset.filter(team=team, room__name=r_name)[0].room
         entrance_cost = dest_room.entrance_cost
         team.coin -= entrance_cost
         team.current_room = dest_room
         team.save()
         room_serializer = self.get_serializer(dest_room)
         room_serializer.is_valid()
-        self.send_changed_room_notification(room_number, request.message, team)
+        self.send_changed_room_notification(r_name, request.message, team)
         return Response(data=room_serializer.data, status=status.HTTP_200_OK)
 
 

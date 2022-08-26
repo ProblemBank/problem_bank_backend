@@ -12,7 +12,7 @@ urlpatterns = [
 
     path('notification/', NotificationView.as_view(), name='team notification'),
     path('team/', TeamView.as_view(), name='team info'),
-    path('room/<room_number:int>/', RoomView.as_view(), name='go to next room'),
+    path('room/<r_name:int>/', RoomView.as_view(), name='go to next room'),
 
     path('notification_to_all/', notification_to_all),
 ]
