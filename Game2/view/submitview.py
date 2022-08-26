@@ -15,13 +15,8 @@ from Game2.serializers import AnswerSerializer
 
 
 def send_notification(team, problem_group, mark):
-    data = {
-        'title': "مسئله شما تصحیح شد."
-    }
-    mark = 'کامل' if mark == 1 else 'صفر'
-    data['body'] = f"شما نمره {mark} را از  {problem_group.title} کسب کردید."
-    data['team'] = team
-    data['time'] = timezone.now()
+    data = {'title': "مسئله شما ارسال شد.", 'body': f"در حال نمره‌دهی به پاسخ شما هستیم", 'team': team,
+            'time': timezone.now()}
     Notification.objects.create(**data)
 
 
@@ -81,14 +76,12 @@ def add_reward_to_team(user, submit, problem):
 
 
 def game_submit_handler(submit, user, problem):
-    if submit.mark == 1:
-        add_reward_to_team(user, submit, problem)
     submit.save()
     answer = Answer.objects.filter(problem=problem).first()
     answer.answer_status = Answer.AnswerStatus.ANSWERED
     answer.save()
     team = Team.objects.filter(users__in=[user])[0]
-    send_notification(team, submit.problem_group, problem.mark)
+    send_notification(team, submit.problem_group, problem)
     team.save()
 
 
@@ -136,7 +129,8 @@ def submit_answer(request, sid, pid):
         'text': request.data['text'],
         'file': request.data['FILES']
     }
-    return bank_submit_view.submit_answer_view(request.user.account, data, sid, pid, game_submit_handler)
+    response = bank_submit_view.submit_answer_view(request.user.account, data, sid, pid, game_submit_handler)
+
 
 
 def send_note(user, message):

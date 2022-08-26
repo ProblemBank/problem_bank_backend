@@ -60,6 +60,7 @@ class Answer(models.Model):
         Problem, on_delete=models.CASCADE, related_name='problem')
     answer_status = models.CharField(
         max_length=20, default=AnswerStatus.NOT_ANSWERED, choices=AnswerStatus.choices)
+    upload_file = models.FileField()
 
     def __str__(self):
         return f'team={self.team} problem={self.problem} status={self.answer_status}'
