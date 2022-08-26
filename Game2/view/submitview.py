@@ -128,15 +128,15 @@ def submit_answer(request, sid, pid):
     print("HEREEEEEEEEEE", request.FILES)
 
     data = {
-        'text': request.data['text'],
-        'file': request.FILES['FILES']
+        'file': request.FILES['file']
     }
     response = bank_submit_view.submit_answer_view(request.user.account, data, sid, pid, game_submit_handler)
     team = Team.objects.filter(users__in=[request.user]).first()
     answer = Answer.objects.filter(problem_id=pid, team_id=team.id).first()
     if answer.answer_status == Answer.AnswerStatus.NOT_ANSWERED or (answer.answer_status == Answer.AnswerStatus.ANSWERED and answer.mark == 0):
-        # answer.upload_file = request.
-        pass
+        answer.upload_file = data['file']
+        answer.answer_status = Answer.AnswerStatus.ANSWERED
+        answer.save()
 
 
 def send_note(user, message):
