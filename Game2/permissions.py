@@ -6,7 +6,7 @@ from .utils import get_user_team
 
 
 class IsAllowedTOPlay(permissions.BasePermission):
-    message = _("زمان مجاز شما برای بازی کردن به پایان رسیده است.")
+    message = "زمان مجاز شما برای بازی کردن به پایان رسیده است."
 
     def has_permission(self, request, view):
         team = get_user_team(user=request.user)
@@ -17,7 +17,7 @@ class IsAllowedTOPlay(permissions.BasePermission):
 
 
 class IsAllowedToOpenBox(permissions.BasePermission):
-    message = _('طبق قوانین بازی نمی‌توانید این جعبه را باز کنید.')
+    message = 'طبق قوانین بازی نمی‌توانید این جعبه را باز کنید.'
 
     def has_permission(self, request, view):
         user = request.user
