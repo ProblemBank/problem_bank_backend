@@ -37,7 +37,7 @@ def get_users(user):
 def game_problem_request_handler(user, submit):
     problem_group = submit.problem_group
     team = get_user_team(user)
-    if problem_group not in team.group_problems:
+    if problem_group not in team.group_problems.all():
         for user in get_users(user):
             submit.respondents.add(user.account)
         submit.save()
@@ -50,13 +50,13 @@ def game_problem_request_handler(user, submit):
 def game_problem_request_permission_checker(gid, user):
     team = get_user_team(user)
     try:
-        problem_group = ProblemGroup.objects.get(gid)
+        problem_group = ProblemGroup.objects.get(id=gid)
     except:
         problem_group = None
     if problem_group is None:
         return True
-    elif problem_group in team.group_problems:
-        return False
+    elif problem_group in team.group_problems.all():
+        return True
     if team.coin < PROBLEM_COST:
         return True
     return game_problem_request_first_handler(gid, user)
