@@ -1,12 +1,14 @@
+from rest_framework.decorators import permission_classes
 from rest_framework.response import Response
 
 from Game2.utils import get_user_team
 import random
 from constants import CARROUSEL_REWARD_RATIO_FOR_WIN, CARROUSEL_REWARD_RATIO_FOR_LOSE
 from rest_framework import status
+from Game2.permissions import IsAllowedTOPlay
 
 
-
+@permission_classes([IsAllowedTOPlay])
 def turnning_carrousel(user):
     team = get_user_team(user)
     if team.carrousel_turn > 0:
