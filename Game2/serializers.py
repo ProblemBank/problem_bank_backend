@@ -47,7 +47,7 @@ class NotificationSerializer(serializers.ModelSerializer):
 class TeamSerializer(serializers.ModelSerializer):
     class Meta:
         model = Team
-        fields = ['name', 'coin', 'carrousel_turn', 'leader']
+        fields = ['name', 'coin', 'carrousel_turn', 'leader', 'chat_room']
 
     @transaction.atomic
     def create(self, validated_data):
@@ -56,7 +56,8 @@ class TeamSerializer(serializers.ModelSerializer):
         for i in range(1, MAX_ROOM_NUMBER + 1):
             entrance_cost = LAST_ROOM_COST if i == MAX_ROOM_NUMBER else 0
             # todo add problemGroups here!
-            room = Room.objects.create(name=str(i), entrance_cost=entrance_cost)
+            room = Room.objects.create(
+                name=str(i), entrance_cost=entrance_cost)
             TeamRoom.objects.create(room=room, team=team)
         return team
 
