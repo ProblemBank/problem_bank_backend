@@ -97,21 +97,21 @@ def game_submit_handler(submit, user, problem):
 @permission_classes([IsAuthenticated])
 def get_problem_from_group(request, gid):
     response = bank_submit_view.request_problem_from_group_view(request.user.account, gid,
-                                                            game_problem_request_handler,
-                                                            game_problem_request_permission_checker)
+                                                                game_problem_request_handler,
+                                                                game_problem_request_permission_checker)
     data = response.data
     data.pop('submit')
     pid = data['problem']['id']
     team = Team.objects.filter(users__in=[request.user]).first()
     answer = Answer()
-    problem = Problem.objects.get(pid=pid)
+    problem = Problem.objects.get(id=pid)
     problem_group = ProblemGroup.objects.get(pk=gid)
     answer.problem = problem
     answer.group_problem = problem_group
     answer.team = team
     answer.save()
     answer_serializer = AnswerSerializer(answer)
-    data['answer'] = answer_serializer.validated_data
+    data['answer'] = answer_serializer.data
     return Response(data, status=status.HTTP_200_OK)
 
 
