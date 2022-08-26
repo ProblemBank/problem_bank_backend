@@ -34,7 +34,7 @@ def get_users(user):
     return team.users.all()
 
 
-def game_problem_request_handler(user, submit, gid, pid):
+def game_problem_request_handler(user, submit):
     for user in get_users(user):
         submit.respondents.add(user.account)
     submit.save()
@@ -42,15 +42,6 @@ def game_problem_request_handler(user, submit, gid, pid):
     team = Team.objects.filter(users__in=[user])[0]
     team.coin = team.coin - get_problem_cost()
     team.save()
-    answer = Answer()
-    problem = Problem.objects.get(pid=pid)
-    problem_group = ProblemGroup.objects.get(pk=gid)
-    answer.problem = problem
-    answer.group_problem = problem_group
-    answer.team = team
-    answer.save()
-    answer_serializer = AnswerSerializer(answer)
-    return answer_serializer.validated_data
 
 
 def game_problem_request_permission_checker(gid, user):
@@ -105,9 +96,23 @@ def game_submit_handler(submit, user, problem):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def get_problem_from_group(request, gid):
-    return bank_submit_view.request_problem_from_group_view(request.user.account, gid,
+    response = bank_submit_view.request_problem_from_group_view(request.user.account, gid,
                                                             game_problem_request_handler,
                                                             game_problem_request_permission_checker)
+    data = response.data
+    data.pop('submit')
+    pid = data['problem']['id']
+    team = Team.objects.filter(users__in=[request.user]).first()
+    answer = Answer()
+    problem = Problem.objects.get(pid=pid)
+    problem_group = ProblemGroup.objects.get(pk=gid)
+    answer.problem = problem
+    answer.group_problem = problem_group
+    answer.team = team
+    answer.save()
+    answer_serializer = AnswerSerializer(answer)
+    data['answer'] = answer_serializer.validated_data
+    return Response(data, status=status.HTTP_200_OK)
 
 
 @transaction.atomic
