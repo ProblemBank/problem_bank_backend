@@ -1,6 +1,7 @@
 from django.db import transaction
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from Account.permissions import IsAllowedTOPlay
 from rest_framework.response import Response
 from rest_framework import status
 from django.utils import timezone
@@ -12,6 +13,7 @@ from problembank.permissions import DefaultPermission
 from constants import PROBLEM_COST, EASY_PROBLEM_REWARD, MEDIUM_PROBLEM_REWARD, HARD_PROBLEM_REWARD,\
     MAX_NOT_SUBMITTED_PROBLEMS
 from Game2.serializers import AnswerSerializer
+from Game2.utils import get_user_team
 
 
 def send_notification(team, problem_group, mark):
@@ -25,7 +27,7 @@ def get_problem_cost():
 
 
 def get_users(user):
-    team = Team.objects.filter(users__in=[user])[0]
+    team = get_user_team(user=user)
     return team.users.all()
 
 
@@ -34,13 +36,13 @@ def game_problem_request_handler(user, submit):
         submit.respondents.add(user.account)
     submit.save()
 
-    team = Team.objects.filter(users__in=[user])[0]
+    team = get_user_team(user=user)
     team.coin = team.coin - get_problem_cost()
     team.save()
 
 
 def game_problem_request_permission_checker(gid, user):
-    team = Team.objects.filter(users__in=[user]).first()
+    team = get_user_team(user=user)
     print(team.coin)
     if team.coin < PROBLEM_COST:
         return False
@@ -48,7 +50,7 @@ def game_problem_request_permission_checker(gid, user):
 
 
 def game_problem_request_first_handler(gid, user):
-    team = Team.objects.filter(users__in=[user])[0]
+    team = get_user_team(user=user)
     current_room = team.current_room
     groups = current_room.problem_groups.all()
     answers = []
@@ -76,7 +78,7 @@ def get_problem_reward(problem):
 
 
 def add_reward_to_team(user, submit, problem):
-    team = Team.objects.filter(users__in=[user])[0]
+    team = get_user_team(user=user)
     team.coin += get_problem_reward(problem)
     team.save()
 
@@ -86,14 +88,14 @@ def game_submit_handler(submit, user, problem):
     answer = Answer.objects.filter(problem=problem).first()
     answer.answer_status = Answer.AnswerStatus.ANSWERED
     answer.save()
-    team = Team.objects.filter(users__in=[user])[0]
+    team = get_user_team(user=user)
     send_notification(team, submit.problem_group, problem)
     team.save()
 
 
 @transaction.atomic
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AND(IsAuthenticated, IsAllowedTOPlay)])
 def get_problem_from_group(request, gid):
     response = bank_submit_view.request_problem_from_group_view(request.user.account, gid,
                                                                 game_problem_request_handler,
@@ -129,7 +131,7 @@ def is_problem_gotten_from_group(request, gid):
 
 @transaction.atomic
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AND(IsAuthenticated, IsAllowedTOPlay)])
 def submit_answer(request, sid, pid):
     data = {
         'file': request.FILES['answerFile']
