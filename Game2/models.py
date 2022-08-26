@@ -24,13 +24,13 @@ class Team(models.Model):
     current_room = models.ForeignKey(
         Room, on_delete=models.PROTECT, related_name='current_room', null=True, blank=True)
     users = models.ManyToManyField(
-        User, related_name='team', verbose_name='اعضا', null=True, blank=True)
+        User, related_name='team', verbose_name='اعضا')
     chat_room = models.URLField(
         max_length=100, verbose_name='اتاق قرار', null=True, blank=True)
     carrousel_turn = models.IntegerField(
         default=MAX_CARROUSEL_TURNS, verbose_name='تعداد دفعات باقی مانده چرخاندن گردونه')
     first_entrance = models.FloatField(null=True, blank=True)
-    group_problems = models.ManyToManyField(ProblemGroup, related_name='team', null=True, blank=True)
+    group_problems = models.ManyToManyField(ProblemGroup, related_name='team')
 
     def __str__(self):
         return f'{self.name}'
