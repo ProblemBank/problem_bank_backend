@@ -7,6 +7,7 @@ from django.db import transaction
 # todo:
 # TokenObtainPairSerializer
 
+
 class CreateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
