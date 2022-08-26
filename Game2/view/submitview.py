@@ -125,8 +125,6 @@ def is_problem_gotten_from_group(request, gid):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def submit_answer(request, sid, pid):
-    print("HEREEEEEEEEEE", request.FILES)
-
     data = {
         'file': request.FILES['file']
     }
