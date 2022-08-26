@@ -141,12 +141,14 @@ def request_problem_from_group_view(account, gid, game_problem_request_handler=N
     instance = serializer.create(serializer.validated_data)
     instance.respondents.add(account)
     instance.save()
+    answer_data = {}
     if game_problem_request_handler is not None:
-        game_problem_request_handler(account.user, instance)
+        answer_data = game_problem_request_handler(account.user, instance, gid, problem.pk)
     data = {}
     data['problem'] = ProblemSerializer(problem).data
     data['submit'] = serializerClass(instance).data
     data['problem'].pop('answer')
+    data['answer'] = answer_data
     return Response(data, status=status.HTTP_200_OK)
 
 

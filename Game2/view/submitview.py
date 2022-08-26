@@ -6,10 +6,12 @@ from rest_framework import status
 from django.utils import timezone
 
 from problembank.views import submitview as bank_submit_view
-from Game2.models import Team, Notification, TeamRoom, Room
-from problembank.models import Problem, BankAccount
+from Game2.models import Team, Notification, TeamRoom, Room, Answer
+from problembank.models import Problem, BankAccount, ProblemGroup
 from problembank.permissions import DefaultPermission
-from constants import PROBLEM_COST, EASY_PROBLEM_REWARD, MEDIUM_PROBLEM_REWARD, HARD_PROBLEM_REWARD
+from constants import PROBLEM_COST, EASY_PROBLEM_REWARD, MEDIUM_PROBLEM_REWARD, HARD_PROBLEM_REWARD,\
+    MAX_NOT_SUBMITTED_PROBLEMS
+from Game2.serializers import AnswerSerializer
 
 
 def send_notification(team, problem_group, mark):
@@ -32,7 +34,7 @@ def get_users(user):
     return team.users.all()
 
 
-def game_problem_request_handler(user, submit):
+def game_problem_request_handler(user, submit, gid, pid):
     for user in get_users(user):
         submit.respondents.add(user.account)
     submit.save()
@@ -40,14 +42,35 @@ def game_problem_request_handler(user, submit):
     team = Team.objects.filter(users__in=[user])[0]
     team.coin = team.coin - get_problem_cost()
     team.save()
+    answer = Answer()
+    problem = Problem.objects.get(pid=pid)
+    problem_group = ProblemGroup.objects.get(pk=gid)
+    answer.problem = problem
+    answer.group_problem = problem_group
+    answer.team = team
+    answer.save()
+    answer_serializer = AnswerSerializer(answer)
+    return answer_serializer.validated_data
 
 
 def game_problem_request_permission_checker(gid, user):
     team = Team.objects.filter(users__in=[user])[0]
-    current_room = team.current_room
-    # TODO Check this part with hashem on how to get unsolved questions.
     if team.coin < PROBLEM_COST:
         return False
+    return game_problem_request_first_handler(gid, user)
+
+
+def game_problem_request_first_handler(gid, user):
+    team = Team.objects.filter(users__in=[user])[0]
+    current_room = team.current_room
+    groups = current_room.problem_groups
+    answers = Answer.objects.filter(group_problem__in=groups)
+    counter = 0
+    for answer in answers:
+        if answer.answer_status == Answer.AnswerStatus.NOT_ANSWERED:
+            counter += 1
+        if counter == MAX_NOT_SUBMITTED_PROBLEMS:
+            return False
     return True
 
 
@@ -70,6 +93,9 @@ def game_submit_handler(submit, user, problem):
     if submit.mark == 1:
         add_reward_to_team(user, submit, problem)
     submit.save()
+    answer = Answer.objects.filter(problem=problem).first()
+    answer.answer_status = Answer.AnswerStatus.ANSWERED
+    answer.save()
     team = Team.objects.filter(users__in=[user])[0]
     send_notification(team, submit.problem_group, problem.mark)
     team.save()
