@@ -8,6 +8,7 @@ from constants import MAX_ROOM_NUMBER, LAST_ROOM_COST
 
 
 class CreateUserSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = User
         fields = ['first_name', 'last_name']

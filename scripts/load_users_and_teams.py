@@ -27,8 +27,9 @@ def run():
                 team = Team.objects.filter(users__in=[user]).first()
                 if team is None:
                     team_data = {
-                        'name': row[8],
+                        'name': row[6],
                         'users': [user],
+                        'chat_room': row[8]
                     }
                     team_serializer = TeamSerializer(data=team_data)
                     team_serializer.is_valid()
