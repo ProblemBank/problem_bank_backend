@@ -6,14 +6,14 @@ from rest_framework import status
 from django.utils import timezone
 
 from problembank.views import submitview as bank_submit_view
-from Game2.models import Team, Notification, TeamRoom, Room
-from problembank.models import Problem, BankAccount, ProblemGroup, BaseSubmit
+from Game2.models import Notification, Team
+from problembank.models import Problem, BankAccount, BaseSubmit
 from problembank.permissions import DefaultPermission
 from constants import PROBLEM_COST, EASY_PROBLEM_REWARD, MEDIUM_PROBLEM_REWARD, HARD_PROBLEM_REWARD,\
     MAX_NOT_SUBMITTED_PROBLEMS
 
 
-def send_notification(team, problem_group, mark):
+def send_notification(team):
     data = {'title': "مسئله شما ارسال شد.", 'body': f"در حال نمره‌دهی به پاسخ شما هستیم", 'team': team,
             'time': timezone.now()}
     Notification.objects.create(**data)
@@ -79,7 +79,7 @@ def game_submit_handler(submit, user, problem):
     submit.status = BaseSubmit.Status.Delivered
     submit.save()
     team = Team.objects.filter(users__in=[user]).first()
-    send_notification(team, submit.problem_group, problem)
+    send_notification(team)
     team.save()
 
 
