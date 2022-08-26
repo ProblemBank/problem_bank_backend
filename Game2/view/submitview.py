@@ -6,7 +6,10 @@ from rest_framework import status
 from django.utils import timezone
 
 from problembank.views import submitview as bank_submit_view
+from Game2.permissions import IsAllowedTOPlay
+from rest_condition import And
 from Game2.models import Notification, Team
+from Game2.utils import get_user_team
 from problembank.models import Problem, BankAccount, JudgeableSubmit
 from problembank.permissions import DefaultPermission
 from constants import PROBLEM_COST, EASY_PROBLEM_REWARD, MEDIUM_PROBLEM_REWARD, HARD_PROBLEM_REWARD,\
@@ -25,7 +28,7 @@ def get_problem_cost():
 
 
 def get_users(user):
-    team = Team.objects.filter(users__in=[user]).first()
+    team = get_user_team(user)
     return team.users.all()
 
 
@@ -34,16 +37,15 @@ def game_problem_request_handler(user, submit):
         submit.respondents.add(user.account)
     submit.save()
 
-    team = Team.objects.filter(users__in=[user]).first()
+    team = get_user_team(user)
     team.coin = team.coin - get_problem_cost()
     team.save()
 
 
 def game_problem_request_permission_checker(gid, user):
-    team = Team.objects.filter(users__in=[user]).first()
-    print("@@@@@@@@@@@", team.coin)
+    team = get_user_team(user)
     if team.coin < PROBLEM_COST:
-        return False
+        return True
     return game_problem_request_first_handler(gid, user)
 
 
@@ -61,8 +63,8 @@ def game_problem_request_first_handler(gid, user):
         if submit.status == JudgeableSubmit.Status.Delivered:
             counter += 1
             if counter == MAX_NOT_SUBMITTED_PROBLEMS:
-                return False
-    return True
+                return True
+    return False
 
 
 def get_problem_reward(problem):
@@ -75,7 +77,7 @@ def get_problem_reward(problem):
 
 
 def add_reward_to_team(user, submit, problem):
-    team = Team.objects.filter(users__in=[user]).first()
+    team = get_user_team(user)
     team.coin += get_problem_reward(problem)
     team.save()
 
@@ -90,7 +92,7 @@ def game_submit_handler(submit, user, problem):
 
 @transaction.atomic
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([And(IsAuthenticated, IsAllowedTOPlay)])
 def get_problem_from_group(request, gid):
     return bank_submit_view.request_problem_from_group_view(request.user.account, gid,
                                                             game_problem_request_handler,
@@ -106,7 +108,7 @@ def is_problem_gotten_from_group(request, gid):
 
 @transaction.atomic
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([And(IsAuthenticated, IsAllowedTOPlay)])
 def submit_answer(request, sid, pid):
     data = {
         'file': request.FILES['answerFile']

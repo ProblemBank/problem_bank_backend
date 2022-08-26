@@ -10,7 +10,7 @@ from constants import MAX_ROOM_NUMBER, LAST_ROOM_COST
 class CreateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'username']
+        fields = ['first_name', 'last_name']
 
     @transaction.atomic
     def create(self, validated_data):
@@ -20,7 +20,6 @@ class CreateUserSerializer(serializers.ModelSerializer):
         bank_account_data = {
             'first_name': validated_data['first_name'],
             'last_name': validated_data['last_name'],
-            'user': user,
         }
         BankAccount.objects.create(**bank_account_data)
         return user
