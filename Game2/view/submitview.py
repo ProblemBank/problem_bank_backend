@@ -9,7 +9,6 @@ from problembank.views import submitview as bank_submit_view
 from Game2.permissions import IsAllowedTOPlay
 from rest_condition import And
 from Game2.models import Notification, Team
-from Game2.utils import get_user_team
 from problembank.models import Problem, BankAccount, JudgeableSubmit, ProblemGroup
 from problembank.permissions import DefaultPermission
 from constants import PROBLEM_COST, EASY_PROBLEM_REWARD, MEDIUM_PROBLEM_REWARD, HARD_PROBLEM_REWARD,\
@@ -17,9 +16,12 @@ from constants import PROBLEM_COST, EASY_PROBLEM_REWARD, MEDIUM_PROBLEM_REWARD, 
 from Game2.utils import get_user_team
 
 
-def send_notification(team):
-    data = {'title': "مسئله شما ارسال شد.", 'body': f"در حال نمره‌دهی به پاسخ شما هستیم", 'team': team,
-            'time': timezone.now()}
+def send_notification(user, problem_group, mark):
+    data = {'title': "مسئله شما تصحیح شد."}
+    mark = 'کامل' if mark == 1 else 'صفر'
+    data['body'] = f"شما نمره {mark} را از  {problem_group.title} کسب کردید."
+    data['user'] = user
+    data['time'] = timezone.now()
     Notification.objects.create(**data)
 
 
@@ -85,8 +87,7 @@ def get_problem_reward(problem):
         return HARD_PROBLEM_REWARD
 
 
-def add_reward_to_team(user, submit, problem):
-    team = get_user_team(user)
+def add_reward_to_team(team, problem):
     team.coin += get_problem_reward(problem)
     team.save()
 
@@ -95,8 +96,20 @@ def game_submit_handler(submit, user, problem):
     submit.status = JudgeableSubmit.Status.Delivered
     submit.save()
     team = Team.objects.filter(users__in=[user]).first()
-    send_notification(team)
+    send_notification(team, submit.problem_group, )
     team.save()
+
+
+def game_judge_handler(submit):
+    if submit.mark == 1:
+        user = submit.respondents.all()[0].user
+        team = get_user_team(user)
+        problem = Problem.objects.filter(id=submit.problem.id)[0]
+        add_reward_to_team(team, problem)
+        submit.status = JudgeableSubmit.Status.Judged
+        submit.save()
+    for account in submit.respondents.all():
+        send_notification(account.user, submit.problem_group, submit.mark)
 
 
 @transaction.atomic
@@ -143,3 +156,10 @@ def notification_to_all(request):
         except:
             pass
     return Response(status=status.HTTP_200_OK)
+
+
+@transaction.atomic
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def judge_view(request, sid, mark):
+    return bank_submit_view.judge_view(request.user.account, sid, mark, game_judge_handler)
