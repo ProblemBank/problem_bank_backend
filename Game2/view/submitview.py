@@ -15,13 +15,8 @@ from Game2.serializers import AnswerSerializer
 
 
 def send_notification(team, problem_group, mark):
-    data = {
-        'title': "مسئله شما تصحیح شد."
-    }
-    mark = 'کامل' if mark == 1 else 'صفر'
-    data['body'] = f"شما نمره {mark} را از  {problem_group.title} کسب کردید."
-    data['team'] = team
-    data['time'] = timezone.now()
+    data = {'title': "مسئله شما ارسال شد.", 'body': f"در حال نمره‌دهی به پاسخ شما هستیم", 'team': team,
+            'time': timezone.now()}
     Notification.objects.create(**data)
 
 
@@ -81,14 +76,12 @@ def add_reward_to_team(user, submit, problem):
 
 
 def game_submit_handler(submit, user, problem):
-    if submit.mark == 1:
-        add_reward_to_team(user, submit, problem)
     submit.save()
     answer = Answer.objects.filter(problem=problem).first()
     answer.answer_status = Answer.AnswerStatus.ANSWERED
     answer.save()
     team = Team.objects.filter(users__in=[user])[0]
-    # send_notification(team, submit.problem_group, submit.mark)
+    send_notification(team, submit.problem_group, problem)
     team.save()
 
 
@@ -100,6 +93,7 @@ def get_problem_from_group(request, gid):
                                                                 game_problem_request_handler,
                                                                 game_problem_request_permission_checker)
     data = response.data
+    data.pop('submit')
     if response.status_code == status.HTTP_200_OK:
         pid = data['problem']['id']
         if not Answer.objects.filter(problem_id=pid, group_problem_id=gid).exists():
@@ -111,8 +105,7 @@ def get_problem_from_group(request, gid):
             answer.group_problem = problem_group
             answer.team = team
         else:
-            answer = Answer.objects.filter(
-                problem_id=pid, group_problem_id=gid).first()
+            answer = Answer.objects.filter(problem_id=pid, group_problem_id=gid).first()
         answer.save()
         answer_serializer = AnswerSerializer(answer)
         data['answer'] = answer_serializer.data
@@ -132,10 +125,18 @@ def is_problem_gotten_from_group(request, gid):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def submit_answer(request, sid, pid):
-    data = {}
-    print("@@@@@@@@@@@", request.FILES)
-    data['file'] = request.FILES['answerFile']
-    return bank_submit_view.submit_answer_view(request.user.account, data, sid, pid, game_submit_handler)
+    print("HEREEEEEEEEEE", request.FILES)
+
+    data = {
+        'text': request.data['text'],
+        'file': request.FILES['FILES']
+    }
+    response = bank_submit_view.submit_answer_view(request.user.account, data, sid, pid, game_submit_handler)
+    team = Team.objects.filter(users__in=[request.user]).first()
+    answer = Answer.objects.filter(problem_id=pid, team_id=team.id).first()
+    if answer.answer_status == Answer.AnswerStatus.NOT_ANSWERED or (answer.answer_status == Answer.AnswerStatus.ANSWERED and answer.mark == 0):
+        # answer.upload_file = request.
+        pass
 
 
 def send_note(user, message):
