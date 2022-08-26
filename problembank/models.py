@@ -104,6 +104,10 @@ class Problem(models.Model):
         BankAccount, on_delete=models.CASCADE, verbose_name='نویسنده', related_name='problems')
 
     text = models.TextField(verbose_name='متن')
+
+    file = models.FileField(upload_to='problem-files/',
+                            null=True, blank=True, verbose_name='فایل صورت مسئله')
+
     publish_date = models.DateTimeField(
         default=timezone.now, null=True, blank=True, verbose_name='زمان انتشار')
     last_change_date = models.DateTimeField(default=timezone.now, null=True, blank=True,
@@ -162,7 +166,7 @@ class DescriptiveAnswer(Answer):
 
 class UploadFileAnswer(Answer):
     answer_file = models.FileField(
-        upload_to='AnswerFile', max_length=4000, blank=False)
+        upload_to='answer-files/', max_length=4000, blank=False)
     file_name = models.CharField(max_length=50, verbose_name='نام فایل')
 
 
