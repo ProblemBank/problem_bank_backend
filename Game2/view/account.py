@@ -6,7 +6,8 @@ from django.utils import timezone
 from Game2.serializers import NotificationSerializer, TeamSerializer, RoomSerializer
 from Game2.models import Notification, Team, Room, TeamRoom, GameInfo
 from constants import MAX_ROOM_NUMBER, LAST_ROOM_COST
-
+import time
+from Game2.utils import get_user_team
 
 class RoomView(generics.GenericAPIView):
     permission_classes = (permissions.IsAuthenticated, )
@@ -26,7 +27,7 @@ class RoomView(generics.GenericAPIView):
     @transaction.atomic
     def get(self, request, r_name):
         user = request.user
-        team = Team.objects.filter(users__in=[user])[0]
+        team = get_user_team(user=user)
         dest_room = self.queryset.filter(team=team, room__name=r_name)[0].room
         entrance_cost = dest_room.entrance_cost
         team.coin -= entrance_cost
@@ -46,6 +47,9 @@ class TeamView(generics.GenericAPIView):
     def get(self, request):
         user = request.user
         team = self.queryset.filter(users__in=[user]).first()
+        if team.first_entrance is None:
+            team.first_entrance = time.time()
+        team.save(update_fields=["first_entrance"])
         team_serializer = self.get_serializer(team)
         # TODO Check this part!!
         team_serializer.data['finish_time'] = GameInfo.objects.get(

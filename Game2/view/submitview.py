@@ -70,7 +70,7 @@ def get_problem_reward(problem):
 
 
 def add_reward_to_team(user, submit, problem):
-    team = Team.objects.filter(users__in=[user])[0]
+    team = Team.objects.filter(users__in=[user]).first()
     team.coin += get_problem_reward(problem)
     team.save()
 
@@ -78,7 +78,7 @@ def add_reward_to_team(user, submit, problem):
 def game_submit_handler(submit, user, problem):
     submit.status = BaseSubmit.Status.Delivered
     submit.save()
-    team = Team.objects.filter(users__in=[user])[0]
+    team = Team.objects.filter(users__in=[user]).first()
     send_notification(team, submit.problem_group, problem)
     team.save()
 
