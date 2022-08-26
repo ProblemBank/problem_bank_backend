@@ -14,9 +14,13 @@ from problembank.permissions import DefaultPermission
 from Game2.utils import get_user_team
 
 
-def send_notification(team):
-    data = {'title': "مسئله شما ارسال شد.", 'body': f"در حال نمره‌دهی به پاسخ شما هستیم", 'team': team,
-            'time': timezone.now()}
+def send_notification(user, problem_group, mark):
+    data = {'title': "مسئله شما تصحیح شد."}
+    mark = 'کامل' if mark == 1 else 'صفر'
+    data['body'] = f"شما نمره {mark} را از  {problem_group.title} کسب کردید."
+    team = get_user_team(user)
+    data['team'] = team
+    data['time'] = timezone.now()
     Notification.objects.create(**data)
 
 
@@ -32,7 +36,7 @@ def get_users(user):
 def game_problem_request_handler(user, submit):
     problem_group = submit.problem_group
     team = get_user_team(user)
-    if problem_group not in team.group_problems:
+    if problem_group not in team.group_problems.all():
         for user in get_users(user):
             submit.respondents.add(user.account)
         submit.save()
@@ -45,13 +49,13 @@ def game_problem_request_handler(user, submit):
 def game_problem_request_permission_checker(gid, user):
     team = get_user_team(user)
     try:
-        problem_group = ProblemGroup.objects.get(gid)
+        problem_group = ProblemGroup.objects.get(id=gid)
     except:
         problem_group = None
     if problem_group is None:
         return True
-    elif problem_group in team.group_problems:
-        return False
+    elif problem_group in team.group_problems.all():
+        return True
     if team.coin < GameInfo.problem_cost:
         return True
     return game_problem_request_first_handler(gid, user)
@@ -78,12 +82,13 @@ def get_problem_reward(problem):
         return GameInfo.easy_problem_reward
     elif problem.difficulty == Problem.Difficulty.Medium:
         return GameInfo.medium_problem_reward
+    elif problem.difficulty == Problem.Difficulty.VeryHard:
+        return GameInfo.so_hard_problem_reward
     else:
         return GameInfo.hard_problem_reward
 
 
-def add_reward_to_team(user, submit, problem):
-    team = get_user_team(user)
+def add_reward_to_team(team, problem):
     team.coin += get_problem_reward(problem)
     team.save()
 
@@ -92,8 +97,19 @@ def game_submit_handler(submit, user, problem):
     submit.status = JudgeableSubmit.Status.Delivered
     submit.save()
     team = Team.objects.filter(users__in=[user]).first()
-    send_notification(team)
     team.save()
+
+
+def game_judge_handler(submit):
+    if submit.mark == 1:
+        user = submit.respondents.all()[0].user
+        team = get_user_team(user)
+        problem = Problem.objects.filter(id=submit.problem.id)[0]
+        add_reward_to_team(team, problem)
+        submit.status = JudgeableSubmit.Status.Judged
+        submit.save()
+    for account in submit.respondents.all():
+        send_notification(account.user, submit.problem_group, submit.mark)
 
 
 @transaction.atomic
@@ -140,3 +156,10 @@ def notification_to_all(request):
         except:
             pass
     return Response(status=status.HTTP_200_OK)
+
+
+@transaction.atomic
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def judge_view(request, sid, mark):
+    return bank_submit_view.judge_view(request.user.account, sid, mark, game_judge_handler)
