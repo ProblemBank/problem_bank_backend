@@ -14,6 +14,7 @@ from problembank.models import Problem, BankAccount, JudgeableSubmit
 from problembank.permissions import DefaultPermission
 from constants import PROBLEM_COST, EASY_PROBLEM_REWARD, MEDIUM_PROBLEM_REWARD, HARD_PROBLEM_REWARD,\
     MAX_NOT_SUBMITTED_PROBLEMS
+from Game2.utils import get_user_team
 
 
 def send_notification(team):
@@ -52,11 +53,14 @@ def game_problem_request_first_handler(gid, user):
     team = get_user_team(user)
     current_room = team.current_room
     groups = current_room.problem_groups.all()
-    submits = JudgeableSubmit.objects.filter(problem_group__in=groups, respondents__in=[user.account])
+    submits = JudgeableSubmit.objects.filter(
+        problem_group__in=groups, respondents__in=[user.account])
 
+
+    
     counter = 0
     for submit in submits:
-        if submit.status == JudgeableSubmit.Status.Received:
+        if submit.status == JudgeableSubmit.Status.Delivered:
             counter += 1
             if counter == MAX_NOT_SUBMITTED_PROBLEMS:
                 return True
@@ -91,8 +95,8 @@ def game_submit_handler(submit, user, problem):
 @permission_classes([And(IsAuthenticated, IsAllowedTOPlay)])
 def get_problem_from_group(request, gid):
     return bank_submit_view.request_problem_from_group_view(request.user.account, gid,
-                                                                game_problem_request_handler,
-                                                                game_problem_request_permission_checker)
+                                                            game_problem_request_handler,
+                                                            game_problem_request_permission_checker)
 
 
 @transaction.atomic

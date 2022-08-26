@@ -136,7 +136,7 @@ def request_problem_from_group_view(account, gid, game_problem_request_handler=N
     problem = data["problem"]
     if game_problem_request_permission_checker is not None and \
             game_problem_request_permission_checker(gid, account.user):
-        return Response({"message": "بازی اجازه گرفتن مسئله را نمیدهد."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message": "طبق قوانین بازی، شما نمی‌توانید این مسئله را دریافت کنید!"}, status=status.HTTP_200_OK)
     serializerClass = BaseSubmitSerializer.get_serializer(problem.problem_type)
     data = {}
     data['problem'] = problem.pk
