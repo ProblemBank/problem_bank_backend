@@ -27,8 +27,8 @@ class Team(models.Model):
         User, on_delete=models.PROTECT, related_name='leader')
     users = models.ManyToManyField(
         User, related_name='users', verbose_name='اعضا')
-
-    chat_room = models.URLField(max_length=100, verbose_name='اتاق قرار')
+    chat_room = models.URLField(
+        max_length=100, verbose_name='اتاق قرار', null=True, blank=True)
     carrousel_turn = models.IntegerField(
         default=MAX_CARROUSEL_TURNS, verbose_name='تعداد دفعات باقی مانده چرخاندن گردونه')
 
@@ -55,7 +55,7 @@ class Answer(models.Model):
     team = models.ForeignKey(
         Team, on_delete=models.CASCADE, related_name='team')
     group_problem = models.ForeignKey(
-        ProblemGroup, on_delete=models.CASCADE, related_name='group_problem')
+        ProblemGroup, on_delete=models.CASCADE, related_name='group_problem', null=True, blank=True)
     problem = models.ForeignKey(
         Problem, on_delete=models.CASCADE, related_name='problem')
     answer_status = models.CharField(
@@ -78,9 +78,6 @@ class Notification(models.Model):
     body = models.CharField(max_length=200, blank=True, null=True)
     team = models.ForeignKey(
         Team, on_delete=models.CASCADE, related_name='notification')
-    chat_room = models.URLField(
-        default=team.chat_room, verbose_name='Chat room link'
-    )
     has_seen = models.BooleanField(default=False)
     time = models.TimeField(default=timezone.now)
 
