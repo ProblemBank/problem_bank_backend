@@ -82,7 +82,7 @@ class Notification(models.Model):
     time = models.TimeField(default=timezone.now)
 
     def __str__(self):
-        return f'title={self.title}\ntext = {self.text}\nteam={self.team}'
+        return f'title={self.title}\ntext = {self.body}\nteam={self.team}'
 
 
 class GameInfo(models.Model):
