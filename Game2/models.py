@@ -78,6 +78,9 @@ class Notification(models.Model):
     body = models.CharField(max_length=200, blank=True, null=True)
     team = models.ForeignKey(
         Team, on_delete=models.CASCADE, related_name='notification')
+    chat_room = models.URLField(
+        default=team.chat_room, verbose_name='Chat room link'
+    )
     has_seen = models.BooleanField(default=False)
     time = models.TimeField(default=timezone.now)
 
