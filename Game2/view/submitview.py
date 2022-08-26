@@ -90,7 +90,7 @@ def is_problem_gotten_from_group(request, gid):
 
 
 @transaction.atomic
-@api_view
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def submit_answer(request, sid, pid):
     data = {

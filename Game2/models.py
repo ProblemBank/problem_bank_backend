@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.utils import timezone
 
 from problembank.models import ProblemGroup, Problem
 from Account.models import User
@@ -77,7 +77,7 @@ class Notification(models.Model):
     team = models.ForeignKey(
         Team, on_delete=models.CASCADE, related_name='notification')
     has_seen = models.BooleanField(default=False)
-    time = models.TimeField()
+    time = models.TimeField(default=timezone.now())
 
     def __str__(self):
         return f'title={self.title}\ntext = {self.text}\nteam={self.team}'
