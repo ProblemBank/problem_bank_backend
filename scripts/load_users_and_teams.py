@@ -6,7 +6,7 @@ import csv
 
 
 def run():
-    with open('../data.csv') as f:
+    with open('data.csv') as f:
         reader = csv.reader(f)
         for row in reader:
             user = User.objects.filter(last_name=row[3], first_name=row[2]).first()
@@ -14,8 +14,10 @@ def run():
                 data = {
                     'first_name': row[2],
                     'last_name': row[3],
+                    'username': row[2] + row[3] + str(row[0])
                 }
                 user_serializer = CreateUserSerializer(data=data)
+                user_serializer.is_valid()
                 data = user_serializer.validated_data
                 user = user_serializer.create(validated_data=data)
                 user.save()
@@ -28,6 +30,7 @@ def run():
                         'users': [user],
                     }
                     team_serializer = TeamSerializer(data=team_data)
+                    team_serializer.is_valid()
                     data = team_serializer.validated_data
                     team = team_serializer.create(validated_data=data)
                     team.save()
