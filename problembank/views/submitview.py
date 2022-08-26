@@ -18,10 +18,13 @@ import sys
 from itertools import chain
 # data['juged_by'] = request.user.account #just for mentor not all the times!
 from problembank.permissions import DefaultPermission
+
+
 class JudgeableSubmitView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = JudgeableSubmitSerializer
-    queryset = JudgeableSubmit.objects.filter(status=BaseSubmit.Status.Delivered)
+    queryset = JudgeableSubmit.objects.filter(
+        status=BaseSubmit.Status.Delivered)
 
 
 class AutoCheckSubmitView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
@@ -50,12 +53,14 @@ def get_submit_from_group(gid, account):
 def get_submit_from_problem(pid, account):
     submit = None
     try:
-        submit = AutoCheckSubmit.objects.all().select_subclasses().filter(problem=pid, respondents__in=[account])[0]
+        submit = AutoCheckSubmit.objects.all().select_subclasses().filter(
+            problem=pid, respondents__in=[account])[0]
         submit = AutoCheckSubmitSerializer(submit).data
     except:
         pass
     try:
-        submit = JudgeableSubmit.objects.all().select_subclasses().filter(problem=pid, respondents__in=[account])[0]
+        submit = JudgeableSubmit.objects.all().select_subclasses().filter(
+            problem=pid, respondents__in=[account])[0]
         submit = JudgeableSubmitSerializer(submit).data
     except:
         pass
@@ -74,7 +79,8 @@ def get_random_problem_from_group(gid, account):
         return {"status": False,
                 "data": {"message": "شما قبلا از این گروه مسئله دریافت کرده اید و پاسخ آن را فرستاده اید."}}
     if submit is not None:
-        problem = Problem.objects.all().select_subclasses().filter(id=submit['problem'])[0]
+        problem = Problem.objects.all().select_subclasses().filter(
+            id=submit['problem'])[0]
         problem_data = ProblemSerializer(problem).data
         data = {}
         problem_data.pop('answer')
@@ -84,7 +90,7 @@ def get_random_problem_from_group(gid, account):
     return {"status": True, "problem": problems.order_by('?')[0]}
 
 
-##  return status = True or False means get nre problem is ok
+# return status = True or False means get nre problem is ok
 def get_problem_for_submit(pid, gid, account):
     if not ProblemGroup.objects.filter(id=gid).exists():
         return {"status": False, "data": {"message": "چنین مسئله ای وجود ندارد."}}
@@ -99,7 +105,8 @@ def get_problem_for_submit(pid, gid, account):
         return {"status": False,
                 "data": {"message": "شما قبلا از این گروه این مسئله را دریافت کرده اید و پاسخ آن را فرستاده اید."}}
     if submit is not None:
-        problem = Problem.objects.all().select_subclasses().filter(id=submit['problem'])[0]
+        problem = Problem.objects.all().select_subclasses().filter(
+            id=submit['problem'])[0]
         problem_data = ProblemSerializer(problem).data
         data = {}
         problem_data.pop('answer')
@@ -115,7 +122,7 @@ def is_problem_goten_from_group_view(account, gid):
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-##  return responce with data
+# return responce with data
 def request_problem_from_group_view(account, gid, game_problem_request_handler=None,
                                     game_problem_request_permission_checker=None, pid=None):
     if pid is None:
@@ -128,7 +135,7 @@ def request_problem_from_group_view(account, gid, game_problem_request_handler=N
 
     problem = data["problem"]
     if game_problem_request_permission_checker is not None and \
-            not game_problem_request_permission_checker(gid, account.user):
+            game_problem_request_permission_checker(gid, account.user):
         return Response({"message": "بازی اجازه گرفتن مسئله را نمیدهد."}, status=status.HTTP_400_BAD_REQUEST)
     serializerClass = BaseSubmitSerializer.get_serializer(problem.problem_type)
     data = {}
@@ -217,7 +224,8 @@ def judge_view(account, sid, mark, game_judge_handler=None):
 @api_view(['POST'])
 @permission_classes([SubmitAnswerPermission])
 def submit_answer_to_problem(request, gid, pid):
-    response = request_problem_from_group_view(request.user.account, gid, pid=pid)
+    response = request_problem_from_group_view(
+        request.user.account, gid, pid=pid)
 
     if response.status_code != status.HTTP_200_OK:
         return response

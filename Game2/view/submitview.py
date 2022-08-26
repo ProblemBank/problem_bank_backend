@@ -40,7 +40,8 @@ def game_problem_request_handler(user, submit):
 
 
 def game_problem_request_permission_checker(gid, user):
-    team = Team.objects.filter(users__in=[user])[0]
+    team = Team.objects.filter(users__in=[user]).first()
+    print(team.coin)
     if team.coin < PROBLEM_COST:
         return False
     return game_problem_request_first_handler(gid, user)
@@ -49,8 +50,13 @@ def game_problem_request_permission_checker(gid, user):
 def game_problem_request_first_handler(gid, user):
     team = Team.objects.filter(users__in=[user])[0]
     current_room = team.current_room
-    groups = current_room.problem_groups
-    answers = Answer.objects.filter(group_problem__in=groups)
+    groups = current_room.problem_groups.all()
+    answers = []
+
+    for answer in Answer.objects.all():
+        if answer.team == team and answer.group_problem in groups:
+            answers.append(answer)
+
     counter = 0
     for answer in answers:
         if answer.answer_status == Answer.AnswerStatus.NOT_ANSWERED:
@@ -93,7 +99,6 @@ def get_problem_from_group(request, gid):
                                                                 game_problem_request_handler,
                                                                 game_problem_request_permission_checker)
     data = response.data
-    data.pop('submit')
     if response.status_code == status.HTTP_200_OK:
         pid = data['problem']['id']
         if not Answer.objects.filter(problem_id=pid, group_problem_id=gid).exists():
@@ -105,7 +110,8 @@ def get_problem_from_group(request, gid):
             answer.group_problem = problem_group
             answer.team = team
         else:
-            answer = Answer.objects.filter(problem_id=pid, group_problem_id=gid).first()
+            answer = Answer.objects.filter(
+                problem_id=pid, group_problem_id=gid).first()
         answer.save()
         answer_serializer = AnswerSerializer(answer)
         data['answer'] = answer_serializer.data
@@ -126,15 +132,17 @@ def is_problem_gotten_from_group(request, gid):
 @permission_classes([IsAuthenticated])
 def submit_answer(request, sid, pid):
     data = {
-        'file': request.FILES['file']
+        'file': request.FILES['answerFile']
     }
-    response = bank_submit_view.submit_answer_view(request.user.account, data, sid, pid, game_submit_handler)
+    response = bank_submit_view.submit_answer_view(
+        request.user.account, data, sid, pid, game_submit_handler)
     team = Team.objects.filter(users__in=[request.user]).first()
     answer = Answer.objects.filter(problem_id=pid, team_id=team.id).first()
     if answer.answer_status == Answer.AnswerStatus.NOT_ANSWERED or (answer.answer_status == Answer.AnswerStatus.ANSWERED and answer.mark == 0):
         answer.upload_file = data['file']
         answer.answer_status = Answer.AnswerStatus.ANSWERED
         answer.save()
+    
 
 
 def send_note(user, message):

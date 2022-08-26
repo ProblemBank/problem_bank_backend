@@ -60,7 +60,7 @@ class Answer(models.Model):
         Problem, on_delete=models.CASCADE, related_name='problem')
     answer_status = models.CharField(
         max_length=20, default=AnswerStatus.NOT_ANSWERED, choices=AnswerStatus.choices)
-    upload_file = models.FileField()
+    upload_file = models.FileField(null=True, blank=True)
     mark = models.IntegerField(default=0)
 
     def __str__(self):
