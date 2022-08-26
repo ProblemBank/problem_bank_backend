@@ -142,11 +142,7 @@ def submit_answer(request, sid, pid):
 
 
 def send_note(user, message):
-    data = {}
-    data['title'] = "مسئله شما تصحیح شد."
-    data['body'] = message
-    data['user'] = user
-    data['time'] = timezone.now()
+    data = {'title': "مسئله شما تصحیح شد.", 'body': message, 'user': user, 'time': timezone.now()}
     Notification.objects.create(**data)
 
 

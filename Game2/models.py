@@ -57,13 +57,13 @@ class Carrousel(models.Model):
 class Notification(models.Model):
     title = models.CharField(max_length=100, blank=True, null=True)
     body = models.CharField(max_length=200, blank=True, null=True)
-    team = models.ForeignKey(
-        Team, on_delete=models.CASCADE, related_name='notification')
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='notification')
     has_seen = models.BooleanField(default=False)
     time = models.TimeField(default=timezone.now)
 
     def __str__(self):
-        return f'title={self.title}\ntext = {self.body}\nteam={self.team}'
+        return f'title={self.title}\ntext = {self.body}\nteam={self.user}'
 
 
 class GameInfo(models.Model):
@@ -82,8 +82,6 @@ class GameInfo(models.Model):
     carrousel_win_ratio_reward = models.IntegerField(default=1.5)
     carrousel_lose_ratio_reward = models.IntegerField(default=0.5)
     max_time_to_play = models.IntegerField(default=4*60*60)
-
-
 
     def __str__(self):
         return f'start={self.start_time} finish={self.finish_time}'
