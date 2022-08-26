@@ -18,14 +18,13 @@ def send_notification(user, problem_group, mark, reward):
     data = {'title': "مسئله شما تصحیح شد."}
     mark = 'کامل' if mark == 1 else 'صفر'
     data['body'] = f"شما نمره {mark} را از  {problem_group.title} کسب کردید. {reward}  سکه به شما تعلق گرفت!"
-    team = get_user_team(user)
-    data['team'] = team
+    data['user'] = user
     data['time'] = timezone.now()
     Notification.objects.create(**data)
 
 
 def get_problem_cost():
-    return GameInfo.problem_cost
+    return GameInfo.objects.get(id=1).problem_cost
 
 
 def get_users(user):
@@ -56,7 +55,7 @@ def game_problem_request_permission_checker(gid, user):
         return True
     elif problem_group in team.group_problems.all():
         return True
-    if team.coin < GameInfo.problem_cost:
+    if team.coin < GameInfo.objects.get(id=1).problem_cost:
         return True
     return game_problem_request_first_handler(gid, user)
 
@@ -72,20 +71,20 @@ def game_problem_request_first_handler(gid, user):
     for submit in submits:
         if submit.status == JudgeableSubmit.Status.Delivered:
             counter += 1
-            if counter == GameInfo.max_not_submitted_problems:
+            if counter == GameInfo.objects.get(id=1).max_not_submitted_problems:
                 return True
     return False
 
 
 def get_problem_reward(problem):
     if problem.difficulty == Problem.Difficulty.Easy:
-        return GameInfo.easy_problem_reward
+        return GameInfo.objects.get(id=1).easy_problem_reward
     elif problem.difficulty == Problem.Difficulty.Medium:
-        return GameInfo.medium_problem_reward
+        return GameInfo.objects.get(id=1).medium_problem_reward
     elif problem.difficulty == Problem.Difficulty.VeryHard:
-        return GameInfo.so_hard_problem_reward
+        return GameInfo.objects.get(id=1).so_hard_problem_reward
     else:
-        return GameInfo.hard_problem_reward
+        return GameInfo.objects.get(id=1).hard_problem_reward
 
 
 def add_reward_to_team(team, problem):

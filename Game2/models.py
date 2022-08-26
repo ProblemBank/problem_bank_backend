@@ -58,7 +58,7 @@ class Notification(models.Model):
     title = models.CharField(max_length=100, blank=True, null=True)
     body = models.CharField(max_length=200, blank=True, null=True)
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='notification')
+        User, on_delete=models.CASCADE, related_name='notification', null=True, blank=True)
     has_seen = models.BooleanField(default=False)
     time = models.TimeField(default=timezone.now)
 
@@ -78,10 +78,10 @@ class GameInfo(models.Model):
     max_room_number = models.IntegerField(default=5)
     last_room_cost = models.IntegerField(default=900)
     max_not_submitted_problems = models.IntegerField(default=2)
-    last_room_name = models.CharField(max_length=128,default='')
+    last_room_name = models.CharField(max_length=128, default='')
     carrousel_win_ratio_reward = models.IntegerField(default=1.5)
     carrousel_lose_ratio_reward = models.IntegerField(default=0.5)
-    max_time_to_play = models.IntegerField(default=4*60*60)
+    max_time_to_play = models.FloatField(default=4*60*60)
 
     def __str__(self):
         return f'start={self.start_time} finish={self.finish_time}'
