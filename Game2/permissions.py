@@ -9,6 +9,7 @@ class IsAllowedTOPlay(permissions.BasePermission):
     message = "زمان مجاز شما برای بازی کردن به پایان رسیده است."
 
     def has_permission(self, request, view):
+        self.message = 'زمان مجاز شما برای بازی به پایان رسیده است.'
         team = get_user_team(user=request.user)
         if time.time() - team.first_entrance < GameInfo.objects.get(id=1).max_time_to_play:
             return True
