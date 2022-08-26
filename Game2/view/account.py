@@ -21,7 +21,7 @@ class RoomView(generics.GenericAPIView):
         data = {
             'title': f'شما به اتاق {r_name} منتقل شدید!',
             'body': message,
-            'user': team,
+            'team': team,
             'time': timezone.now()
         }
         Notification.objects.create(**data)

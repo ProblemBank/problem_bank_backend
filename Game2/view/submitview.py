@@ -16,10 +16,10 @@ from constants import PROBLEM_COST, EASY_PROBLEM_REWARD, MEDIUM_PROBLEM_REWARD, 
 from Game2.utils import get_user_team
 
 
-def send_notification(user, problem_group, mark):
+def send_notification(user, problem_group, mark, reward):
     data = {'title': "مسئله شما تصحیح شد."}
     mark = 'کامل' if mark == 1 else 'صفر'
-    data['body'] = f"شما نمره {mark} را از  {problem_group.title} کسب کردید."
+    data['body'] = f"شما نمره {mark} را از  {problem_group.title} کسب کردید. {reward}  سکه به شما تعلق گرفت!"
     team = get_user_team(user)
     data['team'] = team
     data['time'] = timezone.now()
@@ -91,8 +91,10 @@ def get_problem_reward(problem):
 
 
 def add_reward_to_team(team, problem):
-    team.coin += get_problem_reward(problem)
+    reward = get_problem_reward(problem)
+    team.coin += reward
     team.save()
+    return reward
 
 
 def game_submit_handler(submit, user, problem):
@@ -103,15 +105,16 @@ def game_submit_handler(submit, user, problem):
 
 
 def game_judge_handler(submit):
+    reward = 0
     if submit.mark == 1:
         user = submit.respondents.all()[0].user
         team = get_user_team(user)
         problem = Problem.objects.filter(id=submit.problem.id)[0]
-        add_reward_to_team(team, problem)
+        reward = add_reward_to_team(team, problem)
         submit.status = JudgeableSubmit.Status.Judged
         submit.save()
     for account in submit.respondents.all():
-        send_notification(account.user, submit.problem_group, submit.mark)
+        send_notification(account.user, submit.problem_group, submit.mark, reward)
 
 
 @transaction.atomic
