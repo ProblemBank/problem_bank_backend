@@ -131,7 +131,7 @@ def request_problem_from_group_view(account, gid, game_problem_request_handler=N
         data = get_problem_for_submit(pid, gid, account)
 
     if not data["status"]:
-        return Response(data["data"], status=status.HTTP_400_BAD_REQUEST)
+        return Response(data["data"], status=status.HTTP_200_OK)
 
     problem = data["problem"]
     if game_problem_request_permission_checker is not None and \

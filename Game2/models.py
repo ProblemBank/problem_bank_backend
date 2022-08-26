@@ -26,7 +26,7 @@ class Team(models.Model):
     leader = models.ForeignKey(
         User, on_delete=models.PROTECT, related_name='leader', null=True, blank=True)
     users = models.ManyToManyField(
-        User, related_name='users', verbose_name='اعضا', null=True, blank=True)
+        User, related_name='users', verbose_name='اعضا')
     chat_room = models.URLField(
         max_length=100, verbose_name='اتاق قرار', null=True, blank=True)
     carrousel_turn = models.IntegerField(
