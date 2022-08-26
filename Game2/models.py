@@ -19,7 +19,7 @@ class Room(models.Model):
 
 class Team(models.Model):
     name = models.CharField(max_length=100, verbose_name='نام')
-    coin = models.IntegerField(default=0, verbose_name='پول')
+    coin = models.IntegerField(default=700, verbose_name='پول')
 
     current_room = models.ForeignKey(
         Room, on_delete=models.PROTECT, related_name='current_room')
