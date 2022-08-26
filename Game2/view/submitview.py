@@ -12,7 +12,7 @@ from Game2.models import Notification, Team
 from problembank.models import Problem, BankAccount, JudgeableSubmit, ProblemGroup
 from problembank.permissions import DefaultPermission
 from constants import PROBLEM_COST, EASY_PROBLEM_REWARD, MEDIUM_PROBLEM_REWARD, HARD_PROBLEM_REWARD,\
-    MAX_NOT_SUBMITTED_PROBLEMS
+    MAX_NOT_SUBMITTED_PROBLEMS, SO_HARD_PROBLEM_REWARD
 from Game2.utils import get_user_team
 
 
@@ -83,6 +83,8 @@ def get_problem_reward(problem):
         return EASY_PROBLEM_REWARD
     elif problem.difficulty == Problem.Difficulty.Medium:
         return MEDIUM_PROBLEM_REWARD
+    elif problem.difficulty == Problem.Difficulty.VeryHard:
+        return SO_HARD_PROBLEM_REWARD
     else:
         return HARD_PROBLEM_REWARD
 
@@ -96,7 +98,6 @@ def game_submit_handler(submit, user, problem):
     submit.status = JudgeableSubmit.Status.Delivered
     submit.save()
     team = Team.objects.filter(users__in=[user]).first()
-    send_notification(team, submit.problem_group, )
     team.save()
 
 
