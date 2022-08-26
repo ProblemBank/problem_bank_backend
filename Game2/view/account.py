@@ -23,7 +23,6 @@ class RoomView(generics.GenericAPIView):
         }
         Notification.objects.create(**data)
 
-
     @transaction.atomic
     def get(self, request, r_name):
         user = request.user
@@ -46,10 +45,11 @@ class TeamView(generics.GenericAPIView):
 
     def get(self, request):
         user = request.user
-        team = self.queryset.filter(users__in=[user])[0]
+        team = self.queryset.filter(users__in=[user]).first()
         team_serializer = self.get_serializer(team)
         # TODO Check this part!!
-        team_serializer.data['finish_time'] = GameInfo.objects.get(pk=1).finish_time
+        team_serializer.data['finish_time'] = GameInfo.objects.get(
+            pk=1).finish_time
         return Response(team_serializer.data, status.HTTP_200_OK)
 
 
@@ -61,8 +61,11 @@ class NotificationView(generics.GenericAPIView):
     @transaction.atomic
     def get(self, request):
         user = request.user
-        user_notifications = self.get_queryset().filter(user=user, has_seen=False).order_by('-pk')[:10]
-        user_notifications_serializer = self.get_serializer(data=user_notifications, many=True)
+        team = Team.objects.filter(users__in=[user]).first()
+        user_notifications = self.get_queryset().filter(
+            team=team, has_seen=False).order_by('-pk')[:10]
+        user_notifications_serializer = self.get_serializer(
+            data=user_notifications, many=True)
         user_notifications_serializer.is_valid()
         return Response(user_notifications_serializer.data, status.HTTP_200_OK)
 
