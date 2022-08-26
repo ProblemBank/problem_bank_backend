@@ -20,7 +20,8 @@ def send_notification(user, problem_group, mark):
     data = {'title': "مسئله شما تصحیح شد."}
     mark = 'کامل' if mark == 1 else 'صفر'
     data['body'] = f"شما نمره {mark} را از  {problem_group.title} کسب کردید."
-    data['user'] = user
+    team = get_user_team(user)
+    data['team'] = team
     data['time'] = timezone.now()
     Notification.objects.create(**data)
 
