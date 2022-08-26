@@ -14,6 +14,7 @@ class CreateUserSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
+        # print(validated_data)
         user = User.objects.create(**validated_data)
         user.save()
         bank_account_data = {
@@ -55,7 +56,7 @@ class TeamSerializer(serializers.ModelSerializer):
         for i in range(1, MAX_ROOM_NUMBER + 1):
             entrance_cost = LAST_ROOM_COST if i == MAX_ROOM_NUMBER else 0
             # todo add problemGroups here!
-            room = Room.objects.create(number=i, entrance_cost=entrance_cost)
+            room = Room.objects.create(name=str(i), entrance_cost=entrance_cost)
             TeamRoom.objects.create(room=room, team=team)
         return team
 

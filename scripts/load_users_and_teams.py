@@ -11,6 +11,7 @@ def run():
         for row in reader:
             user = User.objects.filter(last_name=row[3], first_name=row[2]).first()
             if user is None:
+                # print(row)
                 data = {
                     'first_name': row[2],
                     'last_name': row[3],
@@ -18,7 +19,6 @@ def run():
                 }
                 user_serializer = CreateUserSerializer(data=data)
                 user_serializer.is_valid()
-                data = user_serializer.validated_data
                 user = user_serializer.create(validated_data=data)
                 user.save()
                 team = Team.objects.filter(users__in=[user]).first()

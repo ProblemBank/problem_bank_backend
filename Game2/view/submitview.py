@@ -101,18 +101,24 @@ def get_problem_from_group(request, gid):
                                                                 game_problem_request_permission_checker)
     data = response.data
     data.pop('submit')
-    pid = data['problem']['id']
-    team = Team.objects.filter(users__in=[request.user]).first()
-    answer = Answer()
-    problem = Problem.objects.get(id=pid)
-    problem_group = ProblemGroup.objects.get(pk=gid)
-    answer.problem = problem
-    answer.group_problem = problem_group
-    answer.team = team
-    answer.save()
-    answer_serializer = AnswerSerializer(answer)
-    data['answer'] = answer_serializer.data
-    return Response(data, status=status.HTTP_200_OK)
+    if response.status_code == status.HTTP_200_OK:
+        pid = data['problem']['id']
+        if not Answer.objects.filter(problem_id=pid, group_problem_id=gid).exists():
+            team = Team.objects.filter(users__in=[request.user]).first()
+            answer = Answer()
+            problem = Problem.objects.get(id=pid)
+            problem_group = ProblemGroup.objects.get(pk=gid)
+            answer.problem = problem
+            answer.group_problem = problem_group
+            answer.team = team
+        else:
+            answer = Answer.objects.filter(problem_id=pid, group_problem_id=gid).first()
+        answer.save()
+        answer_serializer = AnswerSerializer(answer)
+        data['answer'] = answer_serializer.data
+        return Response(data, status=status.HTTP_200_OK)
+    else:
+        return Response(data, status=status.HTTP_200_OK)
 
 
 @transaction.atomic
