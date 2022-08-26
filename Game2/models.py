@@ -11,7 +11,7 @@ class Room(models.Model):
     entrance_cost = models.IntegerField(
         default=0, verbose_name='هزینه ورود به اتاق')
     problem_groups = models.ManyToManyField(
-        ProblemGroup, verbose_name='مسئله‌ها')
+        ProblemGroup, verbose_name='گروه‌مسئله‌ها')
 
     def __str__(self):
         return f'{self.name}'
@@ -77,7 +77,7 @@ class Notification(models.Model):
     team = models.ForeignKey(
         Team, on_delete=models.CASCADE, related_name='notification')
     has_seen = models.BooleanField(default=False)
-    time = models.TimeField(default=timezone.now())
+    time = models.TimeField(default=timezone.now)
 
     def __str__(self):
         return f'title={self.title}\ntext = {self.text}\nteam={self.team}'
