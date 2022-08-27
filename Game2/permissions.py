@@ -13,8 +13,7 @@ class IsAllowedTOPlay(permissions.BasePermission):
         if time.time() - team.first_entrance < GameInfo.objects.get(id=1).max_time_to_play:
             return True
         else:
-          # FIX TOF
-            return True
+            return False
 
 
 class IsAllowedToOpenBox(permissions.BasePermission):
