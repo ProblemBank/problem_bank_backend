@@ -12,16 +12,16 @@ RUN apk add --no-cache --virtual .build-deps gcc musl-dev
 
 # install python-dev
 RUN apk update \
-    && apk add --virtual .build-deps gcc libc-dev libxslt-dev \
-    && apk add libffi-dev openssl-dev linux-headers \
-    && apk add --no-cache libxslt
+  && apk add --virtual .build-deps gcc libc-dev libxslt-dev \
+  && apk add libffi-dev openssl-dev linux-headers \
+  && apk add --no-cache libxslt
 
 # install psycopg2
 RUN apk update \
-    && apk add --virtual build-deps gcc python3-dev musl-dev \
-    && apk add postgresql-dev \
-    && pip install psycopg2 \
-    && pip install --upgrade incremental
+  && apk add --virtual build-deps gcc python3-dev musl-dev \
+  && apk add postgresql-dev \
+  && pip install psycopg2 \
+  && pip install --upgrade incremental
 
 # install zlib for pillow
 RUN apk add --no-cache jpeg-dev zlib-dev build-base
@@ -40,21 +40,16 @@ WORKDIR /usr/src/app/
 # copy entrypoint-prod.sh
 COPY ./entrypoint.prod.sh ./entrypoint.prod.sh
 
-ADD ["./karsoogh", "./karsoogh"]
-ADD ["./problembank", "./problembank"]
-ADD ["./Game", "./Game"]
-ADD ["./Account", "./Account"]
+ADD ["./.", "./."]
+
 COPY ./manage.py ./manage.py
 
 
 RUN adduser -D game_backend
 
 RUN mkdir -p /usr/src/app/staticfiles && chown -R game_backend /usr/src/app/staticfiles \
-        && mkdir -p /usr/src/app/media && chown -R game_backend /usr/src/app/media
+  && mkdir -p /usr/src/app/media && chown -R game_backend /usr/src/app/media
 
-RUN chown -R game_backend /usr/src/app/
-
-USER game_backend
-
+RUN ["chmod", "+x", "/usr/src/app/entrypoint.prod.sh"]
 # run entrypoint.prod.sh
 ENTRYPOINT ["/usr/src/app/entrypoint.prod.sh"]
