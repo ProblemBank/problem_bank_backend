@@ -1,5 +1,6 @@
 from Account.models import User
 from Game2.models import Team
+from Game2.utils import create_team_room
 from Game2.serializers import CreateUserSerializer, TeamSerializer
 from problembank.models import BankAccount
 
@@ -54,5 +55,6 @@ def run():
                 team.users.add(user)
                 team.save()
             else:
+                create_team_room(team)
                 team.users.add(user)
                 team.save()
