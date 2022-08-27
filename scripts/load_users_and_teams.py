@@ -32,19 +32,20 @@ def run():
                     'first_name': row[2],
                     'last_name': row[4],
                 }
-                bank_account = BankAccount.objects.filter(
-                    **bank_account_data).first()
-                if bank_account is None:
-                    bank_account = BankAccount.objects.create(
-                        bank_account_data)
-                    bank_account.user = user
-                    bank_account.save()
-                else:
-                    bank_account.user = user
-                    bank_account.save()
                 password = make_password(row[3])
                 user.password = password
                 user.save()
+
+            bank_account = BankAccount.objects.filter(
+                **bank_account_data).first()
+            if bank_account is None:
+                bank_account = BankAccount.objects.create(
+                    bank_account_data)
+                bank_account.user = user
+                bank_account.save()
+            else:
+                bank_account.user = user
+                bank_account.save()
 
             team = Team.objects.filter(name=row[6]).first()
             if team is None:
