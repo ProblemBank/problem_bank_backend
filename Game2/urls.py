@@ -4,8 +4,6 @@ from django.urls import path
 from .view.submitview import get_problem_from_group, \
     submit_answer, notification_to_all, judge_view, count_problem_gotten_from_room
 from Game2.view.account import NotificationView, TeamView, RoomView, BoxView
-
-from Game2.view.account import NotificationView, TeamView, RoomView
 from Game2.view.carrousel_view import turnning_carrousel
 
 urlpatterns = [

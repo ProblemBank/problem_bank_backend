@@ -3,6 +3,7 @@ from Game2.models import Team
 from Game2.serializers import CreateUserSerializer, TeamSerializer
 
 import csv
+from django.contrib.auth.hashers import make_password
 
 
 def run():
@@ -15,7 +16,7 @@ def run():
                     'username': row[0],
                     'phone_number': row[1],
                     'first_name': row[2],
-                    'password': row[3],
+                    'password': make_password(row[3]),
                     'last_name': row[4],
                     'gender': row[5].upper(),
                     'grade': row[7],
@@ -39,4 +40,7 @@ def run():
                 else:
                     team.users.add(user)
                     team.save()
-
+            else:
+                password = make_password(row[3])
+                user.password = password
+                user.save()
