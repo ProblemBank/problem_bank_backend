@@ -11,6 +11,7 @@ admin.site.register(BankAccount)
 admin.site.register(ShortAnswerProblem)
 admin.site.register(DescriptiveProblem)
 admin.site.register(Topic)
+admin.site.register(JudgeableSubmit)
 
 @admin.register(AutoCheckSubmit)
 class AutoCheckSubmitAdmin(admin.ModelAdmin):
@@ -19,6 +20,8 @@ class AutoCheckSubmitAdmin(admin.ModelAdmin):
 @admin.register(Subtopic)
 class SubTopicAdmin(admin.ModelAdmin):
     list_filter = ['topic']
+
+
 # @admin.register(JudgeableSubmit)
 # class JugeableSubmitAdmin(admin.ModelAdmin):
 
