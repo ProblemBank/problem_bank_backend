@@ -11,11 +11,15 @@ admin.site.register(BankAccount)
 admin.site.register(ShortAnswerProblem)
 admin.site.register(DescriptiveProblem)
 admin.site.register(Topic)
+admin.site.register(ShortAnswer)
 admin.site.register(JudgeableSubmit)
+
+
 
 @admin.register(AutoCheckSubmit)
 class AutoCheckSubmitAdmin(admin.ModelAdmin):
     list_filter = ['problem', 'respondents']
+
 
 @admin.register(Subtopic)
 class SubTopicAdmin(admin.ModelAdmin):
@@ -34,19 +38,19 @@ class SubTopicAdmin(admin.ModelAdmin):
 
 #     def save_model(self, request, obj, form, change):
 #         judge(None, obj.id , obj.mark)
-  
+
 #     def get_form(self, request, obj=None, **kwargs):
 #         form = super(JugeableSubmitAdmin, self).get_form(request, obj, **kwargs)
 #         obj.save()
 #         return form
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-       
+
     # all defualt saved for each users
     def save_model(self, request, obj, form, change):
         if obj.mentor_password == 'gen':
             obj.mentor_password = generate_password(8)
         if obj.participant_password == 'gen':
             obj.participant_password = generate_password(8)
-        
+
         obj.save()
