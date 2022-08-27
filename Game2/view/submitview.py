@@ -57,12 +57,12 @@ def game_problem_request_permission_checker(gid, user):
         return True
 
     team = get_user_team(user)
-    my_problem_group = ProblemGroup.objects.filter(pk=gid).first()
+    problem_group = ProblemGroup.objects.filter(pk=gid).first()
     current_room = Room.objects.filter(
-        problem_groups__in=[my_problem_group]).first()
-    room_problem_groups_queryset = current_room.problem_groups.all()
-    team_room_problem_groups = room_problem_groups_queryset & team.group_problems.all()
+        problem_groups__in=[problem_group]).first()
+    team_room_problem_groups = current_room.problem_groups.all() & team.group_problems.all()
     counter = JudgeableSubmit.objects.filter(
+        respondents__in=[user.account],
         problem_group__in=list(team_room_problem_groups), status=JudgeableSubmit.Status.Received).count()
     if counter >= GameInfo.objects.get(id=1).max_not_submitted_problems:
         return True
