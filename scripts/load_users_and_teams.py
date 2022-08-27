@@ -1,6 +1,7 @@
 from Account.models import User
 from Game2.models import Team
 from Game2.serializers import CreateUserSerializer, TeamSerializer
+from problembank.models import BankAccount
 
 import csv
 from django.contrib.auth.hashers import make_password
@@ -26,6 +27,20 @@ def run():
                 user = user_serializer.create(validated_data=data)
                 user.save()
             else:
+                bank_account_data = {
+                    'first_name': row[2],
+                    'last_name': row[4],
+                }
+                bank_account = BankAccount.objects.filter(
+                    **bank_account_data).first()
+                if bank_account is None:
+                    bank_account = BankAccount.objects.create(
+                        bank_account_data)
+                    bank_account.user = user
+                    bank_account.save()
+                else:
+                    bank_account.user = user
+                    bank_account.save()
                 password = make_password(row[3])
                 user.password = password
                 user.save()
