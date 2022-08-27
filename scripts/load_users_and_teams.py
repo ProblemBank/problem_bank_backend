@@ -25,18 +25,19 @@ def run():
                 user_serializer.is_valid()
                 user = user_serializer.create(validated_data=data)
                 user.save()
-                team = Team.objects.filter(name=row[6]).first()
-                if team is None:
-                    team = Team.objects.create(
-                        name=row[6],
-                        chat_room=row[8]
-                    )
-                    team.users.add(user)
-                    team.save()
-                else:
-                    team.users.add(user)
-                    team.save()
             else:
                 password = make_password(row[3])
                 user.password = password
                 user.save()
+
+            team = Team.objects.filter(name=row[6]).first()
+            if team is None:
+                team = Team.objects.create(
+                    name=row[6],
+                    chat_room=row[8]
+                )
+                team.users.add(user)
+                team.save()
+            else:
+                team.users.add(user)
+                team.save()
