@@ -42,7 +42,7 @@ class RoomView(generics.GenericAPIView):
 
 
 class TeamView(generics.GenericAPIView):
-    permission_classes = (permissions.IsAuthenticated)
+    permission_classes = (permissions.IsAuthenticated, )
     serializer_class = TeamSerializer
     queryset = Team.objects.all()
 
@@ -60,7 +60,7 @@ class TeamView(generics.GenericAPIView):
 
 
 class NotificationView(generics.GenericAPIView):
-    permission_classes = (permissions.IsAuthenticated)
+    permission_classes = (permissions.IsAuthenticated, )
     serializer_class = NotificationSerializer
     queryset = Notification.objects.all()
 
