@@ -10,6 +10,7 @@ from Game2.permissions import IsAllowedTOPlay
 from rest_condition import And
 from Game2.models import Notification, Team, GameInfo
 from problembank.models import Problem, BankAccount, JudgeableSubmit, ProblemGroup
+from problembank.serializers import ProblemGroupSerializerWithoutProblems
 from problembank.permissions import DefaultPermission
 from Game2.utils import get_user_team
 
@@ -161,3 +162,16 @@ def notification_to_all(request):
 @permission_classes([IsAuthenticated])
 def judge_view(request, sid, mark):
     return bank_submit_view.judge_view(request.user.account, sid, mark, game_judge_handler)
+
+
+@transaction.atomic
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def count_problem_gotten_from_room(request, r_id):
+    user = request.user
+    team = get_user_team(user)
+    current_room = team.current_room
+    problem_groups = ProblemGroup.objects.filter(pk=current_room.problem_groups)
+    serializers = ProblemGroupSerializerWithoutProblems(data=problem_groups, Many=True)
+    serializers.is_valid()
+    return Response(data=serializers.validated_data, status=status.HTTP_200_OK)

@@ -1,5 +1,4 @@
 from rest_framework import permissions
-from django.utils.translation import gettext as _
 import time
 from Game2.models import GameInfo
 from .utils import get_user_team
