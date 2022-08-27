@@ -17,13 +17,14 @@ class RoomView(generics.GenericAPIView):
 
     @transaction.atomic()
     def send_changed_room_notification(self, r_name, message, team):
-        data = {
-            'title': f'شما به اتاق {r_name} منتقل شدید!',
-            'body': message,
-            'team': team,
-            'time': timezone.now()
-        }
-        Notification.objects.create(**data)
+        for user in team.users:
+            data = {
+                'title': f'شما به اتاق {r_name} منتقل شدید!',
+                'body': message,
+                'user': user,
+                'time': timezone.now()
+            }
+            Notification.objects.create(**data)
 
     @transaction.atomic
     def get(self, request, r_name):
