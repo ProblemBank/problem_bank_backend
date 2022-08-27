@@ -8,7 +8,7 @@ from django.utils import timezone
 from problembank.views import submitview as bank_submit_view
 from Game2.permissions import IsAllowedTOPlay
 from rest_condition import And
-from Game2.models import Notification, Team, GameInfo
+from Game2.models import Notification, Team, GameInfo, Room
 from problembank.models import Problem, BankAccount, JudgeableSubmit, ProblemGroup
 from problembank.serializers import ProblemGroupSerializerWithoutProblems
 from problembank.permissions import DefaultPermission
@@ -48,32 +48,25 @@ def game_problem_request_handler(user, submit):
 
 def game_problem_request_permission_checker(gid, user):
     team = get_user_team(user)
-    try:
-        problem_group = ProblemGroup.objects.get(id=gid)
-    except:
-        problem_group = None
-    if problem_group is None:
-        return True
-    elif problem_group in team.group_problems.all():
-        return True
+    problem_group = ProblemGroup.objects.get(id=gid)
+
+    if problem_group in team.group_problems.all():
+        return False
+
     if team.coin < GameInfo.objects.get(id=1).problem_cost:
         return True
-    return game_problem_request_first_handler(gid, user)
 
-
-def game_problem_request_first_handler(gid, user):
     team = get_user_team(user)
-    current_room = team.current_room
-    groups = current_room.problem_groups.all()
-    submits = JudgeableSubmit.objects.filter(
-        problem_group__in=groups, respondents__in=[user.account])
+    my_problem_group = ProblemGroup.objects.filter(pk=gid).first()
+    current_room = Room.objects.filter(
+        problem_groups__in=[my_problem_group]).first()
+    room_problem_groups_queryset = current_room.problem_groups.all()
+    team_room_problem_groups = room_problem_groups_queryset & team.group_problems.all()
+    counter = JudgeableSubmit.objects.filter(
+        problem_group__in=list(team_room_problem_groups), status=JudgeableSubmit.Status.Received).count()
+    if counter >= GameInfo.objects.get(id=1).max_not_submitted_problems:
+        return True
 
-    counter = 0
-    for submit in submits:
-        if submit.status == JudgeableSubmit.Status.Delivered:
-            counter += 1
-            if counter == GameInfo.objects.get(id=1).max_not_submitted_problems:
-                return True
     return False
 
 
@@ -119,9 +112,21 @@ def game_judge_handler(submit):
 @api_view(['POST'])
 @permission_classes([And(IsAuthenticated, IsAllowedTOPlay)])
 def get_problem_from_group(request, gid):
-    return bank_submit_view.request_problem_from_group_view(request.user.account, gid,
-                                                            game_problem_request_handler,
-                                                            game_problem_request_permission_checker)
+    user = request.user
+    team = get_user_team(user)
+    problem_group = ProblemGroup.objects.get(id=gid)
+    submit = JudgeableSubmit.objects.filter(
+        problem_group__in=[problem_group], respondents__in=[user.account]).first()
+    if submit is not None:
+        pid = submit.problem.id
+        return bank_submit_view.request_problem_from_group_view(request.user.account, gid,
+                                                                game_problem_request_handler,
+                                                                game_problem_request_permission_checker,
+                                                                pid)
+    else:
+        return bank_submit_view.request_problem_from_group_view(request.user.account, gid,
+                                                                game_problem_request_handler,
+                                                                game_problem_request_permission_checker)
 
 
 @transaction.atomic
@@ -142,7 +147,8 @@ def submit_answer(request, sid, pid):
 
 
 def send_note(user, message):
-    data = {'title': "مسئله شما تصحیح شد.", 'body': message, 'user': user, 'time': timezone.now()}
+    data = {'title': "مسئله شما تصحیح شد.", 'body': message,
+            'user': user, 'time': timezone.now()}
     Notification.objects.create(**data)
 
 
@@ -167,11 +173,15 @@ def judge_view(request, sid, mark):
 @transaction.atomic
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def count_problem_gotten_from_room(request, r_id):
+def count_problem_gotten_from_room(request, gid):
     user = request.user
     team = get_user_team(user)
-    current_room = team.current_room
-    problem_groups = ProblemGroup.objects.filter(pk=current_room.problem_groups)
-    serializers = ProblemGroupSerializerWithoutProblems(data=problem_groups, Many=True)
+    problem_group = ProblemGroup.objects.filter(pk=gid)
+    current_room = Room.objects.filter(
+        problem_groups__in=[problem_group]).first()
+    problem_groups = ProblemGroup.objects.filter(
+        pk=current_room.problem_groups)
+    serializers = ProblemGroupSerializerWithoutProblems(
+        data=problem_groups, Many=True)
     serializers.is_valid()
     return Response(data=serializers.validated_data, status=status.HTTP_200_OK)

@@ -125,18 +125,18 @@ def is_problem_gotten_from_group_view(account, gid):
 # return response with data
 def request_problem_from_group_view(account, gid, game_problem_request_handler=None,
                                     game_problem_request_permission_checker=None, pid=None):
+    if game_problem_request_permission_checker is not None and \
+            game_problem_request_permission_checker(gid, account.user):
+        return Response({"message": "طبق قوانین بازی، شما نمی‌توانید این مسئله را دریافت کنید!"}, status=status.HTTP_200_OK)
+
     if pid is None:
         data = get_random_problem_from_group(gid, account)
     else:
         data = get_problem_for_submit(pid, gid, account)
-
     if not data["status"]:
         return Response(data["data"], status=status.HTTP_200_OK)
 
     problem = data["problem"]
-    if game_problem_request_permission_checker is not None and \
-            game_problem_request_permission_checker(gid, account.user):
-        return Response({"message": "طبق قوانین بازی، شما نمی‌توانید این مسئله را دریافت کنید!"}, status=status.HTTP_200_OK)
     serializerClass = BaseSubmitSerializer.get_serializer(problem.problem_type)
     data = {}
     data['problem'] = problem.pk
