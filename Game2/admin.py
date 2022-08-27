@@ -6,11 +6,15 @@ from django.contrib import admin
 from .models import Room, Box, Team, TeamBox, GameInfo, Carrousel, Notification, TeamBox, TeamRoom
 
 
+@admin.register(Team)
+class TeamAdmin(admin.ModelAdmin):
+    list_display = ['name', 'coin', 'first_entrance']
+
+
 admin.site.register(TeamBox)
 admin.site.register(GameInfo)
 admin.site.register(Room)
 admin.site.register(Box)
-admin.site.register(Team)
 admin.site.register(Carrousel)
 admin.site.register(Notification)
 admin.site.register(TeamRoom)
