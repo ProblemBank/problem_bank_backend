@@ -262,7 +262,8 @@ def get_judgeable_submits_by_remove_permissions(request, submits):
 
 @api_view(['GET'])
 def get_judgeable_submits(request):
-    j_list = JudgeableSubmit.objects.all()
+    j_list = JudgeableSubmit.objects.filter(
+        status=JudgeableSubmit.Status.Delivered)
     j_list = get_judgeable_submits_by_remove_permissions(request, j_list)
     judgeable_submits_data = JudgeableSubmitSerializer(j_list, many=True).data
     return Response(judgeable_submits_data, status=status.HTTP_200_OK)
