@@ -51,7 +51,7 @@ class TeamView(generics.GenericAPIView):
         team = self.queryset.filter(users__in=[user]).first()
         if team.first_entrance is None:
             team.first_entrance = time.time()
-        team.save(update_fields=["first_entrance"])
+            team.save()
         team_serializer = self.get_serializer(team)
         # TODO Check this part!!
         team_serializer.data['finish_time'] = GameInfo.objects.get(

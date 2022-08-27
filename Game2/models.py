@@ -79,8 +79,8 @@ class GameInfo(models.Model):
     last_room_cost = models.IntegerField(default=900)
     max_not_submitted_problems = models.IntegerField(default=2)
     last_room_name = models.CharField(max_length=128, default='')
-    carrousel_win_ratio_reward = models.IntegerField(default=1.5)
-    carrousel_lose_ratio_reward = models.IntegerField(default=0.5)
+    carrousel_win_ratio_reward = models.FloatField(default=1.5)
+    carrousel_lose_ratio_reward = models.FloatField(default=0.5)
     max_time_to_play = models.FloatField(default=4*60*60)
 
     def __str__(self):
