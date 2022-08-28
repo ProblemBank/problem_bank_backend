@@ -140,5 +140,10 @@ SANDBOX = '0'
 
 CONSTANTS = {
     "PAGINATION_NUMBER": 10,
+}
 
+# https://django-extensions.readthedocs.io/en/latest/graph_models.html
+GRAPH_MODELS = {
+    'app_labels': ["Account", "problembank"],
+    'group_models': True,
 }
