@@ -30,6 +30,8 @@ class BankAccount(models.Model):
     def is_admin(self):
         return self.position == BankAccount.Position.Admin
 
+############# RETRIEVE TOOLS #############
+
 
 class Source(models.Model):
     title = models.CharField(max_length=50, verbose_name='عنوان')
@@ -52,6 +54,9 @@ class Subtopic(models.Model):
 
     def __str__(self):
         return f'{self.topic.title} - {self.title} | {self.id}'
+
+
+############# PROBLEMS #############
 
 
 class Problem(models.Model):
@@ -138,6 +143,10 @@ class DescriptiveProblem(Problem):
 #     answer = models.OneToOneField('MultiChoiceAnswer', null=True, on_delete=models.SET_NULL, unique=True,
 #                                    related_name='problem', verbose_name='پاسخ صحیح')
 
+
+############# ANSWERS #############
+
+
 class Answer(models.Model):
     class Type(models.TextChoices):
         ShortAnswer = 'ShortAnswer'
@@ -170,12 +179,69 @@ class UploadFileAnswer(Answer):
     file_name = models.CharField(max_length=50, verbose_name='نام فایل')
 
 
+############# PARTITIONING #############
+
+
+class ProblemGroup(models.Model):
+    title = models.CharField(max_length=100, verbose_name='عنوان')
+    event = models.ForeignKey('Event', on_delete=models.CASCADE,
+                              verbose_name='رویداد', related_name='problem_groups')
+    problems = models.ManyToManyField(
+        Problem, verbose_name='مسئله(ها)', related_name='groups')
+    is_visible = models.BooleanField(
+        default=True, verbose_name='آیا قابل نمایش است؟')
+
+    def __str__(self):
+        return f'{self.event}| {self.title} {self.id}'
+
+
+class Event(models.Model):
+    title = models.CharField(max_length=100, verbose_name='عنوان')
+
+    owner = models.ForeignKey(BankAccount, null=True, blank=True, on_delete=models.SET_NULL, verbose_name='صاحب',
+                              related_name='owned_events')
+    mentors = models.ManyToManyField(
+        BankAccount, blank=True, verbose_name='همیار(ها)', related_name='editable_events')
+    participants = models.ManyToManyField(BankAccount, blank=True, verbose_name='بیننده(ها)',
+                                          related_name='participated_events')
+
+    mentor_password = models.CharField(
+        max_length=30, default='04tja5YV', verbose_name='رمز منتور')
+    participant_password = models.CharField(
+        max_length=30, default='M4IgJXmH', verbose_name='رمز شرکت کننده')
+
+    image_link = models.CharField(
+        max_length=200, default="https://problembank.ir/logo.png", verbose_name='عکس')
+
+    def __str__(self):
+        return f'{self.title} {self.id}'
+
+
+############# PERIPHERALS #############
+
+
 class Guidance(models.Model):
     problem = models.ForeignKey(
         Problem, on_delete=models.CASCADE, verbose_name='مسئله', related_name='guidances')
     text = models.TextField(verbose_name='متن')
     priority = models.IntegerField(default=1, null=True, blank=True,
                                    verbose_name='اولویت')
+
+
+class Comment(models.Model):
+    problem = models.ForeignKey(
+        Problem, on_delete=models.CASCADE, related_name='comments', verbose_name='مسئله')
+    text = models.TextField(verbose_name='متن')
+    author = models.ForeignKey(
+        BankAccount, on_delete=models.CASCADE, verbose_name='نویسنده', related_name='comments')
+    publish_date = models.DateTimeField(
+        default=timezone.now, verbose_name='زمان انتشار')
+
+    def __str__(self):
+        return f'{self.writer.first_name} {self.writer.last_name} | {self.problem.title}'
+
+
+############# SUBMISSIONS #############
 
 
 class BaseSubmit(models.Model):
@@ -234,51 +300,3 @@ class JudgeableSubmit(BaseSubmit):
                                   on_delete=models.SET_NULL,
                                   null=True,
                                   blank=True, related_name='judged_problems', verbose_name='مصحح')
-
-
-class Comment(models.Model):
-    problem = models.ForeignKey(
-        Problem, on_delete=models.CASCADE, related_name='comments', verbose_name='مسئله')
-    text = models.TextField(verbose_name='متن')
-    author = models.ForeignKey(
-        BankAccount, on_delete=models.CASCADE, verbose_name='نویسنده', related_name='comments')
-    publish_date = models.DateTimeField(
-        default=timezone.now, verbose_name='زمان انتشار')
-
-    def __str__(self):
-        return f'{self.writer.first_name} {self.writer.last_name} | {self.problem.title}'
-
-
-class ProblemGroup(models.Model):
-    title = models.CharField(max_length=100, verbose_name='عنوان')
-    event = models.ForeignKey('Event', on_delete=models.CASCADE,
-                              verbose_name='رویداد', related_name='problem_groups')
-    problems = models.ManyToManyField(
-        Problem, verbose_name='مسئله(ها)', related_name='groups')
-    is_visible = models.BooleanField(
-        default=True, verbose_name='آیا قابل نمایش است؟')
-
-    def __str__(self):
-        return f'{self.event}| {self.title} {self.id}'
-
-
-class Event(models.Model):
-    title = models.CharField(max_length=100, verbose_name='عنوان')
-
-    owner = models.ForeignKey(BankAccount, null=True, blank=True, on_delete=models.SET_NULL, verbose_name='صاحب',
-                              related_name='owned_events')
-    mentors = models.ManyToManyField(
-        BankAccount, blank=True, verbose_name='همیار(ها)', related_name='editable_events')
-    participants = models.ManyToManyField(BankAccount, blank=True, verbose_name='بیننده(ها)',
-                                          related_name='participated_events')
-
-    mentor_password = models.CharField(
-        max_length=30, default='04tja5YV', verbose_name='رمز منتور')
-    participant_password = models.CharField(
-        max_length=30, default='M4IgJXmH', verbose_name='رمز شرکت کننده')
-
-    image_link = models.CharField(
-        max_length=200, default="https://problembank.ir/logo.png", verbose_name='عکس')
-
-    def __str__(self):
-        return f'{self.title} {self.id}'
