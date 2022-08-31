@@ -11,16 +11,7 @@ from .models import User
 # todo:
 # GenericAPIView
 
-class HelloView(APIView):
-    permission_classes = (IsAuthenticated,)
-
-    def get(self, request):
-        content = {'message': 'Hello, World!'}
-        return Response(content)
-
-
 class CreateUserAPI(generics.ListCreateAPIView):
-
     def get_queryset(self):
         return User.objects.all()
 

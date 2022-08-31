@@ -4,7 +4,6 @@ from rest_framework import viewsets
 
 from problembank.models import *
 from problembank.permissions import DefaultPermission
-# from problembank.views import permissions as customPermissions
 from problembank.serializers import BankAccountSerializer, PublicBankAccountSerializer
 
 

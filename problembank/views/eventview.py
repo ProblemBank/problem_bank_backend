@@ -62,7 +62,7 @@ def get_minimal_event_data(event_pk, account_id):
     elif len(event.participants.all().filter(id=account_id)) > 0:
         role = "participant"
     else:
-        role = "anonymouse"
+        role = "anonymous"
 
     data['role'] = role
     return data
