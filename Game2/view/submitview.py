@@ -10,7 +10,7 @@ from Game2.permissions import IsAllowedTOPlay
 from rest_condition import And
 from Game2.models import Notification, Team, GameInfo, Room
 from problembank.models import Problem, BankAccount, JudgeableSubmit, ProblemGroup
-from problembank.serializers import ProblemGroupSerializerWithoutProblems
+from problembank.serializer import ProblemGroupSerializerWithoutProblems
 from problembank.permissions import DefaultPermission
 from Game2.utils import get_user_team
 

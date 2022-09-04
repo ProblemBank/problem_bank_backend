@@ -4,10 +4,9 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
 from problembank.models import Event, Problem, ProblemGroup
-from problembank.serializers import FilterSerializer, ProblemSerializer
+from problembank.serializer import FilterSerializer, ProblemSerializer, FilterSerializer
 from problembank.permissions import ProblemPermission
 from django.conf import settings
-from problembank.serializers import FilterSerializer
 
 def get_problems_by_filter(problems, orderField=None ,topics=[], subtopics=[], \
                            sources=[],

@@ -4,7 +4,7 @@ from rest_framework import viewsets
 
 from problembank.models import *
 from problembank.permissions import DefaultPermission
-from problembank.serializers import BankAccountSerializer, PublicBankAccountSerializer
+from problembank.serializer import BankAccountSerializer, PublicBankAccountSerializer
 
 
 class AccountView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):

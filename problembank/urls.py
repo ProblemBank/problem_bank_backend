@@ -1,10 +1,10 @@
-from problembank.serializers import AutoCheckSubmitSerializer
+from problembank.serializer import AutoCheckSubmitSerializer
 from problembank.views.accountview import AccountView
 from problembank.views.problemgroupview import add_problem_to_group, remove_problem_from_group, copy_problem_to_group
 from problembank.views.problemview import ProblemView, get_all_problems
 from problembank.views.problemgroupview import ProblemGroupView
 from problembank.views.guidanceview import GuidanceView
-from problembank.views.eventview import EventView, get_events, get_event, add_to_event, get_all_events
+from problembank.views.eventview import EventView, get_events, get_event, add_to_event, get_events
 from problembank.views.topicsview import TopicView, SubtopicView, SourceView
 from problembank.views.submitview import AutoCheckSubmitView, JudgeableSubmitView
 from problembank.views.submitview import  submit_answer_to_problem, judge_answer_view, get_judgeable_submits
@@ -45,9 +45,8 @@ urlpatterns = [
       path('submit/<int:pid>/<int:gid>/', submit_answer_to_problem),
       path('judge/<int:pk>/<int:mark>/', judge_answer_view),
       path('getsubmits/', get_judgeable_submits),
-      path('getevent/<int:pk>/', get_event),
-      path('getevents/', get_events),
-      path('get_all_events/', get_all_events),
+      path('get_event/<int:pk>/', get_event),
+      path('get_events/', get_events),
       path('add_to_event/<int:pk>/', add_to_event),
 ]
 

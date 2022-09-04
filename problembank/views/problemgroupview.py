@@ -9,7 +9,7 @@ from rest_framework.decorators import api_view, permission_classes
 
 
 from problembank.models import ProblemGroup, Problem
-from problembank.serializers import ProblemGroupSerializer, ProblemSerializer
+from problembank.serializer import ProblemGroupSerializer, ProblemSerializer
 
 from rest_framework import permissions
 from problembank.permissions import DefaultPermission, ProblemGroupPermission, AddProblemToGroupPermission, CopyProblemToGroupPermission

@@ -11,7 +11,7 @@ from problembank.models import *
 from rest_framework import permissions
 from problembank.permissions import DefaultPermission, ProblemPermission
 # from problembank.views import permissions as customPermissions
-from problembank.serializers import ProblemSerializer, DescriptiveProblemSerializer, ShortAnswerProblemSerializer, \
+from problembank.serializer import ProblemSerializer, DescriptiveProblemSerializer, ShortAnswerProblemSerializer, \
     ShortAnswerProblemSerializer
 from django.utils import timezone
 import sys

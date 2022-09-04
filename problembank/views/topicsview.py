@@ -11,7 +11,7 @@ from problembank.models import *
 from rest_framework import permissions
 from problembank.permissions import DefaultPermission, SourcePermission, SubtopicPermission, TopicPermission
 # from problembank.views import permissions as customPermissions
-from problembank.serializers import SourceSerializer, SubtopicSerializer, TopicSerializer
+from problembank.serializer import SourceSerializer, SubtopicSerializer, TopicSerializer
 
 import sys
 

@@ -10,7 +10,7 @@ from rest_framework.decorators import api_view, permission_classes
 from problembank.models import *
 from rest_framework import permissions
 # from problembank.views import permissions as customPermissions
-from problembank.serializers import GuidanceSerializer
+from problembank.serializer import GuidanceSerializer
 from problembank.permissions import DefaultPermission
 import sys
 

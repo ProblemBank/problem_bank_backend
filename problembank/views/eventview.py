@@ -6,16 +6,19 @@ from rest_framework.views import APIView
 from rest_framework import viewsets
 from rest_framework import mixins
 from rest_framework.decorators import api_view, permission_classes
+from django.db.models import Q
+from problembank.serializers.event_serializer import ShortEventSerializer
 
 from problembank.models import *
 from rest_framework import permissions
 # from problembank.views import permissions as customPermissions
-from problembank.serializers import EventSerializer
+from problembank.serializer import EventSerializer
 from problembank.permissions import DefaultPermission, EventPermission
 import sys
 
+
 class EventView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixins.ListModelMixin,
-                   mixins.UpdateModelMixin, mixins.DestroyModelMixin):
+                mixins.UpdateModelMixin, mixins.DestroyModelMixin):
     #permission_classes = [permissions.IsAuthenticated, customPermissions.MentorPermission, ]
     permission_classes = [permissions.IsAuthenticated, EventPermission]
     queryset = Event.objects.all()
@@ -37,65 +40,32 @@ class EventView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Creat
         return Response(response)
 
 
-
-def get_events_by_remove_permissions(request, events):
-    out_list = []
-    event_permission = EventPermission()
-    request.method = 'GET'
-    for event in events:
-        request.parser_context['kwargs']['pk'] = event.pk
-        if event_permission.has_permission(request, None):
-            out_list.append(event.id)
-    return Event.objects.filter(id__in=out_list)
-
-
-def get_minimal_event_data(event_pk, account_id):
-    event = Event.objects.get(id=event_pk)
-    data = EventSerializer(event).data
-    data.pop("mentors")
-    data.pop("participants")
-    data.pop("owner")
-    if event.owner.id == account_id:
-        role = "owner"
-    elif len(event.mentors.all().filter(id=account_id)) > 0:
-        role = "mentor"
-    elif len(event.participants.all().filter(id=account_id)) > 0:
-        role = "participant"
-    else:
-        role = "anonymous"
-
-    data['role'] = role
-    return data
-
 @api_view(['GET'])
 @permission_classes([EventPermission])
 @transaction.atomic
 def get_event(request, pk):
-    data = get_minimal_event_data(pk, request.user.account.id)
-    return Response(data=data, status=status.HTTP_200_OK)
-    
+    serializer = ShortEventSerializer(data={'id': pk})
+    serializer.is_valid()
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
-@api_view(['GET'])
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
 def get_events(request):
-    event_list = Event.objects.all()
-    event_list = get_events_by_remove_permissions(request, event_list)
-    events_data = []
-    for event in event_list:
-        events_data.append(get_minimal_event_data(event.pk, request.user.account.id))
-    
-    data = {'events':events_data}
-    return Response(data, status=status.HTTP_200_OK)
+    user = request.user
+    events = Event.objects.all()
+    my_events: bool = request.data.get('my_events', False)
+    if my_events:
+        events = events.filter(Q(mentors__in=[user.account]) | Q(
+            participants__in=[user.account]))
+    name_prefix: str = request.data.get('name_prefix', None)
+    if name_prefix:
+        events = events.filter(title__startswith=name_prefix)
+    serializer = ShortEventSerializer(
+        data=events, many=True, context={'request': request})
+    serializer.is_valid()
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
-
-@api_view(['GET'])
-def get_all_events(request):
-    event_list = Event.objects.all()
-    events_data = []
-    for event in event_list:
-        events_data.append(get_minimal_event_data(event.pk, request.user.account.id))
-    
-    data = {'events':events_data}
-    return Response(data, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
@@ -106,7 +76,7 @@ def add_to_event(request, pk):
         return Response(status=status.HTTP_400_BAD_REQUEST)
     if not 'password' in request.data:
         return Response(status=status.HTTP_400_BAD_REQUEST)
-    
+
     password = request.data['password']
     if password == event.mentor_password:
         event.mentors.add(account)

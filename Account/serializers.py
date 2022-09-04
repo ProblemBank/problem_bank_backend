@@ -1,5 +1,5 @@
 from problembank.models import BankAccount
-from problembank.serializers import BankAccountSerializer
+from problembank.serializer import BankAccountSerializer
 from rest_framework import serializers
 from .models import *
 from django.db import transaction

@@ -1,5 +1,5 @@
 
-from problembank.serializers import DescriptiveProblem
+from problembank.serializer import DescriptiveProblem
 from django.contrib import admin
 
 from problembank.models import *

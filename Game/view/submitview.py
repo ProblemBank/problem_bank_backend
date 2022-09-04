@@ -12,7 +12,7 @@ from rest_framework.decorators import api_view, permission_classes
 from problembank.permissions import DefaultPermission
 from rest_framework import permissions
 # from problembank.views import permissions as customPermissions
-from problembank.serializers import *
+from problembank.serializer import *
 from django.utils import timezone
 import sys
 from itertools import chain

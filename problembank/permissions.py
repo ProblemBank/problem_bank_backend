@@ -17,6 +17,20 @@ DELETE = DELETE
 """
 
 
+class IsEventManager(BasePermission):
+    message = 'You are not this event\'s manager'
+
+    def has_object_permission(self, request, view, obj):
+        return request.user in obj.modifiers
+
+
+class IsEventUser(BasePermission):
+    message = 'You are not this event\'s user'
+
+    def has_object_permission(self, request, view, obj):
+        return request.user in obj.modifiers
+
+
 class DefaultPermission(BasePermission):
     def is_get_list_request(self, request):
         return 'pk' not in request.parser_context['kwargs'].keys() and request.method in ['GET']
@@ -114,64 +128,6 @@ class ProblemPermission(ModelPermission):
             (request.method in EDIT_AND_DELET_METHODS and self.some_where_is_mentor(request)) or\
             (request.method in EDIT_AND_DELET_METHODS and self.is_my_object(request)) or\
             (request.method in JUST_VIEW_METHODS and self.is_visibale(request))
-
-# class SubmitPermission(ModelPermission):
-#     model = None
-#     def get_object(self, request):
-#         return None
-#         # if  'sid' not in request.parser_context['kwargs'].keys() and\
-#         #     'pk' not in request.parser_context['kwargs'].keys():
-#         #     return None
-#         # try:
-#         #     pk = request.parser_context['kwargs']['sid']
-#         #     obj = self.model.objects.get(pk=pk)
-#         # except:
-#         #     try:
-#         #         pk = request.parser_context['kwargs']['pk']
-#         #         obj = self.model.objects.get(pk=pk)
-#         #     except:
-#         #         return None
-#         # return obj
-#     def get_problem_group(self, request):
-#         return None
-#     def get_problem(self, request):
-#         return None
-#     def has_anonymous_permission(self, request, view):
-#         return False
-
-#     def is_mentor(self, request):
-#         account = request.user.account
-#         problem_group = self.get_problem_group(request)
-#         if problem_group is not None and problem_group is not None:
-#             return len(problem_group.event.mentors.all().filter(id=account.id)) > 0 or\
-#                     self.is_my_object(request)
-#         return False
-
-#     def is_participant(self, request):
-#         account = request.user.account
-#         problem_group = self.get_problem_group(request)
-#         if problem_group is not None and problem_group is not None:
-#             return len(problem_group.event.participants.all().filter(id=account.id)) > 0
-#         return False
-
-#     def is_my_object(self, request):
-#         obj = self.get_object(request)
-#         account = request.user.account
-#         if obj is None:
-#             return False
-#         return len(obj.respondents.all().filter(id=account.id)) > 0
-
-#     def is_poblic_problem(self, request):
-#         problem = self.get_problem(request)
-#         if problem is None:
-#             return False
-#         return problem.is_private == False
-
-#     def has_member_permission(self, request, view):
-#         return  (request.method in JUST_ADD_METHODS and self.is_participant(request)) or\
-#                 (request.method in JUST_VIEW_METHODS and self.is_my_object(request)) or\
-#                 (request.method in EDIT_AND_DELET_METHODS and self.is_mentor(request)) or\
-#                 (request.method in JUST_ADD_METHODS and self.is_poblic_problem(request))
 
 
 class JudgePermission(ModelPermission):
@@ -331,3 +287,62 @@ class EventPermission(ModelPermission):
         return request.method in JUST_ADD_METHODS or\
             (request.method in JUST_VIEW_METHODS and self.is_member(request)) or\
             (request.method in EDIT_AND_DELET_METHODS and self.is_my_object(request))
+
+
+# class SubmitPermission(ModelPermission):
+#     model = None
+#     def get_object(self, request):
+#         return None
+#         # if  'sid' not in request.parser_context['kwargs'].keys() and\
+#         #     'pk' not in request.parser_context['kwargs'].keys():
+#         #     return None
+#         # try:
+#         #     pk = request.parser_context['kwargs']['sid']
+#         #     obj = self.model.objects.get(pk=pk)
+#         # except:
+#         #     try:
+#         #         pk = request.parser_context['kwargs']['pk']
+#         #         obj = self.model.objects.get(pk=pk)
+#         #     except:
+#         #         return None
+#         # return obj
+#     def get_problem_group(self, request):
+#         return None
+#     def get_problem(self, request):
+#         return None
+#     def has_anonymous_permission(self, request, view):
+#         return False
+
+#     def is_mentor(self, request):
+#         account = request.user.account
+#         problem_group = self.get_problem_group(request)
+#         if problem_group is not None and problem_group is not None:
+#             return len(problem_group.event.mentors.all().filter(id=account.id)) > 0 or\
+#                     self.is_my_object(request)
+#         return False
+
+#     def is_participant(self, request):
+#         account = request.user.account
+#         problem_group = self.get_problem_group(request)
+#         if problem_group is not None and problem_group is not None:
+#             return len(problem_group.event.participants.all().filter(id=account.id)) > 0
+#         return False
+
+#     def is_my_object(self, request):
+#         obj = self.get_object(request)
+#         account = request.user.account
+#         if obj is None:
+#             return False
+#         return len(obj.respondents.all().filter(id=account.id)) > 0
+
+#     def is_poblic_problem(self, request):
+#         problem = self.get_problem(request)
+#         if problem is None:
+#             return False
+#         return problem.is_private == False
+
+#     def has_member_permission(self, request, view):
+#         return  (request.method in JUST_ADD_METHODS and self.is_participant(request)) or\
+#                 (request.method in JUST_VIEW_METHODS and self.is_my_object(request)) or\
+#                 (request.method in EDIT_AND_DELET_METHODS and self.is_mentor(request)) or\
+#                 (request.method in JUST_ADD_METHODS and self.is_poblic_problem(request))
