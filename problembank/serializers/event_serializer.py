@@ -15,9 +15,9 @@ class ShortEventSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         if obj.owner == user.account:
             role = "owner"
-        elif user.account in obj.mentors:
+        elif user.account in obj.mentors.all():
             role = "mentor"
-        elif user.account in obj.participants:
+        elif user.account in obj.participants.all():
             role = "participant"
         else:
             role = "anonymous"
