@@ -132,7 +132,7 @@ class DescriptiveProblemSerializer(serializers.ModelSerializer):
     answer = DescriptiveAnswerSerializer(required=False)
     file = serializers.FileField(required=False, allow_null=True)
 
-    class Meta: 
+    class Meta:
         model = DescriptiveProblem
         fields = '__all__'
         extra_kwargs = {'author': {'read_only': True},
@@ -257,12 +257,6 @@ class ProblemGroupSerializer(serializers.ModelSerializer):
         data['problems'] = problems_data
         return data
 
-
-class ProblemGroupSerializerWithoutProblems(serializers.ModelSerializer):
-
-    class Meta:
-        model = ProblemGroup
-        exclude = ('problems',)
 
 class AutoCheckSubmitSerializer(serializers.ModelSerializer):
     answer = ShortAnswerSerializer(required=False)
