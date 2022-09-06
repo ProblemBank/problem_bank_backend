@@ -264,35 +264,6 @@ class ProblemGroupSerializerWithoutProblems(serializers.ModelSerializer):
         model = ProblemGroup
         exclude = ('problems',)
 
-
-class EventSerializer(serializers.ModelSerializer):
-    problem_groups = ProblemGroupSerializerWithoutProblems(
-        many=True, required=False)
-
-    class Meta:
-        model = Event
-        exclude = ['mentor_password', 'participant_password']
-        extra_kwargs = {'owner': {'read_only': True}}
-
-    def create(self, validated_data):
-        mentors_data = validated_data.pop('mentors')
-        participants_data = validated_data.pop('participants')
-
-        instance = Event.objects.create(**validated_data)
-        instance.mentors.set(mentors_data)
-        instance.participants.set(participants_data)
-        instance.save()
-        return instance
-
-    def update(self, instance, validated_data):
-        instance.mentors.set(validated_data.pop('mentors'))
-        instance.participants.set(validated_data.pop('participants'))
-        instance.save()
-        Event.objects.filter(id=instance.id).update(**validated_data)
-        instance = Event.objects.filter(id=instance.id)[0]
-        return instance
-
-
 class AutoCheckSubmitSerializer(serializers.ModelSerializer):
     answer = ShortAnswerSerializer(required=False)
 

@@ -12,32 +12,21 @@ from problembank.serializers.event_serializer import ShortEventSerializer
 from problembank.models import *
 from rest_framework import permissions
 # from problembank.views import permissions as customPermissions
-from problembank.serializer import EventSerializer
+from problembank.serializers.event_serializer import EventSerializer
 from problembank.permissions import DefaultPermission, EventPermission
 import sys
 
 
-class EventView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixins.ListModelMixin,
-                mixins.UpdateModelMixin, mixins.DestroyModelMixin):
+class EventView(viewsets.ModelViewSet):
     #permission_classes = [permissions.IsAuthenticated, customPermissions.MentorPermission, ]
     permission_classes = [permissions.IsAuthenticated, EventPermission]
     queryset = Event.objects.all()
-    serializer_class = EventSerializer
+    serializer_class = ShortEventSerializer
 
-    @transaction.atomic
-    def create(self, request, *args, **kwargs):
-        data = request.data
-        serializerClass = self.get_serializer_class()
-        serializer = serializerClass(data=data)
-        if not serializer.is_valid(raise_exception=True):
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        data = serializer.validated_data
-        data['owner'] = request.user.account
-        instance = serializer.create(data)
-        instance.save()
-
-        response = serializer.to_representation(instance)
-        return Response(response)
+    def get_serializer_context(self):
+        context = super(EventView, self).get_serializer_context()
+        context.update({"request": self.request})
+        return context
 
 
 @api_view(['GET'])
