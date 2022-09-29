@@ -6,6 +6,7 @@ import sys
 from .models import *
 from django.db import transaction
 import json
+from problembank.serializers.problem_group_serializer import ProblemGroupSerializerWithoutProblems
 
 
 class SourceSerializer(serializers.ModelSerializer):

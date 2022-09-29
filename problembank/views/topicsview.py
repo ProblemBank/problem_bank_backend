@@ -15,24 +15,21 @@ from problembank.serializer import SourceSerializer, SubtopicSerializer, TopicSe
 
 import sys
 
-class TopicView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixins.ListModelMixin,
-                   mixins.UpdateModelMixin, mixins.DestroyModelMixin):
+class TopicView(viewsets.ModelViewSet):
     #permission_classes = [permissions.IsAuthenticated, customPermissions.MentorPermission, ]
     permission_classes = [permissions.IsAuthenticated, TopicPermission]
     queryset = Topic.objects.all()
     serializer_class = TopicSerializer
 
 
-class SubtopicView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixins.ListModelMixin,
-                   mixins.UpdateModelMixin, mixins.DestroyModelMixin):
+class SubtopicView(viewsets.ModelViewSet):
     #permission_classes = [permissions.IsAuthenticated, customPermissions.MentorPermission, ]
     permission_classes = [permissions.IsAuthenticated, SubtopicPermission]
     queryset = Subtopic.objects.all()
     serializer_class = SubtopicSerializer
 
 
-class SourceView(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixins.ListModelMixin,
-                   mixins.UpdateModelMixin, mixins.DestroyModelMixin):
+class SourceView(viewsets.ModelViewSet):
     #permission_classes = [permissions.IsAuthenticated, customPermissions.MentorPermission, ]
     permission_classes = [permissions.IsAuthenticated, SourcePermission]
     queryset = Source.objects.all()
