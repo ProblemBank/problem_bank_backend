@@ -38,17 +38,16 @@ RUN pip install gunicorn==20.0.4
 WORKDIR /usr/src/app/
 
 # copy entrypoint-prod.sh
-COPY ./entrypoint.prod.sh ./entrypoint.prod.sh
+COPY ./entrypoint.prod.sh /usr/src/app/entrypoint.prod.sh
 
-ADD ["./.", "./."]
-
-COPY ./manage.py ./manage.py
-
+COPY . /usr/src/app/
 
 RUN adduser -D game_backend
 
 RUN mkdir -p /usr/src/app/staticfiles && chown -R game_backend /usr/src/app/staticfiles \
   && mkdir -p /usr/src/app/media && chown -R game_backend /usr/src/app/media
+  
+RUN chown -R game_backend /usr/src/app/
 
 RUN ["chmod", "+x", "/usr/src/app/entrypoint.prod.sh"]
 # run entrypoint.prod.sh
