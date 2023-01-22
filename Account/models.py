@@ -22,7 +22,6 @@ class User(AbstractUser):
         TWELFTH = 'TWELFTH'
 
     phone_number = models.CharField(max_length=15, blank=True, null=True)
-    backup_phone_number = models.CharField(max_length=15, blank=True, null=True)
     profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
     gender = models.CharField(max_length=10, null=True, blank=True, choices=Gender.choices)
     grade = models.CharField(max_length=10, null=True, blank=True, choices=Grade.choices)
