@@ -46,7 +46,7 @@ def get_events(request):
     my_events: bool = request.data.get('my_events', False)
     if my_events:
         events = events.filter(Q(mentors__in=[user.account]) | Q(
-            participants__in=[user.account]))
+            participants__in=[user.account])).distinct()
     name_prefix: str = request.data.get('name_prefix', None)
     if name_prefix:
         events = events.filter(title__startswith=name_prefix)
